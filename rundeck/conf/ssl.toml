@@ -1,0 +1,6 @@
+[template]
+src = "ssl.properties.tmpl"
+dest = "/etc/rundeck/ssl/ssl.properties"
+keys = [
+    "/rundeck/ssl"
+]

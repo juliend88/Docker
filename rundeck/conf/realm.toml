@@ -1,0 +1,6 @@
+[template]
+src = "realm.properties.tmpl"
+dest = "/etc/rundeck/realm.properties"
+keys = [
+    "/rundeck/users"
+]
