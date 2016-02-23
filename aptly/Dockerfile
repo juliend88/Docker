@@ -1,0 +1,4 @@
+FROM bryanhong/aptly:latest
+
+
+
