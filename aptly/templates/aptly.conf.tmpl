@@ -1,0 +1,27 @@
+{
+  "rootDir": "$HOME/.aptly",
+  "downloadConcurrency": 4,
+  "downloadSpeedLimit": 0,
+  "architectures": [],
+  "dependencyFollowSuggests": false,
+  "dependencyFollowRecommends": false,
+  "dependencyFollowAllVariants": false,
+  "dependencyFollowSource": false,
+  "gpgDisableSign": false,
+  "gpgDisableVerify": false,
+  "downloadSourcePackages": false,
+  "ppaDistributorID": "ubuntu",
+  "ppaCodename": "",
+
+  "SwiftPublishEndpoints": {
+    "{{getv "/aptly/name"}}": {
+      "container": "{{getv "/aptly/name"}}",
+      "osname": "{{getv "/aptly/tenant/username"}}",
+      "password": "{{getv "/aptly/tenant/password"}}",
+      "prefix": "",
+      "authurl": "{{getv "/aptly/authurl"}}",
+      "tenant": "{{getv "/aptly/tenant/name"}}",
+      "tenantid": "{{getv "/aptly/tenant/id"}}"
+    }
+  }
+}

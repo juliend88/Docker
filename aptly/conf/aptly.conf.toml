@@ -1,0 +1,6 @@
+[template]
+src = "aptly.conf.tmpl"
+dest = "/etc/aptly.conf"
+keys = [
+    "/aptly"
+]

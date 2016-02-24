@@ -1,6 +1,6 @@
 FROM java:7
 
-RUN wget -O /usr/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.11.0/confd-0.11.0-linux-amd64 && mkdir -p /etc/confd/{conf.d,templates} && chmod +x /usr/bin/confd
+RUN wget -O /usr/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.11.0/confd-0.11.0-linux-amd64 && chmod +x /usr/bin/confd
 
 ENV RUN_DECK_VERSION 2.6.2-1-GA
 
