@@ -3,7 +3,7 @@
 ### Written by the CAT team
 ##
 #
-heat_template_version: 2013-05-23
+heat_template_version: 2014-10-16
 
 
 description: CoreOS stack for Cloudwatt
@@ -47,18 +47,20 @@ resources:
     type: OS::Neutron::SecurityGroup
     properties:
       rules:
-        - { direction: ingress, protocol: TCP, port_range_min: 22, port_range_max: 22 }
-        - { direction: ingress, protocol: TCP, port_range_min: 80, port_range_max: 80 }
-        - { direction: ingress, protocol: ICMP }
         - { direction: ingress }
-        - { direction: egress, protocol: ICMP }
-        - { direction: egress, protocol: TCP }
-        - { direction: egress, protocol: UDP }
+        - { direction: egress}
 
   floating_ip:
     type: OS::Neutron::FloatingIP
     properties:
       floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
+
+  ports:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: network }
+      security_groups:
+        - { get_resource: security_group }
 
   server:
     type: OS::Nova::Server
@@ -67,27 +69,49 @@ resources:
       image: 811c20f7-ad34-4401-85a9-72b9f921a0dd
       flavor: { get_param: flavor_name }
       user_data_format: RAW
+      networks:
+        - port: { get_resource: ports }
       user_data:
         str_replace:
-          template: |
-           #cloud-config
-           coreos:
-            etcd2:
-              name: "%H"
-              advertise-client-urls: http://$private_ipv4:2379
-              initial-advertise-peer-urls: http://$private_ipv4:2380
-              initial-cluster: "%H=http://$private_ipv4:2380"
-              listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
-              listen-peer-urls: http://$private_ipv4:2380
-            units:
-              - name: etcd2.service
-                command: start
           params:
-            $public_key$: ""
-      networks:
-        - network: { get_resource: network }
-      security_groups:
-        - { get_resource: security_group }
+            $private_ipv4: { get_attr: [ ports, fixed_ips, 0, ip_address ] }
+            $public_ipv4: { get_attr: [floating_ip, floating_ip_address] }
+          template: |
+            #cloud-config
+            write_files:
+              - path: /etc/environment
+                permissions: 0644
+                owner: "root:root"
+                content: |
+                  COREOS_PRIVATE_IPV4=$private_ipv4
+                  COREOS_PUBLIC_IPV4=$public_ipv4
+                  ETCD_ADDR=$private_ipv4:2379
+                  ETCD_PEER_ADDR=$private_ipv4:2380
+            coreos:
+              etcd2:
+                name: "%H"
+                advertise-client-urls: http://$private_ipv4:2379
+                initial-advertise-peer-urls: http://$private_ipv4:2380
+                initial-cluster: "%H=http://$private_ipv4:2380"
+                listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
+                listen-peer-urls: http://$private_ipv4:2380
+              units:
+                - name: docker-tcp.socket
+                  command: start
+                  enable: true
+                  content: |
+                    [Unit]
+                    Description=Docker Socket for the API
+
+                    [Socket]
+                    ListenStream=2375
+                    BindIPv6Only=both
+                    Service=docker.service
+
+                    [Install]
+                    WantedBy=sockets.target
+                - name: etcd2.service
+                  command: start
 
   floating_ip_link:
     type: OS::Nova::FloatingIPAssociation

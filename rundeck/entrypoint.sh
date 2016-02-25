@@ -1,5 +1,10 @@
 #!/bin/bash
-confd -backend env -onetime
+if [ -n "$ETCD_NODE" ]
+then
+    confd -backend etcd -node ${ETCD_NODE} -onetime
+else
+    confd -backend env -onetime
+fi
 
 . /etc/rundeck/profile
 RDECK_JVM="$RDECK_JVM -Drundeck.ssl.config=/etc/rundeck/ssl/ssl.properties -Dserver.https.port=${RDECK_HTTPS_PORT}"
