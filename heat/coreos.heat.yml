@@ -43,12 +43,21 @@ resources:
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
 
+  router:
+    type: OS::Neutron::Router
+
+  toolbox_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: router }
+      subnet_id: { get_resource: subnet }
+
   security_group:
     type: OS::Neutron::SecurityGroup
     properties:
       rules:
         - { direction: ingress }
-        - { direction: egress}
+        - { direction: egress }
 
   floating_ip:
     type: OS::Neutron::FloatingIP
