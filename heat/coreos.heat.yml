@@ -16,7 +16,7 @@ parameters:
     type: string
 
   flavor_name:
-    default: s1.cw.small-1
+    default: n1.cw.standard-4
     description: Flavor to use for the deployed instance
     type: string
     label: Instance Type (Flavor)
@@ -112,6 +112,21 @@ resources:
                     WantedBy=sockets.target
                 - name: etcd2.service
                   command: start
+                - name: toolboxui.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Toolbox UI
+                    After=docker.service
+                    Requires=docker.service
+
+                    [Service]
+                    TimeoutStartSec=0
+                    ExecStartPre=-/usr/bin/docker kill toolboxui
+                    ExecStartPre=-/usr/bin/docker rm toolboxui
+                    ExecStartPre=/usr/bin/docker pull cloudwattfr/toolboxui
+                    ExecStart=/usr/bin/docker run --name toolboxui -p 80:3000 cloudwattfr/toolboxui $private_ipv4
+                    ExecStop=/usr/bin/docker stop toolboxui
 
   floating_ip_link:
     type: OS::Nova::FloatingIPAssociation
