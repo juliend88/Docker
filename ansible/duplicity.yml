@@ -1,0 +1,15 @@
+---
+#
+##
+### Written by the CAT (Cloudwatt Automation Team)
+##
+#
+- hosts: all
+  become: yes
+
+
+  tasks:
+ - name:  packages installed
+      package:
+        name=duplicity
+        state=present

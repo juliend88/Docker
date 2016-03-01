@@ -1,0 +1,22 @@
+---
+#
+##
+### Written by the CAT (Cloudwatt Automation Team)
+##
+#
+- hosts: all
+  become: yes
+
+  vars:
+  toolbox_adress: toolbox_adress
+
+  tasks:
+
+  - name: config repo
+    lineinfile:
+    dest=/etc/apt/sources.list
+    line="http://{{ toolbox_adress }}:8080/ {{ ansible_distribution_release }} main
+
+  - name: Discovery etcd Aptly
+    curl: curl -L http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/aptly -XPUT -d value=
+

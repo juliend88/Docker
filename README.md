@@ -96,5 +96,7 @@ docker run \
     --env="ZS_DBPassword=my_password" \
     zabbix/zabbix-3.0:latest
     
-Options : https://hub.docker.com/r/zabbix/zabbix-3.0/    
+Options : https://hub.docker.com/r/zabbix/zabbix-3.0/
+
+## DNS MASQ
     

@@ -1,0 +1,24 @@
+---
+#
+##
+### Written by the CAT (Cloudwatt Automation Team)
+##
+#
+- hosts: all
+  become: yes
+
+  vars:
+    ipadress: VM_ipadress
+
+  tasks:
+    - name : install NTP
+      apt: pkg=ntp
+           state=present
+
+    - name: config ntf client
+      lineinfile:
+        dest=/etc/ntp.conf
+        line="server {{ipadress}}"
+
+    - name: Discovery etcd ntpserver
+      curl: curl -L http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/ntpserver -XPUT -d value=
