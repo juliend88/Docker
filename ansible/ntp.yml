@@ -4,13 +4,11 @@
 ### Written by the CAT (Cloudwatt Automation Team)
 ##
 #
-- hosts: all
+- hosts: '{{openstack_id}}'
   user: cloud
   become: yes
 
   vars:
-    toolbox_adress: 84.39.32.12
-    openstack_id : 9f19011c-86d1-4182-bef3-1d7f0b1c62d1
     package: ntp
 
   tasks:
