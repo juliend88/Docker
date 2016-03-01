@@ -134,7 +134,7 @@ resources:
                     ExecStartPre=-/usr/bin/docker kill toolboxui
                     ExecStartPre=-/usr/bin/docker rm toolboxui
                     ExecStartPre=/usr/bin/docker pull cloudwattfr/toolboxui
-                    ExecStart=/usr/bin/docker run --name toolboxui -p 80:3000 cloudwattfr/toolboxui $private_ipv4
+                    ExecStart=/usr/bin/docker run --name toolboxui -p 80:3000 cloudwattfr/toolboxui $private_ipv4 $public_ipv4
                     ExecStop=/usr/bin/docker stop toolboxui
 
   floating_ip_link:
