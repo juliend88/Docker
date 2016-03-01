@@ -47,6 +47,11 @@
         state=restarted
         enabled=yes
 
+   - name : install httplib2
+     pip: name=httplib2
+          state=present
+
+
     - uri:
         url: http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/ntpserver
         method: PUT
