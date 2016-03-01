@@ -7,9 +7,21 @@
 - hosts: all
   become: yes
 
+  vars:
+    ipadress: VM_ipadress
+    toolbox_adress: 84.39.32.12
+    openstack_id : 9f19011c-86d1-4182-bef3-1d7f0b1c62d1
+    package: duplicity
 
   tasks:
- - name:  packages installed
+    - name:  packages installed
       package:
-        name=duplicity
-        state=present
+          name=duplicity
+          state=present
+
+    - uri:
+         url: http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/ntpserver
+         method: PUT
+         HEADER_Content-Type: "application/x-www-form-urlencoded"
+         body_format: raw
+         body: "value={{ package }}"

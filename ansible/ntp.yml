@@ -5,20 +5,31 @@
 ##
 #
 - hosts: all
+  user: cloud
   become: yes
 
   vars:
-    ipadress: VM_ipadress
+    toolbox_adress: 84.39.32.12
+    openstack_id : 9f19011c-86d1-4182-bef3-1d7f0b1c62d1
+    package: ntp
 
   tasks:
-    - name : install NTP
-      apt: pkg=ntp
+     - name : install NTP
+       apt: pkg=ntp
            state=present
 
-    - name: config ntf client
-      lineinfile:
-        dest=/etc/ntp.conf
-        line="server {{ipadress}}"
+     - name : install httplib2
+       pip: name=httplib2
+           state=present
 
-    - name: Discovery etcd ntpserver
-      curl: curl -L http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/ntpserver -XPUT -d value=
+     - name: config ntp client
+       lineinfile:
+        dest=/etc/ntp.conf
+        line="server {{toolbox_adress}}"
+
+     - uri:
+         url: http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/ntpserver
+         method: PUT
+         HEADER_Content-Type: "application/x-www-form-urlencoded"
+         body_format: raw
+         body: "value={{ package }}"
