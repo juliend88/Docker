@@ -23,7 +23,7 @@
           state=present
 
     - uri:
-         url: http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/ntpserver
+         url: http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/duplicity
          method: PUT
          HEADER_Content-Type: "application/x-www-form-urlencoded"
          body_format: raw

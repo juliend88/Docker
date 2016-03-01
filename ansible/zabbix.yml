@@ -56,7 +56,7 @@
 
 
     - uri:
-        url: http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/ntpserver
+        url: http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/zabbix
         method: PUT
         HEADER_Content-Type: "application/x-www-form-urlencoded"
         body_format: raw
