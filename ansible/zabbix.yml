@@ -4,8 +4,11 @@
 ### Written by the CAT (Cloudwatt Automation Team)
 ##
 #
-- hosts: all
+- hosts: '{{openstack_id}}'
   become: yes
+
+  vars:
+    package: zabbix
 
   tasks:
     - apt: update_cache=true upgrade=full
