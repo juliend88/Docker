@@ -59,6 +59,7 @@
         url: http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/zabbix
         method: PUT
         HEADER_Content-Type: "application/x-www-form-urlencoded"
+        status_code: 200,201
         body_format: raw
         body: "value={{ package }}"
 
