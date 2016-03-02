@@ -1,0 +1,6 @@
+[template]
+src = "squid.tmpl"
+dest= "/etc/tmpfiles.d/clamd.squid.conf"
+keys = [
+    "/squid.conf"
+]

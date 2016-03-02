@@ -4,24 +4,3 @@ dest = "/etc/clamd.d/squid.conf"
 keys = [
     "/squid"
 ]
-
-
-src = "clamd.squid.tmpl"
-dest= "/etc/sysconfig/clamd.squid"
-keys = [
-    "/clamd.conf"
-]
-
-
-
-src = "squid.tmpl"
-dest= "/etc/tmpfiles.d/clamd.squid.conf"
-keys = [
-    "/squid.conf"
-]
-
- src = "clam.service.tmpl"
-dest= "/usr/lib/systemd/system/clamd@.service"
-keys = [
-    "/clam.service"
-]
