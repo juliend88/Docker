@@ -100,3 +100,8 @@ Options : https://hub.docker.com/r/zabbix/zabbix-3.0/
 
 ## DNS MASQ
     
+defensative/dnsmasq-ubuntu
+
+## Ngnix 
+
+ docker run --name some-nginx -v /some/nginx.conf:/etc/nginx/nginx.conf:ro -d nginx
