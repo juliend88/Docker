@@ -1,6 +1,0 @@
-[template]
- src = "clam.service.tmpl"
-dest= "/usr/lib/systemd/system/clamd@.service"
-keys = [
-    "/clam.service"
-]
