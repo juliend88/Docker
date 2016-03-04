@@ -13,7 +13,6 @@
 
   tasks:
     - apt: update_cache=true upgrade=full
-      when: "'slaves' in group_names"
 
     - name: install packages
       apt: pkg={{ item }} state=present
@@ -21,14 +20,12 @@
         - zabbix-agent
         - ntp
       notify: restart ntp
-      when: "'slaves' in group_names"
 
     - name: get zabbix_server IP
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
         regexp=".*Server=.*"
         line="Server={{ hostvars['127.0.0.1'].ansible_default_ipv4.address }}"
-      when: "'slaves' in group_names"
 
     - name: zabbix slave hostname
       lineinfile:
@@ -36,7 +33,6 @@
         regexp="^Hostname="
         line="Hostname={{ ansible_hostname }}"
       notify: restart zabbix
-      when: "'slaves' in group_names"
 
   handlers:
     - name: restart ntp
@@ -54,7 +50,6 @@
     - name : install httplib2
       pip: name=httplib2
           state=present
-
 
     - uri:
         url: http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/zabbix
