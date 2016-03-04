@@ -11,7 +11,7 @@
   vars:
     package: zabbix
     server_ip: server_ip
-
+    toolbox_adress: toolbox_adress
   tasks:
     - apt: update_cache=true upgrade=full
 
