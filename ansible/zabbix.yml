@@ -10,6 +10,7 @@
 
   vars:
     package: zabbix
+    server_ip: server_ip
 
   tasks:
     - apt: update_cache=true upgrade=full
@@ -25,7 +26,7 @@
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
         regexp=".*Server=.*"
-        line="Server={{ hostvars['127.0.0.1'].ansible_default_ipv4.address }}"
+        line="Server={{ server_ip }}"
 
     - name: zabbix slave hostname
       lineinfile:
