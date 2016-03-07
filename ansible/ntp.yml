@@ -26,7 +26,7 @@
         line="server {{toolbox_adress}}"
 
      - uri:
-         url: http://{{ toolbox_adress }}:4001/v2/keys/servers/{{ openstack_id }}/apps/ntpserver
+         url: http://{{ toolbox_adress }}:2379/v2/keys/servers/{{ openstack_id }}/apps/ntpserver
          method: PUT
          HEADER_Content-Type: "application/x-www-form-urlencoded"
          status_code: 200,201
