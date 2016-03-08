@@ -4,7 +4,7 @@
 ### Written by the CAT (Cloudwatt Automation Team)
 ##
 #
-- hosts: '{{openstack_id}}'
+- hosts: servers
   user: cloud
   become: yes
 
@@ -27,7 +27,7 @@
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
         regexp=".*Server=.*"
-        line="Server={{ toolbox_adress }}"
+        line="Server={{ toolbox_address }}"
 
     - name: zabbix slave hostname
       lineinfile:
@@ -41,7 +41,7 @@
             state=present
 
     - uri:
-        url: http://{{ toolbox_adress }}:2379/v2/keys/servers/{{ openstack_id }}/apps/zabbix
+        url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/zabbix
         method: PUT
         HEADER_Content-Type: "application/x-www-form-urlencoded"
         status_code: 200,201
