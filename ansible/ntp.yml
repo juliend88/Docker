@@ -23,10 +23,10 @@
      - name: config ntp client
        lineinfile:
         dest=/etc/ntp.conf
-        line="server {{toolbox_adress}}"
+        line="server {{toolbox_address}}"
 
      - uri:
-         url: http://{{ toolbox_adress }}:2379/v2/keys/servers/{{ openstack_id }}/apps/ntpserver
+         url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/ntpserver
          method: PUT
          HEADER_Content-Type: "application/x-www-form-urlencoded"
          status_code: 200,201

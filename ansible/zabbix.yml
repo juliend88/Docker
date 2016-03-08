@@ -4,7 +4,7 @@
 ### Written by the CAT (Cloudwatt Automation Team)
 ##
 #
-- hosts: '{{ openstack_id }}'
+- hosts: '{{openstack_id}}'
   user: cloud
   become: yes
 
