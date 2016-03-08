@@ -4,7 +4,7 @@
 ### Written by the CAT (Cloudwatt Automation Team)
 ##
 #
-- hosts: '{{openstack_id}}'
+- hosts: '{{ server_ip }}'
   user: cloud
   become: yes
 
@@ -12,7 +12,7 @@
     package: zabbix
     server_ip: server_ip
     toolbox_adress: toolbox_adress
-
+    openstack_id: openstack_id
   tasks:
     - apt: update_cache=true upgrade=full
 
@@ -27,7 +27,7 @@
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
         regexp=".*Server=.*"
-        line="Server={{ server_ip }}"
+        line="Server={{ toolbox_adress }}"
 
     - name: zabbix slave hostname
       lineinfile:
