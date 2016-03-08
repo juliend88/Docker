@@ -5,6 +5,7 @@
 ##
 #
 - hosts: '{{openstack_id}}'
+  user: cloud
   become: yes
 
   vars:
