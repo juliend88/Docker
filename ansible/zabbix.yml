@@ -14,10 +14,8 @@
     toolbox_adress: toolbox_adress
     openstack_id: openstack_id
   tasks:
-    - apt: update_cache=true upgrade=full
-
     - name: install packages
-      apt: pkg={{ item }} state=present
+      package: name={{ item }} state=present
       with_items:
         - zabbix-agent
         - ntp
@@ -26,8 +24,8 @@
     - name: get zabbix_server IP
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
-        regexp=".*Server=.*"
-        line="Server={{ toolbox_address }}"
+        regexp=".*ServerActive=.*"
+        line="ServerActive={{ toolbox_address }}"
 
     - name: zabbix slave hostname
       lineinfile:

@@ -13,8 +13,8 @@
 
   tasks:
      - name : install NTP
-       apt: pkg=ntp
-           state=present
+       package: name=ntp
+                state=present
 
      - name : install httplib2
        pip: name=httplib2
