@@ -15,7 +15,6 @@
     openstack_id: openstack_id
 
   tasks:
-<<<<<<< HEAD
 
     - name: Add repository
       yumrepo:
@@ -24,10 +23,6 @@
       baseurl: http://repo.zabbix.com/zabbix/2.2/rhel/7/x86_64/zabbix-release-2.2-1.el7.noarch.rpm
       When: {{ansible_distribution}}=Centos
 
-
-
-=======
->>>>>>> f166bf952e293b7f0b07856006c33a6240dd6f4b
     - name: install packages
       package: name={{ item }} state=present
       with_items:
