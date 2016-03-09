@@ -1,4 +1,4 @@
-FROM ansible/ubuntu14.04-ansible
+FROM williamyeh/ansible:ubuntu14.04
 
 ENV ANSIBLE_HOST_KEY_CHECKING False
 
