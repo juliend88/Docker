@@ -13,6 +13,7 @@
     server_ip: server_ip
     toolbox_adress: toolbox_adress
     openstack_id: openstack_id
+
   tasks:
 
     - name: Add repository
