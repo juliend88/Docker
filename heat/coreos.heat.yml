@@ -150,9 +150,9 @@ resources:
                     ExecStartPre=-/usr/bin/docker rm toolboxui
                     ExecStartPre=/usr/bin/docker pull cloudwattfr/toolboxui
                     ExecStart=/usr/bin/docker run --name toolboxui -p 80:3000 \
-                     -e OS_USERNAME= \
-                     -e OS_PASSWORD= \
-                     -e OS_TENANT_NAME= \
+                     -e OS_USERNAME=cedric.hauber@wescale.fr \
+                     -e OS_PASSWORD=wescalewescale \
+                     -e OS_TENANT_NAME=COMPUTE-15-02-17_02h44m07-518a808f-b6b3-11e4-ad8b-525400872571 \
                      -e OS_AUTH_URL=https://identity.fr1.cloudwatt.com/v2.0 \
                      cloudwattfr/toolboxui $private_ipv4 $public_ipv4
                     ExecStop=/usr/bin/docker stop toolboxui

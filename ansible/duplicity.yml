@@ -4,7 +4,7 @@
 ### Written by the CAT (Cloudwatt Automation Team)
 ##
 #
-- hosts: '{{openstack_id}}'
+- hosts: servers
   user: cloud
   become: yes
 
@@ -24,7 +24,7 @@
           state=present
 
     - uri:
-         url: http://{{ toolbox_adress }}:2379/v2/keys/servers/{{ openstack_id }}/apps/duplicity
+         url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/duplicity
          method: PUT
          HEADER_Content-Type: "application/x-www-form-urlencoded"
          status_code: 200,201

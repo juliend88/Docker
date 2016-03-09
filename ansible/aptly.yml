@@ -4,7 +4,7 @@
 ### Written by the CAT (Cloudwatt Automation Team)
 ##
 #
-- hosts: '{{openstack_id}}'
+- hosts: servers
   user: cloud
   become: yes
 
@@ -22,10 +22,10 @@
   - name: config repo
     lineinfile:
       dest=/etc/apt/sources.list
-      line="deb http://{{ toolbox_adress }}:8080/ {{ ansible_distribution_release }} main"
+      line="deb http://{{ toolbox_address }}:8080/ {{ ansible_distribution_release }} main"
 
   - uri:
-       url: http://{{ toolbox_adress }}:2379/v2/keys/servers/{{ openstack_id }}/apps/aptly
+       url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/aptly
        method: PUT
        HEADER_Content-Type: "application/x-www-form-urlencoded"
        status_code: 200,201

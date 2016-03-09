@@ -4,7 +4,7 @@
 ### Written by the CAT (Cloudwatt Automation Team)
 ##
 #
-- hosts: '{{ openstack_id }}'
+- hosts: servers
   user: cloud
   become: yes
 
@@ -15,6 +15,7 @@
     openstack_id: openstack_id
 
   tasks:
+<<<<<<< HEAD
 
     - name: Add repository
       yumrepo:
@@ -25,8 +26,10 @@
 
 
 
+=======
+>>>>>>> f166bf952e293b7f0b07856006c33a6240dd6f4b
     - name: install packages
-      apt: pkg={{ item }} state=present
+      package: name={{ item }} state=present
       with_items:
         - zabbix-agent
         - ntp
@@ -35,8 +38,8 @@
     - name: get zabbix_server IP
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
-        regexp=".*Server=.*"
-        line="Server={{ toolbox_adress }}"
+        regexp=".*ServerActive=.*"
+        line="ServerActive={{ toolbox_address }}"
 
     - name: zabbix slave hostname
       lineinfile:
@@ -50,7 +53,7 @@
             state=present
 
     - uri:
-        url: http://{{ toolbox_adress }}:2379/v2/keys/servers/{{ openstack_id }}/apps/zabbix
+        url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/zabbix
         method: PUT
         HEADER_Content-Type: "application/x-www-form-urlencoded"
         status_code: 200,201
