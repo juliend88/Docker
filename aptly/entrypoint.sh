@@ -9,9 +9,4 @@ then
         confd -backend env -onetime
     fi
 fi
-exec $@
-
-
-
-
-
+bash -c "$*"
