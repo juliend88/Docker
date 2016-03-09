@@ -1,0 +1,61 @@
+---
+#
+##
+### Written by the CAT (Cloudwatt Automation Team)
+##
+#
+- hosts: servers
+  user: cloud
+  become: yes
+
+  vars:
+    package: clamav
+    server_ip: server_ip
+    toolbox_adress: toolbox_adress
+    openstack_id: openstack_id
+
+  tasks:
+    - name: Add repository
+      yum:
+        name=http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+        state=present
+      when: ansible_distribution == "CentOS"
+
+    - name: install packages Ubuntu
+      package: name={{ item }} state=present
+      with_items:
+        - clamav
+      when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
+
+    - name: install packages Centos
+      package: name={{ item }} state=present
+      with_items:
+        - clamav-server
+        - clamav-data
+        - clamav-update
+        - clamav-filesystem
+        - clamav
+        - clamav-scanner-systemd
+        - clamav-devel
+        - clamav-lib
+        - clamav-server-systemd
+      when:  ansible_distribution == "Centos"
+
+    - name: change config freshclam Ubuntu/Debian
+      template:
+        dest=/etc/clamav/freshclam.conf
+        src=clamav-file/clamav.j2
+      when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
+
+    - name: change config freshclam Centos
+      template:
+        dest=/etc/freshclam.conf
+        src=clamav-file/clamav.j2
+      when: (ansible_distribution == "Centos")
+
+
+    - name: restart clamav
+      service:
+        name=clamav-freshclam
+        state=restarted
+        enabled=yes
