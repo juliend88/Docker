@@ -4,7 +4,9 @@ ENV ANSIBLE_HOST_KEY_CHECKING False
 
 ADD entrypoint.sh /
 
+ADD graylog-file/90-graylog2.j2 /ansible/graylog-file/
 ADD *.yml /ansible/
+
 
 ENTRYPOINT ["/entrypoint.sh"]
 

@@ -32,3 +32,9 @@
          status_code: 200,201
          body_format: raw
          body: "value={{ package }}"
+
+     - name: restart ntpd
+       service:
+         name=ntpd
+         state=restarted
+         enabled=yes
