@@ -1,0 +1,30 @@
+---
+#
+##
+### Written by the CAT (Cloudwatt Automation Team)
+##
+#
+
+- hosts: servers
+  user: cloud
+  become: yes
+
+  vars:
+    package: skydns
+
+
+  tasks:
+
+    - name: add toolbox adress in resolv.conf
+      lineinfile:
+        dest=/etc/resolv.conf
+        line="nameserver {{toolbox_address}}"
+
+
+    - uri:
+        url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/skydns
+        method: PUT
+        HEADER_Content-Type: "application/x-www-form-urlencoded"
+        status_code: 200,201
+        body_format: raw
+        body: "value={{ package }}"
