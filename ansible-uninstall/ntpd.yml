@@ -1,0 +1,23 @@
+---
+#
+##
+### Written by the CAT (Cloudwatt Automation Team)
+##
+#
+- hosts: servers
+  user: cloud
+  become: yes
+
+  vars:
+    package: ntp
+
+  tasks:
+     - name: config ntp client
+       lineinfile:
+        dest=/etc/ntp.conf
+        line="#server {{toolbox_address}}"
+
+     - uri:
+         url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/ntpserver
+         method: DELETE
+         status_code: 200,201

@@ -39,23 +39,53 @@
         - clamav-devel
         - clamav-lib
         - clamav-server-systemd
-      when:  ansible_distribution == "Centos"
+      when:  ansible_distribution == "CentOS"
 
     - name: change config freshclam Ubuntu/Debian
       template:
-        dest=/etc/clamav/freshclam.conf
-        src=clamav-file/clamav.j2
+        dest=/etc/clamav/freshclam.j2
+        src=clamav-file-ubuntu/clamav.j2
       when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
 
-    - name: change config freshclam Centos
-      template:
-        dest=/etc/freshclam.conf
-        src=clamav-file/clamav.j2
-      when: (ansible_distribution == "Centos")
+    - name: Copy config clamd
+      copy:
+       src=clamav-file-centos/clamd.conf
+       dest=/etc/clamd.d/clamd.conf
+      when: ansible_distribution == "CentOS"
 
+    - name: Copy config freshclam
+      template:
+        src=clamav-file-centos/freshclam.j2
+        dest=/etc/freshclam.conf
+      when: ansible_distribution == "CentOS"
+
+    - name: Copy config freshclam service
+      copy:
+        src=clamav-file-centos/clam-freshclam.service
+        dest=/usr/lib/systemd/system/clam-freshclam.service
+      when: ansible_distribution == "CentOS"
+
+    - name: enable service clamav
+      shell:
+        systemctl enable clam-freshclam.service; \
+        systemctl start clam-freshclam.service
+      when: ansible_distribution == "CentOS"
 
     - name: restart clamav
       service:
         name=clamav-freshclam
         state=restarted
         enabled=yes
+      when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
+
+    - name : install httplib2
+      pip: name=httplib2
+            state=present
+
+    - uri:
+        url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/clamav
+        method: PUT
+        HEADER_Content-Type: "application/x-www-form-urlencoded"
+        status_code: 200,201
+        body_format: raw
+        body: "value={{ package }}"

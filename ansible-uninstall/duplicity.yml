@@ -1,0 +1,25 @@
+---
+#
+##
+### Written by the CAT (Cloudwatt Automation Team)
+##
+#
+- hosts: servers
+  user: cloud
+  become: yes
+
+  vars:
+    package: duplicity
+
+  tasks:
+
+    - name:  packages uninstalled
+      package:
+          name=duplicity
+          state=absent
+
+    - uri:
+         url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/duplicity
+         method: DELETE
+         status_code: 200,201
+

@@ -1,0 +1,44 @@
+---
+#
+##
+### Written by the CAT (Cloudwatt Automation Team)
+##
+#
+- hosts: servers
+  user: cloud
+  become: yes
+
+  vars:
+    package: zabbix
+    server_ip: server_ip
+    toolbox_adress: toolbox_adress
+    openstack_id: openstack_id
+
+  tasks:
+    - name: rm repository
+      yum:
+        name=http://repo.zabbix.com/zabbix/2.2/rhel/7/x86_64/zabbix-release-2.2-1.el7.noarch.rpm
+        state=absent
+      when: ansible_distribution == "CentOS"
+
+    - name: uninstall packages
+      package: name={{ item }} state=absent
+      with_items:
+        - zabbix-agent
+
+    - name: rm zabbix agent config
+      file:
+        path=/etc/zabbix/zabbix_agentd.conf
+        state=absent
+
+
+    - uri:
+        url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/zabbix
+        method: DELETE
+        status_code: 200,201
+
+
+
+
+
+

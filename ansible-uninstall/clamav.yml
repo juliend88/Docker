@@ -1,0 +1,81 @@
+---
+#
+##
+### Written by the CAT (Cloudwatt Automation Team)
+##
+#
+- hosts: servers
+  user: cloud
+  become: yes
+
+  vars:
+    package: clamav
+    server_ip: server_ip
+    toolbox_adress: toolbox_adress
+    openstack_id: openstack_id
+
+  tasks:
+    - name: uninstall packages Ubuntu
+      package: name={{ item }} state=absent
+      with_items:
+        - clamav
+      when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
+
+    - name: uninstall packages Centos
+      package: name={{ item }} state=absent
+      with_items:
+        - clamav-server
+        - clamav-data
+        - clamav-update
+        - clamav-filesystem
+        - clamav
+        - clamav-scanner-systemd
+        - clamav-devel
+        - clamav-lib
+        - clamav-server-systemd
+      when:  ansible_distribution == "CentOS"
+
+    - name: rm config freshclam Ubuntu/Debian
+      file:
+        path=/etc/clamav/freshclam.conf
+        state=absent
+      when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
+
+    - name: Copy config clamd
+      file:
+        path=/etc/clamd.d/clamd.conf
+        state=absent
+      when: ansible_distribution == "CentOS"
+
+    - name: Copy config freshclam
+      file:
+        path=/etc/freshclam.conf
+        state=absent
+      when: ansible_distribution == "CentOS"
+
+    - name: Copy config freshclam service
+      file:
+        path=/usr/lib/systemd/system/clam-freshclam.service
+        state=absent
+      when: ansible_distribution == "CentOS"
+
+    - name: disable service clamav
+      shell:
+        systemctl stop clam-freshclam.service,\
+        systemctl disable clam-freshclam.service
+      when: ansible_distribution == "CentOS"
+
+    - name: disable clamav
+      service:
+        name=clamav-freshclam
+        state=stopped
+        enabled=no
+      when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
+
+    - uri:
+        url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/zabbix
+        method: DELETE
+        status_code: 200,201
+
+
+

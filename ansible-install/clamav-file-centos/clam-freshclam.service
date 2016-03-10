@@ -1,0 +1,11 @@
+# Run the freshclam as daemon
+[Unit]
+Description = freshclam scanner
+After = network.target
+[Service]
+Type = forking
+ExecStart = /usr/bin/freshclam -d -c 4
+Restart = on-failure
+PrivateTmp = true
+[Install]
+WantedBy=multi-user.target
