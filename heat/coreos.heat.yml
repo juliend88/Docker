@@ -98,9 +98,9 @@ resources:
         - { get_resource: security_group }
 
 
-   my_key:
-     type: OS::Nova::KeyPair
-     properties:
+  my_key:
+    type: OS::Nova::KeyPair
+    properties:
        save_private_key: true
        name: toolbox
 
