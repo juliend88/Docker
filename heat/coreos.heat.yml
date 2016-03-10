@@ -97,6 +97,13 @@ resources:
       security_groups:
         - { get_resource: security_group }
 
+
+   my_key:
+     type: OS::Nova::KeyPair
+     properties:
+       save_private_key: true
+       name: toolbox
+
   server:
     type: OS::Nova::Server
     properties:
@@ -116,6 +123,8 @@ resources:
             $os_password: { get_param: os_password }
             $os_tenant: { get_param: os_tenant }
             $os_auth: { get_param: os_auth }
+            $toolboxkey_private: { get_attr: [ my_key, private_key ]}
+            $toolboxkey_public: { get_attr: [ my_key, public_key ]}
           template: |
             #cloud-config
             write_files:
@@ -139,11 +148,14 @@ resources:
                   ETCD_ADDR=$private_ipv4:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
                   TOOLBOX_DOMAIN=$domain
-              - path: /home/core/keys/PUT_YOUR_KEYS_HERE
+              - path: /home/core/toolbox_private.pem
                 permissions: 0666
                 owner: "root:root"
-                content: |
-                  Put your keypairs here to allow the Toolbox access your instances
+                content: $toolboxkey_private
+              - path: /home/core/toolbox_public.pem
+                permissions: 0666
+                owner: "root:root"
+                content: $toolboxkey_public
             coreos:
               etcd2:
                 name: "%H"
@@ -249,3 +261,6 @@ outputs:
   floating_ip:
     description: IP address of the deployed compute instance
     value: { get_attr: [floating_ip, floating_ip_address] }
+  private_key:
+     description: Private key
+     value: { get_attr: [ my_key, public_key ] }
