@@ -44,24 +44,24 @@
     - name: change config freshclam Ubuntu/Debian
       template:
         dest=/etc/clamav/freshclam.j2
-        src=clamav-file-ubuntu/clamav.j2
+        src=ansible-install/clamav-file-ubuntu/clamav.j2
       when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
 
     - name: Copy config clamd
       copy:
-       src=clamav-file-centos/clamd.conf
+       src=ansible-install/clamav-file-centos/clamd.conf
        dest=/etc/clamd.d/clamd.conf
       when: ansible_distribution == "CentOS"
 
     - name: Copy config freshclam
       template:
-        src=clamav-file-centos/freshclam.j2
+        src=ansible-install/clamav-file-centos/freshclam.j2
         dest=/etc/freshclam.conf
       when: ansible_distribution == "CentOS"
 
     - name: Copy config freshclam service
       copy:
-        src=clamav-file-centos/clam-freshclam.service
+        src=ansible-install/clamav-file-centos/clam-freshclam.service
         dest=/usr/lib/systemd/system/clam-freshclam.service
       when: ansible_distribution == "CentOS"
 

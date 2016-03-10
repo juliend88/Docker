@@ -5,8 +5,8 @@ ENV ANSIBLE_HOST_KEY_CHECKING False
 ADD entrypoint.sh /
 
 ADD graylog-file/90-graylog2.j2 /ansible/graylog-file/
-ADD clamav-file-ubuntu/clamav.j2 /ansible/clamav-file-ubuntu/
-ADD clamav-file-centos/* /ansible/clamav-file-centos/
+ADD ansible-install/* /ansible/ansible-install/
+ADD ansible-uninstall/* /ansible/ansible-uninstall/
 ADD *.yml /ansible/
 
 
