@@ -31,7 +31,6 @@
         path=/etc/zabbix/zabbix_agentd.conf
         state=absent
 
-
     - uri:
         url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/zabbix
         method: DELETE

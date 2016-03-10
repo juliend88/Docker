@@ -14,15 +14,16 @@
 
   tasks:
 
-  - name : uninstall httplib2
-    pip: name=httplib2
-         state=absent
-
-
   - name: unconfig repo
     lineinfile:
       dest=/etc/apt/sources.list
       line="#deb http://{{ toolbox_address }}:8080/ {{ ansible_distribution_release }} main"
+
+      - name: rm repository
+      yum:
+        name=http://repo.zabbix.com/zabbix/2.2/rhel/7/x86_64/zabbix-release-2.2-1.el7.noarch.rpm
+        state=absent
+      when: ansible_distribution == "CentOS"
 
   - uri:
        url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/aptly

@@ -23,6 +23,13 @@
     lineinfile:
       dest=/etc/apt/sources.list
       line="deb http://{{ toolbox_address }}:8080/ {{ ansible_distribution_release }} main"
+    when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
+
+  - name: add repository
+    yum:
+      name=http://{{ toolbox_address }}:8080/ {{ ansible_distribution_release }} main
+      state=present
+    when: ansible_distribution == "CentOS"
 
   - uri:
        url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/aptly
