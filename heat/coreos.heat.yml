@@ -3,7 +3,7 @@
 ### Written by the CAT team
 ##
 #
-heat_template_version: 2014-10-16
+heat_template_version: 2013-05-23
 
 
 description: CoreOS stack for Cloudwatt
@@ -13,6 +13,32 @@ parameters:
   keypair_name:
     description: Keypair to inject in instance
     label: SSH Keypair
+    type: string
+
+  os_username:
+    description: OpenStack Username
+    label: OpenStack Username
+    type: string
+
+  os_password:
+    description: OpenStack Password
+    label: OpenStack Password
+    type: string
+
+  os_tenant:
+    description: OpenStack Tenant Name
+    label: OpenStack Tenant Name
+    type: string
+
+  os_auth:
+    description: OpenStack Auth URL
+    default: https://identity.fr1.cloudwatt.com/v2.0
+    label: OpenStack Auth URL
+    type: string
+
+  domain:
+    description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
+    label: Cloud DNS
     type: string
 
   flavor_name:
@@ -85,6 +111,11 @@ resources:
           params:
             $private_ipv4: { get_attr: [ ports, fixed_ips, 0, ip_address ] }
             $public_ipv4: { get_attr: [floating_ip, floating_ip_address] }
+            $domain: { get_param: domain }
+            $os_username: { get_param: os_username }
+            $os_password: { get_param: os_password }
+            $os_tenant: { get_param: os_tenant }
+            $os_auth: { get_param: os_auth }
           template: |
             #cloud-config
             write_files:
@@ -96,6 +127,7 @@ resources:
                   COREOS_PUBLIC_IPV4=$public_ipv4
                   ETCD_ADDR=$private_ipv4:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
+                  TOOLBOX_DOMAIN=$domain
             coreos:
               etcd2:
                 name: "%H"
@@ -131,11 +163,27 @@ resources:
 
                     [Service]
                     TimeoutStartSec=0
+                    Environment=/etc/environment
                     ExecStartPre=-/usr/bin/docker kill rabbitmq
                     ExecStartPre=-/usr/bin/docker rm rabbitmq
                     ExecStartPre=/usr/bin/docker pull rabbitmq:3-management
-                    ExecStart=/usr/bin/docker run --name rabbitmq -p 15672:15672 -p 5672:5672 rabbitmq:3-management
+                    ExecStart=/usr/bin/docker run --name rabbitmq -e VIRTUAL_HOST=rabbitmq.$domain -e VIRTUAL_PORT=15672 rabbitmq:3-management
                     ExecStop=/usr/bin/docker stop rabbitmq
+                - name: nginxproxy.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Docker Nginx Proxy
+                    After=docker.service
+                    Requires=docker.service
+
+                    [Service]
+                    TimeoutStartSec=0
+                    ExecStartPre=-/usr/bin/docker kill proxy
+                    ExecStartPre=-/usr/bin/docker rm proxy
+                    ExecStartPre=-/usr/bin/docker pull jwilder/nginx-proxy
+                    ExecStart=/usr/bin/docker run --name=proxy -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro jwilder/nginx-proxy
+                    ExecStop=/usr/bin/docker stop proxy
                 - name: toolboxui.service
                   command: start
                   content: |
@@ -146,14 +194,15 @@ resources:
 
                     [Service]
                     TimeoutStartSec=0
+                    Environment=/etc/environment
                     ExecStartPre=-/usr/bin/docker kill toolboxui
                     ExecStartPre=-/usr/bin/docker rm toolboxui
                     ExecStartPre=/usr/bin/docker pull cloudwattfr/toolboxui
-                    ExecStart=/usr/bin/docker run --name toolboxui -p 80:3000 \
-                     -e OS_USERNAME=cedric.hauber@wescale.fr \
-                     -e OS_PASSWORD=wescalewescale \
-                     -e OS_TENANT_NAME=COMPUTE-15-02-17_02h44m07-518a808f-b6b3-11e4-ad8b-525400872571 \
-                     -e OS_AUTH_URL=https://identity.fr1.cloudwatt.com/v2.0 \
+                    ExecStart=/usr/bin/docker run --link rabbitmq:rabbitmq --name toolboxui -e DOMAIN=$domain -p 8080:3000  \
+                     -e OS_USERNAME=$os_username \
+                     -e OS_PASSWORD=$os_password \
+                     -e OS_TENANT_NAME=$os_tenant \
+                     -e OS_AUTH_URL=$os_auth \
                      cloudwattfr/toolboxui $private_ipv4 $public_ipv4
                     ExecStop=/usr/bin/docker stop toolboxui
 
