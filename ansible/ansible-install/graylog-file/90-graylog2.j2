@@ -1,2 +1,2 @@
 $template GRAYLOGRFC5424,"%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msg%\n"
-*.* @{{ toolbox_address }}:1514;GRAYLOGRFC5424
+*.* @graylog.{{server_domain}}:1514;GRAYLOGRFC5424

@@ -22,7 +22,7 @@
   - name: config repo
     lineinfile:
       dest=/etc/apt/sources.list
-      line="deb http://aptly.{{server_domain}}:8080/ {{ ansible_distribution_release }} main"
+      line="deb http://aptly.{{server_domain}}/ {{ ansible_distribution_release }} main"
     when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
 
   - name: add repository
