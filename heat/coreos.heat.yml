@@ -262,5 +262,5 @@ outputs:
     description: IP address of the deployed compute instance
     value: { get_attr: [floating_ip, floating_ip_address] }
   private_key:
-     description: Private key
+     description: Public key
      value: { get_attr: [ my_key, public_key ] }
