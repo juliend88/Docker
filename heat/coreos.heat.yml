@@ -56,6 +56,14 @@ parameters:
           - n1.cw.standard-12
           - n1.cw.standard-16
 
+  volume_size:
+      type: number
+      description: Size of volume to attach to instance
+      default: 10
+      constraints:
+        - range: { min: 10, max: 1000 }
+
+
 resources:
   network:
     type: OS::Neutron::Net
@@ -97,13 +105,6 @@ resources:
       security_groups:
         - { get_resource: security_group }
 
-
-  my_key:
-    type: OS::Nova::KeyPair
-    properties:
-       save_private_key: true
-       name: toolbox
-
   server:
     type: OS::Nova::Server
     properties:
@@ -123,21 +124,16 @@ resources:
             $os_password: { get_param: os_password }
             $os_tenant: { get_param: os_tenant }
             $os_auth: { get_param: os_auth }
-            $toolboxkey_private: { get_attr: [ my_key, private_key ]}
-            $toolboxkey_public: { get_attr: [ my_key, public_key ]}
           template: |
             #cloud-config
             write_files:
-              - path: /home/core/vpn/init.sh
+              - path: /home/core/init-drive.sh
                 permissions: 0700
                 owner: "root:root"
                 content: |
                   #!/bin/bash
-                  if [ ! -f "/home/core/vpn/openvpn.conf" ]; then
-                    docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u udp://$public_ipv4 -n $private_ipv4
-                    docker run -v /home/core/vpn:/etc/openvpn -e "EASYRSA_BATCH=1" -e "EASYRSA_REQ_CN=$domain" --rm -it kylemanna/openvpn ovpn_initpki nopass
-                    docker run -v /home/core/vpn:/etc/openvpn --rm -it kylemanna/openvpn easyrsa build-client-full cloud nopass
-                    docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient cloud > /home/core/cloud.ovpn
+                  if [[ ! $(blkid -o value -s TYPE /dev/vdb) == "ext4" ]]; then
+                      /usr/sbin/mkfs.ext4 /dev/vdb
                   fi
               - path: /etc/environment
                 permissions: 0644
@@ -148,14 +144,6 @@ resources:
                   ETCD_ADDR=$private_ipv4:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
                   TOOLBOX_DOMAIN=$domain
-              - path: /home/core/toolbox_private.pem
-                permissions: 0666
-                owner: "root:root"
-                content: $toolboxkey_private
-              - path: /home/core/toolbox_public.pem
-                permissions: 0666
-                owner: "root:root"
-                content: $toolboxkey_public
             coreos:
               etcd2:
                 name: "%H"
@@ -165,6 +153,39 @@ resources:
                 listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
                 listen-peer-urls: http://$private_ipv4:2380
               units:
+                - name: format-data.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Before=docker.service data.mount
+                    ConditionPathExists=/dev/vdb
+
+                    [Service]
+                    Type=oneshot
+                    ExecStart=/home/core/init-drive.sh
+                - name: data.mount
+                  command: start
+                  content: |
+                    [Unit]
+                    Before=docker.service
+                    After=format-data.service
+                    Requires=format-data.service
+
+                    [Mount]
+                    What=/dev/vdb
+                    Where=/data
+                    Type=ext4
+                - name: generatekey.service
+                  command: start
+                  content: |
+                    [Unit]
+                    ConditionPathExists=!/home/core/keys/key
+                    Description=Toolbox KeyPair Generator
+
+                    [Service]
+                    Type=oneshot
+                    ExecStartPre=-/usr/bin/mkdir /home/core/keys
+                    ExecStart=/usr/bin/ssh-keygen -t rsa -f /home/core/keys/key -N ""
                 - name: docker-tcp.socket
                   command: start
                   enable: true
@@ -212,13 +233,31 @@ resources:
                     ExecStartPre=-/usr/bin/docker pull jwilder/nginx-proxy
                     ExecStart=/usr/bin/docker run --name=proxy -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro jwilder/nginx-proxy
                     ExecStop=/usr/bin/docker stop proxy
+                - name: openvpn-init.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Toolbox VPN Init
+                    After=docker.service
+                    Requires=docker.service
+                    Before=openvpn.service
+                    ConditionPathExists=!/home/core/vpn/openvpn.conf
+
+                    [Service]
+                    Type=oneshot
+                    TimeoutStartSec=0
+                    Environment=/etc/environment
+                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -s 10.0.2.0/24 -u udp://$public_ipv4 -n $private_ipv4 -n 8.8.8.8 -n 8.8.4.4
+                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn -e "EASYRSA_BATCH=1" -e "EASYRSA_REQ_CN=$domain" --rm kylemanna/openvpn ovpn_initpki nopass
+                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn easyrsa build-client-full cloud nopass
+                    ExecStart=/bin/bash -c "/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient cloud > /home/core/cloud.ovpn"
                 - name: openvpn.service
                   command: start
                   content: |
                     [Unit]
                     Description=Toolbox VPN
-                    After=docker.service
-                    Requires=docker.service
+                    After=docker.service openvpn-init.service
+                    Requires=docker.service openvpn-init.service
 
                     [Service]
                     TimeoutStartSec=0
@@ -226,7 +265,6 @@ resources:
                     ExecStartPre=-/usr/bin/docker kill openvpn
                     ExecStartPre=-/usr/bin/docker rm openvpn
                     ExecStartPre=/usr/bin/docker pull kylemanna/openvpn
-                    ExecStartPre=/home/core/vpn/init.sh
                     ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --name=openvpn -p 1194:1194/udp --cap-add=NET_ADMIN kylemanna/openvpn
                     ExecStop=/usr/bin/docker stop openvpn
                 - name: toolboxui.service
@@ -248,8 +286,24 @@ resources:
                      -e OS_PASSWORD=$os_password \
                      -e OS_TENANT_NAME=$os_tenant \
                      -e OS_AUTH_URL=$os_auth \
+                     -p 3000:3000 \
+                     -v /home/core/keys/key.pub:/keypair.pub \
                      cloudwattfr/toolboxui $private_ipv4 $public_ipv4
                     ExecStop=/usr/bin/docker stop toolboxui
+
+
+
+  volume:
+    type: OS::Cinder::Volume
+    properties:
+      size: { get_param: volume_size }
+      description: Volume for stack
+
+  volume_attachment:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      volume_id: { get_resource: volume }
+      instance_uuid: { get_resource: server }
 
   floating_ip_link:
     type: OS::Nova::FloatingIPAssociation
@@ -261,6 +315,3 @@ outputs:
   floating_ip:
     description: IP address of the deployed compute instance
     value: { get_attr: [floating_ip, floating_ip_address] }
-  private_key:
-     description: Public key
-     value: { get_attr: [ my_key, public_key ] }
