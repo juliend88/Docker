@@ -3,7 +3,7 @@ FROM debian:jessie
 RUN echo "deb http://repo.aptly.info/ squeeze main" > /etc/apt/sources.list.d/aptly.list; \
 apt-key adv --keyserver keys.gnupg.net --recv-keys 2A194991; \
 apt-get update; \
-apt-get install aptly wget nginx -y; \
+apt-get install aptly wget nginx -y --force-yes; \
 apt-get clean; \
 rm -rf /var/lib/apt/lists/*
 
@@ -12,6 +12,7 @@ RUN  wget -O /usr/bin/confd https://github.com/kelseyhightower/confd/releases/do
 ADD entrypoint.sh /entrypoint.sh
 ADD conf/* /etc/confd/conf.d/
 ADD templates/* /etc/confd/templates/
+ADD files/* /etc/cron.daily/deb-mirror
 
 ENTRYPOINT ["/entrypoint.sh"]
 

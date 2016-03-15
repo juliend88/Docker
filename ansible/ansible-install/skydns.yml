@@ -15,6 +15,9 @@
 
   tasks:
 
+    - apt: update_cache=true upgrade=full
+      when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
+
     - name: add toolbox adress in resolv.conf
       lineinfile:
         dest=/etc/resolv.conf

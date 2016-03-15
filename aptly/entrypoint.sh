@@ -8,5 +8,6 @@ then
     else
         confd -backend env -onetime
     fi
+         gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys 2A194991
 fi
 bash -c "$*"

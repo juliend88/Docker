@@ -13,6 +13,9 @@
 
   tasks:
 
+    - apt: update_cache=true upgrade=full
+      when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
+
     - name: Create file
       template:
         dest=/etc/rsyslog.d/90-graylog2.conf
