@@ -1,0 +1,7 @@
+[nexus]
+name=Nexus repo
+baseurl=http://nexus.{{server_domain}}:8081/nexus/content/repositories/releases
+enabled=1
+gpgcheck=0
+
+

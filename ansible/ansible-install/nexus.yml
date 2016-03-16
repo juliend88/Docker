@@ -18,7 +18,7 @@
 
   - name: add yum repo
     copy:
-      src=nexus-file-centos/nexus-repo
+      src=nexus-file-centos/nexus.repo
       dest=/etc/yum.repos.d/
     when : ansible_distribution == "CentOS"
 
