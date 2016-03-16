@@ -1,0 +1,5 @@
+[nexus]
+name=Nexus repo
+baseurl=http://nexus.{{server_domain}}.repo
+enabled=1
+gpgcheck=0

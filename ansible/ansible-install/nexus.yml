@@ -17,9 +17,15 @@
   tasks:
 
   - name: add yum repo
-    shell:
-      cp http://{{ toolbox_address}}.repo /etc/yum.repos.d/
+    copy:
+      src=nexus-file-centos/nexus-repo
+      dest=/etc/yum.repos.d/
     when : ansible_distribution == "CentOS"
+
+  - name : install httplib2
+    pip:
+      name=httplib2
+      state=present
 
   - uri:
      url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/nexus
@@ -28,8 +34,3 @@
      status_code: 200,201
      body_format: raw
      body: "value={{ package }}"
-
-
-
-
-
