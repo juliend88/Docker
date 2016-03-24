@@ -178,8 +178,24 @@ resources:
                     ExecStartPre=-/usr/bin/docker kill rabbitmq
                     ExecStartPre=-/usr/bin/docker rm rabbitmq
                     ExecStartPre=/usr/bin/docker pull rabbitmq:3-management
-                    ExecStart=/usr/bin/docker run --name rabbitmq -e VIRTUAL_HOST=rabbitmq.$domain -e VIRTUAL_PORT=15672 rabbitmq:3-management
+                    ExecStart=/usr/bin/docker run --name rabbitmq -v /data/rabbitmq:/var/lib/rabbitmq -e VIRTUAL_HOST=rabbitmq.$domain -e VIRTUAL_PORT=15672 rabbitmq:3-management
                     ExecStop=/usr/bin/docker stop rabbitmq
+                - name: rethinkdb.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=RethinkDB Server
+                    After=docker.service
+                    Requires=docker.service
+
+                    [Service]
+                    TimeoutStartSec=0
+                    Environment=/etc/environment
+                    ExecStartPre=-/usr/bin/docker kill rethinkdb
+                    ExecStartPre=-/usr/bin/docker rm rethinkdb
+                    ExecStartPre=/usr/bin/docker pull rethinkdb
+                    ExecStart=/usr/bin/docker run --name rethinkdb -v /data/rethinkdb:/data -e VIRTUAL_HOST=rethinkdb.$domain -e VIRTUAL_PORT=8080 rethinkdb
+                    ExecStop=/usr/bin/docker stop rethinkdb
                 - name: nginxproxy.service
                   command: start
                   content: |
@@ -229,29 +245,29 @@ resources:
                     ExecStartPre=/usr/bin/docker pull kylemanna/openvpn
                     ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --name=openvpn -p 1194:1194/udp --cap-add=NET_ADMIN --net=host kylemanna/openvpn
                     ExecStop=/usr/bin/docker stop openvpn
-                - name: toolboxui.service
+                - name: toolbox.service
                   command: start
                   content: |
                     [Unit]
                     Description=Toolbox UI
-                    After=rabbitmq.service
-                    Requires=rabbitmq.service
+                    After=rabbitmq.service rethinkdb.service
+                    Requires=rabbitmq.service rethinkdb.service
 
                     [Service]
                     TimeoutStartSec=0
                     Environment=/etc/environment
-                    ExecStartPre=-/usr/bin/docker kill toolboxui
-                    ExecStartPre=-/usr/bin/docker rm toolboxui
-                    ExecStartPre=/usr/bin/docker pull cloudwattfr/toolboxui
-                    ExecStart=/usr/bin/docker run --link rabbitmq:rabbitmq --name toolboxui -e VIRTUAL_HOST=console.$domain -e DOMAIN=$domain -e VIRTUAL_PORT=3000  \
+                    ExecStartPre=-/usr/bin/docker kill toolbox
+                    ExecStartPre=-/usr/bin/docker rm toolbox
+                    ExecStartPre=/usr/bin/docker pull cloudwattfr/toolbox
+                    ExecStart=/usr/bin/docker run --link rabbitmq:rabbitmq --link rethinkdb:rethinkdb --name toolbox -e VIRTUAL_HOST=manager.$domain -e DOMAIN=$domain -e VIRTUAL_PORT=3000  \
                      -e OS_USERNAME=$os_username \
                      -e OS_PASSWORD=$os_password \
                      -e OS_TENANT_NAME=$os_tenant \
                      -e OS_AUTH_URL=$os_auth \
                      -p 3000:3000 \
                      -v /home/core/keys/key.pub:/keypair.pub \
-                     cloudwattfr/toolboxui $private_ipv4 $public_ipv4
-                    ExecStop=/usr/bin/docker stop toolboxui
+                     cloudwattfr/toolbox $private_ipv4 $public_ipv4
+                    ExecStop=/usr/bin/docker stop toolbox
 
   floating_ip_link:
     type: OS::Nova::FloatingIPAssociation
