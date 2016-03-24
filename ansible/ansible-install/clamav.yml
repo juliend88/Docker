@@ -10,9 +10,6 @@
 
   vars:
     package: clamav
-    server_ip: server_ip
-    toolbox_address: toolbox_address
-    openstack_id: openstack_id
 
   tasks:
 

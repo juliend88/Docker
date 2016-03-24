@@ -10,16 +10,13 @@
 
   vars:
     package: nexus
-    server_ip: server_ip
-    toolbox_address: toolbox_address
-    openstack_id: openstack_id
 
   tasks:
 
   - name: add yum repo
-    copy:
-      src=nexus-file-centos/nexus.repo
-      dest=/etc/yum.repos.d/
+    template:
+      src=nexus-file-centos/nexus.repo.j2
+      dest=/etc/yum.repos.d/nexus.repo
     when : ansible_distribution == "CentOS"
 
   - name : install httplib2

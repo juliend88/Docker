@@ -10,9 +10,6 @@
 
   vars:
     package: zabbix
-    server_ip: server_ip
-    toolbox_adress: toolbox_adress
-    openstack_id: openstack_id
 
   tasks:
 
@@ -31,7 +28,7 @@
         - zabbix-agent
 
 
-    - name: get zabbix_server IP
+    - name: set ServerActive IP
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
         regexp=".*ServerActive=.*"

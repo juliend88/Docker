@@ -65,12 +65,21 @@ resources:
     properties:
       network_id: { get_resource: network }
       ip_version: 4
+      dns_nameservers:
+        - 10.0.1.254
+        - 185.23.94.244
+        - 185.23.94.245
       cidr: 10.0.1.0/24
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
 
   router:
     type: OS::Neutron::Router
+    properties:
+      admin_state_up: true
+      external_gateway_info:
+        enable_snat: true
+        network: "public"
 
   toolbox_interface:
     type: OS::Neutron::RouterInterface
@@ -94,6 +103,9 @@ resources:
     type: OS::Neutron::Port
     properties:
       network: { get_resource: network }
+      fixed_ips:
+        - ip_address: 10.0.1.254
+          subnet_id: { get_resource: subnet }
       security_groups:
         - { get_resource: security_group }
 
@@ -211,6 +223,23 @@ resources:
                     ExecStartPre=-/usr/bin/docker pull jwilder/nginx-proxy
                     ExecStart=/usr/bin/docker run --name=proxy -p 80:80 -v /var/run/docker.sock:/tmp/docker.sock:ro jwilder/nginx-proxy
                     ExecStop=/usr/bin/docker stop proxy
+                - name: skydns.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Skydns
+                    After=docker.service
+                    Requires=docker.service
+
+                    [Service]
+                    TimeoutStartSec=0
+                    ExecStartPre=-/usr/bin/docker kill skydns
+                    ExecStartPre=-/usr/bin/docker rm skydns
+                    ExecStartPre=-/usr/bin/docker pull skynetservices/skydns:latest
+                    ExecStartPre=-/usr/bin/etcdctl set /skydns/config '{"dns_addr":"0.0.0.0:53","domain":"toolbox.","ttl":60,"nameservers":["8.8.8.8:53","8.8.4.4:53"]}'
+                    ExecStartPre=-/usr/bin/etcdctl set /skydns/$domain/dns/ns/ns1 '{"host":"$private_ipv4"}'
+                    ExecStart=/usr/bin/docker run --name=skydns -p 53:53 -e ETCD_MACHINES=http://$private_ipv4:2379 skynetservices/skydns:latest
+                    ExecStop=/usr/bin/docker stop skydns
                 - name: openvpn-init.service
                   command: start
                   content: |
