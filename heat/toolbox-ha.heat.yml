@@ -183,7 +183,7 @@ resources:
                       mkdir -p /opt/bin
                       curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.2.0/bin/linux/amd64/kubectl
                       chmod +x /opt/bin/kubectl
-                      kubectl create -f /etc/kubernetes/descriptors
+                      /opt/bin/kubectl create -f /etc/kubernetes/descriptors
                   fi
               - path: /etc/kubernetes/manifests/kube-apiserver.yaml
                 permissions: 0666
@@ -434,7 +434,8 @@ resources:
                   spec:
                     ports:
                       - port: 3000
-                        nodePort: 80
+                        targetPort: 3000
+                    type: LoadBalancer
                     selector:
                       component: toolbox
               - path: /etc/kubernetes/descriptors/toolbox-rc.yaml
@@ -528,6 +529,15 @@ resources:
                   ETCD_ADDR=$private_ipv4:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
                   TOOLBOX_DOMAIN=$domain
+              - path: /etc/kubernetes/openstack.conf
+                permissions: 0644
+                owner: "root:root"
+                content: |
+                  [Global]
+                  auth-url=$os_auth
+                  username=$os_username
+                  password=$os_password
+                  tenant-name=$os_tenant
               - path: /opt/kubernetes-init-ssl.sh
                 permissions: 0700
                 owner: "root:root"
@@ -642,6 +652,8 @@ resources:
                       --api-servers=http://127.0.0.1:8080 \
                       --register-node=true \
                       --allow-privileged=true \
+                      --cloud-provider=openstack \
+                      --cloud-config=/etc/kubernetes/openstack.conf \
                       --config=/etc/kubernetes/manifests \
                       --hostname-override=$private_ipv4 \
                       --cluster-dns=10.2.0.2 \
