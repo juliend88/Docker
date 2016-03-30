@@ -178,6 +178,12 @@ resources:
                   RES=$(curl -H "Content-Type: application/json" -XPOST -d'{"apiVersion":"v1","kind":"Namespace","metadata":{"name":"kube-system"}}' "http://127.0.0.1:8080/api/v1/namespaces")
                   if [ -z "$(echo $RES | grep '"phase": "Active"')" ]; then
                       echo "Unexpected error configuring Kubernetes Namespace : $RES"
+                  else
+                      echo "Created kube-system namespace"
+                      mkdir -p /opt/bin
+                      curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.2.0/bin/linux/amd64/kubectl
+                      chmod +x /opt/bin/kubectl
+                      kubectl create -f /etc/kubernetes/descriptors
                   fi
               - path: /etc/kubernetes/manifests/kube-apiserver.yaml
                 permissions: 0666
@@ -374,7 +380,7 @@ resources:
                           port: 10251
                         initialDelaySeconds: 15
                         timeoutSeconds: 1
-              - path: /etc/kubernetes/manifests/rabbitmq-service.yaml
+              - path: /etc/kubernetes/descriptors/rabbitmq-service.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
@@ -389,7 +395,7 @@ resources:
                       - port: 5672
                     selector:
                       component: rabbitmq
-              - path: /etc/kubernetes/manifests/rabbitmq-rc.yaml
+              - path: /etc/kubernetes/descriptors/rabbitmq-rc.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
@@ -415,7 +421,45 @@ resources:
                             resources:
                               limits:
                                 cpu: 100m
-              - path: /etc/kubernetes/manifests/rethinkdb-service.yaml
+              - path: /etc/kubernetes/descriptors/toolbox-service.yaml
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  apiVersion: v1
+                  kind: Service
+                  metadata:
+                    labels:
+                      component: toolbox
+                    name: toolbox-service
+                  spec:
+                    ports:
+                      - port: 3000
+                        nodePort: 80
+                    selector:
+                      component: toolbox
+              - path: /etc/kubernetes/descriptors/toolbox-rc.yaml
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  apiVersion: v1
+                  kind: ReplicationController
+                  metadata:
+                    labels:
+                      component: toolbox
+                    name: toolbox-controller
+                  spec:
+                    replicas: 1
+                    template:
+                      metadata:
+                        labels:
+                          component: toolbox
+                      spec:
+                        containers:
+                          - image: cloudwattfr/toolbox:latest
+                            name: toolbox
+                            ports:
+                              - containerPort: 3000
+              - path: /etc/kubernetes/descriptors/rethinkdb-service.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
@@ -431,7 +475,7 @@ resources:
                         targetPort: 28015
                     selector:
                       db: rethinkdb
-              - path: /etc/kubernetes/manifests/rethinkdb-rc.yaml
+              - path: /etc/kubernetes/descriptors/rethinkdb-rc.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
