@@ -205,6 +205,8 @@ resources:
                       - --bind-address=0.0.0.0
                       - --insecure-bind-address=0.0.0.0
                       - --etcd-servers=http://$private_ipv4:2379
+                      - --cloud-provider=openstack
+                      - --cloud-config=/openstack.conf
                       - --allow-privileged=true
                       - --service-cluster-ip-range=10.0.2.0/24
                       - --secure-port=443
@@ -225,10 +227,16 @@ resources:
                       - mountPath: /etc/kubernetes/ssl
                         name: ssl-certs-kubernetes
                         readOnly: true
+                      - mountPath: /openstack.conf
+                        name: openstack-config
+                        readOnly: true
                       - mountPath: /etc/ssl/certs
                         name: ssl-certs-host
                         readOnly: true
                     volumes:
+                    - hostPath:
+                        path: /etc/kubernetes/openstack.conf
+                      name: openstack-config
                     - hostPath:
                         path: /etc/kubernetes/ssl
                       name: ssl-certs-kubernetes
@@ -331,6 +339,8 @@ resources:
                       command:
                       - /hyperkube
                       - controller-manager
+                      - --cloud-provider=openstack
+                      - --cloud-config=/openstack.conf
                       - --master=http://127.0.0.1:8080
                       - --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
                       - --root-ca-file=/etc/kubernetes/ssl/ca.pem
@@ -345,10 +355,16 @@ resources:
                       - mountPath: /etc/kubernetes/ssl
                         name: ssl-certs-kubernetes
                         readOnly: true
+                      - mountPath: /openstack.conf
+                        name: openstack-config
+                        readOnly: true
                       - mountPath: /etc/ssl/certs
                         name: ssl-certs-host
                         readOnly: true
                     volumes:
+                    - hostPath:
+                        path: /etc/kubernetes/openstack.conf
+                      name: openstack-config
                     - hostPath:
                         path: /etc/kubernetes/ssl
                       name: ssl-certs-kubernetes
@@ -380,6 +396,147 @@ resources:
                           port: 10251
                         initialDelaySeconds: 15
                         timeoutSeconds: 1
+              - path: /etc/kubernetes/descriptors/skydns-rc.yaml
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  apiVersion: v1
+                  kind: ReplicationController
+                  metadata:
+                    name: kube-dns-v11
+                    namespace: kube-system
+                    labels:
+                      k8s-app: kube-dns
+                      version: v11
+                      kubernetes.io/cluster-service: "true"
+                  spec:
+                    replicas: 1
+                    selector:
+                      k8s-app: kube-dns
+                      version: v11
+                    template:
+                      metadata:
+                        labels:
+                          k8s-app: kube-dns
+                          version: v11
+                          kubernetes.io/cluster-service: "true"
+                      spec:
+                        containers:
+                        - name: etcd
+                          image: gcr.io/google_containers/etcd-amd64:2.2.1
+                          resources:
+                            limits:
+                              cpu: 100m
+                              memory: 500Mi
+                            requests:
+                              cpu: 100m
+                              memory: 50Mi
+                          command:
+                          - /usr/local/bin/etcd
+                          - -data-dir
+                          - /var/etcd/data
+                          - -listen-client-urls
+                          - http://127.0.0.1:2379,http://127.0.0.1:4001
+                          - -advertise-client-urls
+                          - http://127.0.0.1:2379,http://127.0.0.1:4001
+                          - -initial-cluster-token
+                          - skydns-etcd
+                          volumeMounts:
+                          - name: etcd-storage
+                            mountPath: /var/etcd/data
+                        - name: kube2sky
+                          image: gcr.io/google_containers/kube2sky:1.14
+                          resources:
+                            limits:
+                              cpu: 100m
+                              memory: 200Mi
+                            requests:
+                              cpu: 100m
+                              memory: 50Mi
+                          livenessProbe:
+                            httpGet:
+                              path: /healthz
+                              port: 8080
+                              scheme: HTTP
+                            initialDelaySeconds: 60
+                            timeoutSeconds: 5
+                            successThreshold: 1
+                            failureThreshold: 5
+                          readinessProbe:
+                            httpGet:
+                              path: /readiness
+                              port: 8081
+                              scheme: HTTP
+                            initialDelaySeconds: 30
+                            timeoutSeconds: 5
+                          args:
+                          # command = "/kube2sky"
+                          - --domain=$domain
+                        - name: skydns
+                          image: gcr.io/google_containers/skydns:2015-10-13-8c72f8c
+                          resources:
+                            limits:
+                              cpu: 100m
+                              memory: 200Mi
+                            requests:
+                              cpu: 100m
+                              memory: 50Mi
+                          args:
+                          - -machines=http://127.0.0.1:4001
+                          - -addr=0.0.0.0:53
+                          - -ns-rotate=false
+                          - -domain=$domain.
+                          ports:
+                          - containerPort: 53
+                            name: dns
+                            protocol: UDP
+                          - containerPort: 53
+                            name: dns-tcp
+                            protocol: TCP
+                        - name: healthz
+                          image: gcr.io/google_containers/exechealthz:1.0
+                          resources:
+                            # keep request = limit to keep this container in guaranteed class
+                            limits:
+                              cpu: 10m
+                              memory: 20Mi
+                            requests:
+                              cpu: 10m
+                              memory: 20Mi
+                          args:
+                          - -cmd=nslookup kubernetes.default.svc.$domain 127.0.0.1 >/dev/null
+                          - -port=8080
+                          ports:
+                          - containerPort: 8080
+                            protocol: TCP
+                        volumes:
+                        - name: etcd-storage
+                          emptyDir: {}
+                        dnsPolicy: Default  # Don't use cluster DNS.
+              - path: /etc/kubernetes/descriptors/skydns-service.yaml
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  apiVersion: v1
+                  kind: Service
+                  metadata:
+                    name: kube-dns
+                    namespace: kube-system
+                    labels:
+                      k8s-app: kube-dns
+                      kubernetes.io/cluster-service: "true"
+                      kubernetes.io/name: "KubeDNS"
+                  spec:
+                    selector:
+                      k8s-app: kube-dns
+                    clusterIP: 10.0.2.2
+                    ports:
+                    - name: dns
+                      port: 53
+                      protocol: UDP
+                    - name: dns-tcp
+                      port: 53
+                      protocol: TCP
               - path: /etc/kubernetes/descriptors/rabbitmq-service.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -435,19 +592,20 @@ resources:
                     ports:
                       - port: 3000
                         targetPort: 3000
-                    type: LoadBalancer
+                        nodePort: 30000
+                    type: NodePort
                     selector:
                       component: toolbox
               - path: /etc/kubernetes/descriptors/toolbox-rc.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
-                  apiVersion: v1
-                  kind: ReplicationController
+                  apiVersion: extensions/v1beta1
+                  kind: Deployment
                   metadata:
                     labels:
                       component: toolbox
-                    name: toolbox-controller
+                    name: toolbox-deployment
                   spec:
                     replicas: 1
                     template:
@@ -457,7 +615,15 @@ resources:
                       spec:
                         containers:
                           - image: cloudwattfr/toolbox:latest
+                            command:
+                              - npm
+                              - start
+                              - $private_ipv4
+                              - $public_ipv4
                             name: toolbox
+                            env:
+                              - name: DOMAIN
+                                value: $domain
                             ports:
                               - containerPort: 3000
               - path: /etc/kubernetes/descriptors/rethinkdb-service.yaml
@@ -559,7 +725,7 @@ resources:
                   DNS.1 = kubernetes
                   DNS.2 = kubernetes.default
                   DNS.3 = kubernetes.default.svc
-                  DNS.4 = kubernetes.default.svc.cluster.local
+                  DNS.4 = kubernetes.default.svc.$domain
                   IP.1 = 10.0.2.1
                   IP.2 = $private_ipv4
                   EOF
@@ -652,12 +818,10 @@ resources:
                       --api-servers=http://127.0.0.1:8080 \
                       --register-node=true \
                       --allow-privileged=true \
-                      --cloud-provider=openstack \
-                      --cloud-config=/etc/kubernetes/openstack.conf \
                       --config=/etc/kubernetes/manifests \
                       --hostname-override=$private_ipv4 \
-                      --cluster-dns=10.2.0.2 \
-                      --cluster-domain=cluster.local
+                      --cluster-dns=10.0.2.2 \
+                      --cluster-domain=$domain
                     ExecStartPost=-/opt/kube-namespace-init.sh
                     Restart=always
                     RestartSec=10
