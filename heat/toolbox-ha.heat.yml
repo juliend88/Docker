@@ -3,7 +3,7 @@
 ### Written by the CAT team
 ##
 #
-heat_template_version: 2013-05-23
+heat_template_version: 2014-10-16
 
 
 description: High Aviability Toolbox stack for Cloudwatt
@@ -42,7 +42,7 @@ parameters:
     type: string
 
   flavor_name:
-    default: n2.cw.standard-4
+    default: n1.cw.standard-4
     description: Flavor to use for the deployed instance
     type: string
     label: Instance Type (Flavor)
@@ -51,7 +51,7 @@ parameters:
           - s1.cw.small-1
           - n1.cw.standard-1
           - n1.cw.standard-2
-          - n2.cw.standard-4
+          - n1.cw.standard-4
           - n1.cw.standard-8
           - n1.cw.standard-12
           - n1.cw.standard-16
@@ -93,19 +93,14 @@ resources:
         - { direction: ingress }
         - { direction: egress }
 
-  floating_ip:
-    type: OS::Neutron::FloatingIP
-    properties:
-      floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
-
-  ports:
+  master_port:
     type: OS::Neutron::Port
     properties:
       network: { get_resource: network }
       security_groups:
         - { get_resource: security_group }
 
-  server:
+  master:
     type: OS::Nova::Server
     properties:
       key_name: { get_param: keypair_name }
@@ -113,11 +108,11 @@ resources:
       flavor: { get_param: flavor_name }
       user_data_format: RAW
       networks:
-        - port: { get_resource: ports }
+        - port: { get_resource: master_port }
       user_data:
         str_replace:
           params:
-            $private_ipv4: { get_attr: [ ports, fixed_ips, 0, ip_address ] }
+            $private_ipv4: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }
             $public_ipv4: { get_attr: [floating_ip, floating_ip_address] }
             $domain: { get_param: domain }
             $os_username: { get_param: os_username }
@@ -133,6 +128,46 @@ resources:
                 content: |
                   FLANNELD_IFACE=$private_ipv4
                   FLANNELD_ETCD_ENDPOINTS=http://$private_ipv4:2379
+              - path: /opt/bin/kubelet-wrapper
+                permissions: 0700
+                owner: "root:root"
+                content: |
+                  #!/bin/bash
+                  # Wrapper for launching kubelet via rkt-fly stage1.
+                  #
+                  # Make sure to set KUBELET_VERSION to an image tag published here:
+                  # https://quay.io/repository/coreos/hyperkube?tab=tags Alternatively,
+                  # override $KUBELET_ACI to a custom location.
+
+                  set -e
+
+                  if [ -z "${KUBELET_VERSION}" ]; then
+                      echo "ERROR: must set KUBELET_VERSION"
+                      exit 1
+                  fi
+
+                  KUBELET_ACI="${KUBELET_ACI:-quay.io/coreos/hyperkube}"
+
+                  mkdir --parents /etc/kubernetes
+                  mkdir --parents /var/lib/docker
+                  mkdir --parents /var/lib/kubelet
+                  mkdir --parents /run/kubelet
+
+                  exec /usr/bin/rkt run \
+                    --volume etc-kubernetes,kind=host,source=/etc/kubernetes \
+                    --volume etc-ssl-certs,kind=host,source=/usr/share/ca-certificates \
+                    --volume var-lib-docker,kind=host,source=/var/lib/docker \
+                    --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet \
+                    --volume run,kind=host,source=/run \
+                    --mount volume=etc-kubernetes,target=/etc/kubernetes \
+                    --mount volume=etc-ssl-certs,target=/etc/ssl/certs \
+                    --mount volume=var-lib-docker,target=/var/lib/docker \
+                    --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
+                    --mount volume=run,target=/run \
+                    --trust-keys-from-https \
+                    $RKT_OPTS \
+                    --stage1-path=/usr/share/rkt/stage1-fly.aci \
+                    ${KUBELET_ACI}:${KUBELET_VERSION} --exec=/kubelet -- "$@"
               - path: /opt/flannel-init.sh
                 permissions: 0700
                 owner: "root:root"
@@ -546,7 +581,7 @@ resources:
                   metadata:
                     labels:
                       component: rabbitmq
-                    name: rabbitmq-service
+                    name: rabbitmq
                   spec:
                     ports:
                       - port: 5672
@@ -587,10 +622,10 @@ resources:
                   metadata:
                     labels:
                       component: toolbox
-                    name: toolbox-service
+                    name: manager
                   spec:
                     ports:
-                      - port: 3000
+                      - port: 80
                         targetPort: 3000
                         nodePort: 30000
                     type: NodePort
@@ -605,7 +640,7 @@ resources:
                   metadata:
                     labels:
                       component: toolbox
-                    name: toolbox-deployment
+                    name: toolbox
                   spec:
                     replicas: 1
                     template:
@@ -635,7 +670,7 @@ resources:
                   metadata:
                     labels:
                       db: rethinkdb
-                    name: rethinkdb-driver
+                    name: rethinkdb
                   spec:
                     ports:
                       - port: 28015
@@ -814,7 +849,7 @@ resources:
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
                     Environment=KUBELET_VERSION=v1.2.0_coreos.0
-                    ExecStart=/usr/lib/coreos/kubelet-wrapper \
+                    ExecStart=/opt/bin/kubelet-wrapper \
                       --api-servers=http://127.0.0.1:8080 \
                       --register-node=true \
                       --allow-privileged=true \
@@ -827,13 +862,69 @@ resources:
                     RestartSec=10
                     [Install]
                     WantedBy=multi-user.target
+                - name: openvpn-init.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Toolbox VPN Init
+                    After=docker.service
+                    Requires=docker.service
+                    Before=openvpn.service
+                    ConditionPathExists=!/home/core/vpn/openvpn.conf
+
+                    [Service]
+                    Type=oneshot
+                    TimeoutStartSec=0
+                    Environment=/etc/environment
+                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u udp://$public_ipv4:1194 \
+                                                                                                                       -n 10.0.2.2 \
+                                                                                                                       -n 185.23.94.244 \
+                                                                                                                       -n 8.8.8.8 \
+                                                                                                                       -s 10.8.0.0/24 \
+                                                                                                                       -N \
+                                                                                                                       -p "route 10.0.2.0 255.255.255.0" \
+                                                                                                                       -p "route 10.0.3.0 255.255.255.0" \
+                                                                                                                       -p "dhcp-option DOMAIN-SEARCH $domain" \
+                                                                                                                       -p "dhcp-option DOMAIN-SEARCH svc.$domain" \
+                                                                                                                       -p "dhcp-option DOMAIN-SEARCH default.svc.$domain"
+                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn -e "EASYRSA_BATCH=1" -e "EASYRSA_REQ_CN=$domain" --rm kylemanna/openvpn ovpn_initpki nopass
+                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn easyrsa build-client-full cloud nopass
+                    ExecStart=/bin/bash -c "/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient cloud > /home/core/cloud.ovpn"
+                - name: openvpn.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Toolbox VPN
+                    After=docker.service openvpn-init.service
+                    Requires=docker.service openvpn-init.service
+
+                    [Service]
+                    TimeoutStartSec=0
+                    Environment=/etc/environment
+                    ExecStartPre=-/usr/bin/docker kill openvpn
+                    ExecStartPre=-/usr/bin/docker rm openvpn
+                    ExecStartPre=/usr/bin/docker pull kylemanna/openvpn
+                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --name=openvpn -p 1194:1194/udp --cap-add=NET_ADMIN --net=host kylemanna/openvpn
+                    ExecStop=/usr/bin/docker stop openvpn
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
+
   floating_ip_link:
     type: OS::Nova::FloatingIPAssociation
     properties:
       floating_ip: { get_resource: floating_ip }
-      server_id: { get_resource: server }
+      server_id: { get_resource: master }
 
-outputs:
-  floating_ip:
-    description: IP address of the deployed compute instance
-    value: { get_attr: [floating_ip, floating_ip_address] }
+  nodes:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 1
+      resource_def:
+        type: "kube-node.heat.yml"
+        properties:
+          domain: { get_param: domain }
+          master: { get_attr: [ master, networks, private, 0 ] }
+          keypair_name: { get_param: keypair_name }
+          flavor_name: { get_param: flavor_name }

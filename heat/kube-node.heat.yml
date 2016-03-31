@@ -1,0 +1,153 @@
+heat_template_version: 2014-10-16
+
+parameters:
+  master:
+    label: master
+    type: string
+  keypair_name:
+    description: Keypair to inject in instance
+    label: SSH Keypair
+    type: string
+  domain:
+    description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
+    label: Cloud DNS
+    type: string
+
+  flavor_name:
+    default: n1.cw.standard-4
+    description: Flavor to use for the deployed instance
+    type: string
+    label: Instance Type (Flavor)
+    constraints:
+      - allowed_values:
+          - s1.cw.small-1
+          - n1.cw.standard-1
+          - n1.cw.standard-2
+          - n1.cw.standard-4
+          - n1.cw.standard-8
+          - n1.cw.standard-12
+          - n1.cw.standard-16
+
+resources:
+  port:
+    type: OS::Neutron::Port
+    properties:
+      network: { get_resource: network }
+      security_groups:
+        - { get_resource: security_group }
+
+  node:
+    type: OS::Nova::Server
+    properties:
+      key_name: { get_param: keypair_name }
+      image: 811c20f7-ad34-4401-85a9-72b9f921a0dd
+      flavor: { get_param: flavor_name }
+      user_data_format: RAW
+      name: node-%index%
+      networks:
+        - port: { get_resource: port }
+      user_data:
+        str_replace:
+          params:
+            $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
+            $domain: { get_param: domain }
+            $master: { get_param: master }
+          template: |
+            #cloud-config
+            write_files:
+              - path: /etc/flannel/options.env
+                permissions: 0644
+                owner: "root:root"
+                content: |
+                  FLANNELD_IFACE=$private_ipv4
+                  FLANNELD_ETCD_ENDPOINTS=http://localhost:2379
+              - path: /opt/bin/kubelet-wrapper
+                permissions: 0700
+                owner: "root:root"
+                content: |
+                  #!/bin/bash
+                  # Wrapper for launching kubelet via rkt-fly stage1.
+                  #
+                  # Make sure to set KUBELET_VERSION to an image tag published here:
+                  # https://quay.io/repository/coreos/hyperkube?tab=tags Alternatively,
+                  # override $KUBELET_ACI to a custom location.
+
+                  set -e
+
+                  if [ -z "${KUBELET_VERSION}" ]; then
+                      echo "ERROR: must set KUBELET_VERSION"
+                      exit 1
+                  fi
+
+                  KUBELET_ACI="${KUBELET_ACI:-quay.io/coreos/hyperkube}"
+
+                  mkdir --parents /etc/kubernetes
+                  mkdir --parents /var/lib/docker
+                  mkdir --parents /var/lib/kubelet
+                  mkdir --parents /run/kubelet
+
+                  exec /usr/bin/rkt run \
+                    --volume etc-kubernetes,kind=host,source=/etc/kubernetes \
+                    --volume etc-ssl-certs,kind=host,source=/usr/share/ca-certificates \
+                    --volume var-lib-docker,kind=host,source=/var/lib/docker \
+                    --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet \
+                    --volume run,kind=host,source=/run \
+                    --mount volume=etc-kubernetes,target=/etc/kubernetes \
+                    --mount volume=etc-ssl-certs,target=/etc/ssl/certs \
+                    --mount volume=var-lib-docker,target=/var/lib/docker \
+                    --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
+                    --mount volume=run,target=/run \
+                    --trust-keys-from-https \
+                    $RKT_OPTS \
+                    --stage1-path=/usr/share/rkt/stage1-fly.aci \
+                    ${KUBELET_ACI}:${KUBELET_VERSION} --exec=/kubelet -- "$@"
+              - path: /etc/environment
+                permissions: 0644
+                owner: "root:root"
+                content: |
+                  COREOS_PRIVATE_IPV4=$private_ipv4
+                  COREOS_PUBLIC_IPV4=$private_ipv4
+                  ETCD_ADDR=localhost:2379
+                  ETCD_PEER_ADDR=$master:2380
+                  TOOLBOX_DOMAIN=$domain
+
+            coreos:
+              etcd2:
+                proxy: on
+                listen-client-urls: http://localhost:2379
+                initial-cluster: etcdserver=http://$master:2380
+              units:
+                - name: etcd2.service
+                  command: start
+                - name: flanneld.service
+                  drop-ins:
+                    - name: 40-ExecStartPre-symlink.conf
+                      content: |
+                        [Service]
+                        ExecStartPre=/opt/flannel-init.sh
+                        ExecStartPre=/usr/bin/ln -sf /etc/flannel/options.env /run/flannel/options.env
+                - name: docker.service
+                  drop-ins:
+                    - name: 40-flannel.conf
+                      content: |
+                        [Unit]
+                        Requires=flanneld.service
+                        After=flanneld.service
+                - name: kubelet.service
+                  command: start
+                  content: |
+                    [Service]
+                    ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
+                    Environment=KUBELET_VERSION=v1.2.0_coreos.0
+                    ExecStart=/opt/bin/kubelet-wrapper \
+                      --api-servers=http://$master:8080 \
+                      --register-node=true \
+                      --allow-privileged=true \
+                      --hostname-override=$private_ipv4 \
+                      --cluster-dns=10.0.2.2 \
+                      --cluster-domain=$domain
+                    Restart=always
+                    RestartSec=10
+                    [Install]
+                    WantedBy=multi-user.target
+
