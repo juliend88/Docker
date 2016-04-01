@@ -1,17 +1,28 @@
-#
-##
-### Written by the CAT team
-##
-#
 heat_template_version: 2013-05-23
 
-description: High Aviability Toolbox stack for Cloudwatt
-
-
 parameters:
+  master:
+    label: master
+    type: string
+  nodename:
+    label: nodename
+    type: string
+  network:
+    label: network
+    type: string
+  security_group:
+    label: security_group
+    type: string
   keypair_name:
     description: Keypair to inject in instance
     label: SSH Keypair
+    type: string
+  domain:
+    description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
+    label: Cloud DNS
+    type: string
+  public_ipv4:
+    label: public_ipv4
     type: string
 
   os_username:
@@ -35,11 +46,6 @@ parameters:
     label: OpenStack Auth URL
     type: string
 
-  domain:
-    description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
-    label: Cloud DNS
-    type: string
-
   flavor_name:
     default: n1.cw.standard-4
     description: Flavor to use for the deployed instance
@@ -56,51 +62,12 @@ parameters:
           - n1.cw.standard-16
 
 resources:
-  network:
-    type: OS::Neutron::Net
-
-  subnet:
-    type: OS::Neutron::Subnet
-    properties:
-      network_id: { get_resource: network }
-      ip_version: 4
-      dns_nameservers:
-        - 185.23.94.244
-        - 185.23.94.245
-      cidr: 10.0.1.0/24
-      allocation_pools:
-        - { start: 10.0.1.100, end: 10.0.1.199 }
-
-  router:
-    type: OS::Neutron::Router
-    properties:
-      admin_state_up: true
-      external_gateway_info:
-        enable_snat: true
-        network: "public"
-
-  toolbox_interface:
-    type: OS::Neutron::RouterInterface
-    properties:
-      router_id: { get_resource: router }
-      subnet_id: { get_resource: subnet }
-
-  security_group:
-    type: OS::Neutron::SecurityGroup
-    properties:
-      rules:
-        - { direction: ingress }
-        - { direction: egress }
-
   master_port:
     type: OS::Neutron::Port
     properties:
-      network: { get_resource: network }
-      fixed_ips:
-        - ip_address: 10.0.1.254
-          subnet_id: { get_resource: subnet }
+      network: { get_param: network }
       security_groups:
-        - { get_resource: security_group }
+        - { get_param: security_group }
 
   master:
     type: OS::Nova::Server
@@ -115,7 +82,7 @@ resources:
         str_replace:
           params:
             $private_ipv4: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }
-            $public_ipv4: { get_attr: [floating_ip, floating_ip_address] }
+            $public_ipv4: { get_param: public_ipv4 }
             $domain: { get_param: domain }
             $os_username: { get_param: os_username }
             $os_password: { get_param: os_password }
@@ -728,7 +695,7 @@ resources:
                 owner: "root:root"
                 content: |
                   COREOS_PRIVATE_IPV4=$private_ipv4
-                  COREOS_PUBLIC_IPV4=$public_ipv4
+                  COREOS_PUBLIC_IPV4=$private_ipv4
                   ETCD_ADDR=$private_ipv4:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
                   TOOLBOX_DOMAIN=$domain
@@ -865,7 +832,7 @@ resources:
                     Type=oneshot
                     TimeoutStartSec=0
                     Environment=/etc/environment
-                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u udp://$public_ipv4:1194 \
+                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u udp://$private_ipv4:1194 \
                                                                                                                        -n 10.0.2.2 \
                                                                                                                        -n 185.23.94.244 \
                                                                                                                        -n 8.8.8.8 \
@@ -895,28 +862,3 @@ resources:
                     ExecStartPre=/usr/bin/docker pull kylemanna/openvpn
                     ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --name=openvpn -p 1194:1194/udp --cap-add=NET_ADMIN --net=host kylemanna/openvpn
                     ExecStop=/usr/bin/docker stop openvpn
-  floating_ip:
-    type: OS::Neutron::FloatingIP
-    properties:
-      floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
-
-  floating_ip_link:
-    type: OS::Nova::FloatingIPAssociation
-    properties:
-      floating_ip: { get_resource: floating_ip }
-      server_id: { get_resource: master }
-
-  nodes:
-    type: OS::Heat::ResourceGroup
-    properties:
-      count: 1
-      resource_def:
-        type: kube-node.heat.yaml
-        properties:
-          domain: { get_param: domain }
-          master: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }
-          security_group: { get_resource: security_group }
-          network: { get_resource: network }
-          nodename: node-%index%
-          keypair_name: { get_param: keypair_name }
-          flavor_name: { get_param: flavor_name }

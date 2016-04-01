@@ -1,0 +1,154 @@
+#
+##
+### Written by the CAT team
+##
+#
+heat_template_version: 2013-05-23
+
+description: High Aviability Toolbox stack for Cloudwatt
+
+
+parameters:
+  keypair_name:
+    description: Keypair to inject in instance
+    label: SSH Keypair
+    type: string
+
+  os_username:
+    description: OpenStack Username
+    label: OpenStack Username
+    type: string
+
+  os_password:
+    description: OpenStack Password
+    label: OpenStack Password
+    type: string
+
+  os_tenant:
+    description: OpenStack Tenant Name
+    label: OpenStack Tenant Name
+    type: string
+
+  os_auth:
+    description: OpenStack Auth URL
+    default: https://identity.fr1.cloudwatt.com/v2.0
+    label: OpenStack Auth URL
+    type: string
+
+  domain:
+    description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
+    label: Cloud DNS
+    type: string
+
+  flavor_name:
+    default: n1.cw.standard-4
+    description: Flavor to use for the deployed instance
+    type: string
+    label: Instance Type (Flavor)
+    constraints:
+      - allowed_values:
+          - s1.cw.small-1
+          - n1.cw.standard-1
+          - n1.cw.standard-2
+          - n1.cw.standard-4
+          - n1.cw.standard-8
+          - n1.cw.standard-12
+          - n1.cw.standard-16
+
+resources:
+  network:
+    type: OS::Neutron::Net
+
+  subnet:
+    type: OS::Neutron::Subnet
+    properties:
+      network_id: { get_resource: network }
+      ip_version: 4
+      dns_nameservers:
+        - 185.23.94.244
+        - 185.23.94.245
+      cidr: 10.0.1.0/24
+      allocation_pools:
+        - { start: 10.0.1.100, end: 10.0.1.199 }
+
+  router:
+    type: OS::Neutron::Router
+    properties:
+      admin_state_up: true
+      external_gateway_info:
+        enable_snat: true
+        network: "public"
+
+  toolbox_interface:
+    type: OS::Neutron::RouterInterface
+    properties:
+      router_id: { get_resource: router }
+      subnet_id: { get_resource: subnet }
+
+  security_group:
+    type: OS::Neutron::SecurityGroup
+    properties:
+      rules:
+        - { direction: ingress }
+        - { direction: egress }
+
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
+
+  floating_ip_link:
+    type: OS::Nova::FloatingIPAssociation
+    properties:
+      floating_ip: { get_resource: floating_ip }
+      server_id: { get_resource: master }
+
+  masters:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 3
+      resource_def:
+        type: kube-node.heat.yaml
+        properties:
+          domain: { get_param: domain }
+          public_ipv4: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }
+          security_group: { get_resource: security_group }
+          network: { get_resource: network }
+          nodename: master-%index%
+          keypair_name: { get_param: keypair_name }
+          os_username: { get_param: flavor_name }
+          os_password: { get_param: flavor_name }
+          os_tenant: { get_param: flavor_name }
+          os_auth: { get_param: flavor_name }
+          flavor_name: { get_param: flavor_name }
+
+  masterpool:
+    type: OS::Neutron::Pool
+    properties:
+      name: masterpool
+      protocol: TCP
+      lb_method: ROUND_ROBIN
+      vip: {"protocol_port": 443}
+
+  masterlb:
+    type: OS::Neutron::LoadBalancer
+    properties:
+      members: { get_attr: [masters, refs] }
+      pool_id: { get_resource: masterpool }
+      protocol_port: 443
+
+  nodes:
+    type: OS::Heat::ResourceGroup
+    properties:
+      count: 1
+      resource_def:
+        type: kube-node.heat.yaml
+        properties:
+          domain: { get_param: domain }
+          master: { get_attr: [masterpool, vip, address] }
+          security_group: { get_resource: security_group }
+          network: { get_resource: network }
+          nodename: node-%index%
+          keypair_name: { get_param: keypair_name }
+          flavor_name: { get_param: flavor_name }
