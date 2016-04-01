@@ -3,8 +3,7 @@
 ### Written by the CAT team
 ##
 #
-heat_template_version: 2014-10-16
-
+heat_template_version: 2013-05-23
 
 description: High Aviability Toolbox stack for Cloudwatt
 
@@ -187,7 +186,7 @@ resources:
                           break
                       fi
                   done
-                  RES=$(curl --silent -X PUT -d "value={\"Network\":\"10.0.3.0/24\",\"Backend\":{\"Type\":\"vxlan\"}}" "$ACTIVE_ETCD/v2/keys/coreos.com/network/config?prevExist=false")
+                  RES=$(curl --silent -X PUT -d "value={\"Network\":\"10.1.0.0/16\",\"Backend\":{\"Type\":\"vxlan\"}}" "$ACTIVE_ETCD/v2/keys/coreos.com/network/config?prevExist=false")
                   if [ -z "$(echo $RES | grep '"action":"create"')" ] && [ -z "$(echo $RES | grep 'Key already exists')" ]; then
                       echo "Unexpected error configuring flannel pod network: $RES"
                   fi
@@ -922,9 +921,12 @@ resources:
     properties:
       count: 1
       resource_def:
-        type: "kube-node.heat.yml"
+        type: kube-node.heat.yaml
         properties:
           domain: { get_param: domain }
-          master: { get_attr: [ master, networks, private, 0 ] }
+          master: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }
+          security_group: { get_resource: security_group }
+          network: { get_resource: network }
+          nodename: node-%index%
           keypair_name: { get_param: keypair_name }
           flavor_name: { get_param: flavor_name }

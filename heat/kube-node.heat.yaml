@@ -1,8 +1,17 @@
-heat_template_version: 2014-10-16
+heat_template_version: 2013-05-23
 
 parameters:
   master:
     label: master
+    type: string
+  nodename:
+    label: nodename
+    type: string
+  network:
+    label: network
+    type: string
+  security_group:
+    label: security_group
     type: string
   keypair_name:
     description: Keypair to inject in instance
@@ -32,9 +41,9 @@ resources:
   port:
     type: OS::Neutron::Port
     properties:
-      network: { get_resource: network }
+      network: { get_param: network }
       security_groups:
-        - { get_resource: security_group }
+        - { get_param: security_group }
 
   node:
     type: OS::Nova::Server
@@ -43,7 +52,7 @@ resources:
       image: 811c20f7-ad34-4401-85a9-72b9f921a0dd
       flavor: { get_param: flavor_name }
       user_data_format: RAW
-      name: node-%index%
+      name: {get_param: nodename}
       networks:
         - port: { get_resource: port }
       user_data:
@@ -124,7 +133,6 @@ resources:
                     - name: 40-ExecStartPre-symlink.conf
                       content: |
                         [Service]
-                        ExecStartPre=/opt/flannel-init.sh
                         ExecStartPre=/usr/bin/ln -sf /etc/flannel/options.env /run/flannel/options.env
                 - name: docker.service
                   drop-ins:
