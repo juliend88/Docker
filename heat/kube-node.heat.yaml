@@ -70,6 +70,52 @@ resources:
                 content: |
                   FLANNELD_IFACE=$private_ipv4
                   FLANNELD_ETCD_ENDPOINTS=http://localhost:2379
+              - path: /etc/kubernetes/worker-kubeconfig.yaml
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  apiVersion: v1
+                  kind: Config
+                  clusters:
+                  - name: local
+                  users:
+                  - name: kubelet
+                  contexts:
+                  - context:
+                      cluster: local
+                      user: kubelet
+                    name: kubelet-context
+                  current-context: kubelet-context
+              - path: /etc/kubernetes/manifests/kube-proxy.yaml
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  apiVersion: v1
+                  kind: Pod
+                  metadata:
+                    name: kube-proxy
+                    namespace: kube-system
+                  spec:
+                    hostNetwork: true
+                    containers:
+                    - name: kube-proxy
+                      image: quay.io/coreos/hyperkube:v1.2.0_coreos.0
+                      command:
+                      - /hyperkube
+                      - proxy
+                      - --master=http://$master:8080
+                      - --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
+                      - --proxy-mode=iptables
+                      securityContext:
+                        privileged: true
+                      volumeMounts:
+                        - mountPath: /etc/kubernetes/worker-kubeconfig.yaml
+                          name: "kubeconfig"
+                          readOnly: true
+                    volumes:
+                      - name: "kubeconfig"
+                        hostPath:
+                          path: "/etc/kubernetes/worker-kubeconfig.yaml"
               - path: /opt/bin/kubelet-wrapper
                 permissions: 0700
                 owner: "root:root"
@@ -146,16 +192,18 @@ resources:
                   content: |
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
+
                     Environment=KUBELET_VERSION=v1.2.0_coreos.0
-                    ExecStart=/opt/bin/kubelet-wrapper \
+                    ExecStart=/usr/lib/coreos/kubelet-wrapper \
                       --api-servers=http://$master:8080 \
                       --register-node=true \
                       --allow-privileged=true \
+                      --config=/etc/kubernetes/manifests \
                       --hostname-override=$private_ipv4 \
                       --cluster-dns=10.0.2.2 \
-                      --cluster-domain=$domain
+                      --cluster-domain=$domain \
+                      --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
                     Restart=always
                     RestartSec=10
                     [Install]
                     WantedBy=multi-user.target
-
