@@ -243,7 +243,6 @@ resources:
                       - --cloud-config=/openstack.conf
                       - --allow-privileged=true
                       - --service-cluster-ip-range=10.0.2.0/24
-                      - --kubelet-https=false
                       - --secure-port=443
                       - --advertise-address=$private_ipv4
                       - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
@@ -778,6 +777,9 @@ resources:
                   # Set permissions
                   chmod 600 /etc/kubernetes/ssl/*-key.pem
                   chown root:root /etc/kubernetes/ssl/*-key.pem
+                  # Export CA to Etcd
+                  curl --silent -X PUT --data-urlencode value@ca.pem "$ACTIVE_ETCD/v2/keys/ssl/ca"
+                  curl --silent -X PUT --data-urlencode value@ca-key.pem "$ACTIVE_ETCD/v2/keys/ssl/key"
 
             coreos:
               etcd2:
@@ -805,6 +807,8 @@ resources:
                   command: start
                   content: |
                     [Unit]
+                    Requires=etcd2.service
+                    After=etcd2.service
                     ConditionPathExists=!/etc/kubernetes/ssl
                     Description=Kubernetes Keys Generator
 
