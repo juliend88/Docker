@@ -64,10 +64,6 @@ resources:
     properties:
       network_id: { get_resource: network }
       ip_version: 4
-      dns_nameservers:
-        - 10.0.1.254
-        - 185.23.94.244
-        - 185.23.94.245
       cidr: 10.0.1.0/24
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
@@ -97,9 +93,6 @@ resources:
     type: OS::Neutron::Port
     properties:
       network: { get_resource: network }
-      fixed_ips:
-        - ip_address: 10.0.1.254
-          subnet_id: { get_resource: subnet }
       security_groups:
         - { get_resource: security_group }
 
