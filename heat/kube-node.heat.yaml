@@ -78,13 +78,8 @@ resources:
                   kind: Config
                   clusters:
                   - name: local
-                    cluster:
-                      certificate-authority: /etc/kubernetes/ssl/ca.pem
                   users:
                   - name: kubelet
-                    user:
-                      client-certificate: /etc/kubernetes/ssl/worker.pem
-                      client-key: /etc/kubernetes/ssl/worker-key.pem
                   contexts:
                   - context:
                       cluster: local
@@ -108,7 +103,7 @@ resources:
                       command:
                       - /hyperkube
                       - proxy
-                      - --master=https://$master
+                      - --master=http://$master
                       - --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
                       - --proxy-mode=iptables
                       securityContext:
@@ -119,9 +114,6 @@ resources:
                         - mountPath: /etc/kubernetes/worker-kubeconfig.yaml
                           name: "kubeconfig"
                           readOnly: true
-                        - mountPath: /etc/kubernetes/ssl
-                          name: "etc-kube-ssl"
-                          readOnly: true
                     volumes:
                       - name: "ssl-certs"
                         hostPath:
@@ -129,9 +121,6 @@ resources:
                       - name: "kubeconfig"
                         hostPath:
                           path: "/etc/kubernetes/worker-kubeconfig.yaml"
-                      - name: "etc-kube-ssl"
-                        hostPath:
-                          path: "/etc/kubernetes/ssl"
               - path: /opt/bin/kubelet-wrapper
                 permissions: 0700
                 owner: "root:root"
@@ -181,35 +170,6 @@ resources:
                   ETCD_ADDR=localhost:2379
                   ETCD_PEER_ADDR=$master:2380
                   TOOLBOX_DOMAIN=$domain
-              - path: /opt/kubernetes-init-ssl.sh
-                permissions: 0700
-                owner: "root:root"
-                content: |
-                  #!/bin/bash
-                  mkdir -p /etc/kubernetes/ssl
-                  cd /etc/kubernetes/ssl
-                  # Config
-                  cat <<EOF > worker-openssl.cnf
-                  [req]
-                  req_extensions = v3_req
-                  distinguished_name = req_distinguished_name
-                  [req_distinguished_name]
-                  [ v3_req ]
-                  basicConstraints = CA:FALSE
-                  keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-                  subjectAltName = @alt_names
-                  [alt_names]
-                  IP.1 = \$ENV::WORKER_IP
-                  EOF
-                  # Worker CA
-                  etcdctl get /ssl/ca > ca.pem
-                  etcdctl get /ssl/key > ca-key.pem
-                  openssl genrsa -out $fqdn-worker-key.pem 2048
-                  WORKER_IP=$private_ipv4 openssl req -new -key worker-key.pem -out worker.csr -subj "/CN=$fqdn" -config worker-openssl.cnf
-                  WORKER_IP=$private_ipv4 openssl x509 -req -in worker.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out worker.pem -days 365 -extensions v3_req -extfile worker-openssl.cnf
-                  # Set permissions
-                  chmod 600 /etc/kubernetes/ssl/*-key.pem
-                  chown root:root /etc/kubernetes/ssl/*-key.pem
             coreos:
               etcd2:
                 proxy: on
@@ -218,18 +178,6 @@ resources:
               units:
                 - name: etcd2.service
                   command: start
-                - name: generatessl.service
-                  command: start
-                  content: |
-                    [Unit]
-                    Requires=etcd2.service
-                    After=etcd2.service
-                    ConditionPathExists=!/etc/kubernetes/ssl
-                    Description=Kubernetes Keys Generator
-
-                    [Service]
-                    Type=oneshot
-                    ExecStart=/opt/kubernetes-init-ssl.sh
                 - name: flanneld.service
                   drop-ins:
                     - name: 40-ExecStartPre-symlink.conf
@@ -258,8 +206,6 @@ resources:
                       --hostname-override=$private_ipv4 \
                       --cluster-dns=10.0.2.2 \
                       --cluster-domain=$domain \
-                      --tls-cert-file=/etc/kubernetes/ssl/worker.pem \
-                      --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem \
                       --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
                     Restart=always
                     RestartSec=10
