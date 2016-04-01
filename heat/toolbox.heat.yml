@@ -65,6 +65,7 @@ resources:
       network_id: { get_resource: network }
       ip_version: 4
       dns_nameservers:
+        - 10.0.1.254
         - 185.23.94.244
         - 185.23.94.245
       cidr: 10.0.1.0/24
