@@ -774,12 +774,12 @@ resources:
                   openssl genrsa -out admin-key.pem 2048
                   openssl req -new -key admin-key.pem -out admin.csr -subj "/CN=kube-admin"
                   openssl x509 -req -in admin.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out admin.pem -days 365
+                  # Export CA to Etcd
+                  curl --silent -X PUT --data-urlencode value@ca.pem "http://$private_ipv4:2379/v2/keys/ssl/ca"
+                  curl --silent -X PUT --data-urlencode value@ca-key.pem "http://$private_ipv4:2379/v2/keys/ssl/key"
                   # Set permissions
                   chmod 600 /etc/kubernetes/ssl/*-key.pem
                   chown root:root /etc/kubernetes/ssl/*-key.pem
-                  # Export CA to Etcd
-                  curl --silent -X PUT --data-urlencode value@ca.pem "$ACTIVE_ETCD/v2/keys/ssl/ca"
-                  curl --silent -X PUT --data-urlencode value@ca-key.pem "$ACTIVE_ETCD/v2/keys/ssl/key"
 
             coreos:
               etcd2:

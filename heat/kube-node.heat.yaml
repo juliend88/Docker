@@ -61,6 +61,7 @@ resources:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $domain: { get_param: domain }
             $master: { get_param: master }
+            $fqdn: { get_param: nodename }
           template: |
             #cloud-config
             write_files:
@@ -202,9 +203,23 @@ resources:
                   IP.1 = \$ENV::WORKER_IP
                   EOF
                   # Worker CA
+                  echo "Waiting for Kubernetes to be Started..."
+                  K8S="http://$master:8080"
+                  while true
+                  do
+                      echo "Trying: $K8S"
+                      if [ -n "$(curl --silent "$K8S/version")" ]; then
+                          ACTIVE_K8S=$K8S
+                          break
+                      fi
+                      sleep 1
+                      if [ -n "$ACTIVE_K8S" ]; then
+                          break
+                      fi
+                  done
                   etcdctl get /ssl/ca > ca.pem
                   etcdctl get /ssl/key > ca-key.pem
-                  openssl genrsa -out $fqdn-worker-key.pem 2048
+                  openssl genrsa -out worker-key.pem 2048
                   WORKER_IP=$private_ipv4 openssl req -new -key worker-key.pem -out worker.csr -subj "/CN=$fqdn" -config worker-openssl.cnf
                   WORKER_IP=$private_ipv4 openssl x509 -req -in worker.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out worker.pem -days 365 -extensions v3_req -extfile worker-openssl.cnf
                   # Set permissions
@@ -251,7 +266,7 @@ resources:
 
                     Environment=KUBELET_VERSION=v1.2.0_coreos.0
                     ExecStart=/usr/lib/coreos/kubelet-wrapper \
-                      --api-servers=http://$master:8080 \
+                      --api-servers=https://$master \
                       --register-node=true \
                       --allow-privileged=true \
                       --config=/etc/kubernetes/manifests \
