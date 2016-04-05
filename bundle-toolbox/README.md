@@ -298,7 +298,7 @@ Enfin, toujours dans le but de vous aider au maximum, nous avons intégré 2 lie
 Dans cette section, nous allons vous présenter les différents services de cette Toolbox.
 
 ### Miroir APT
-Pour répondre a ce besoin nous avons choisi d'utiliser Aptly.
+Pour répondre à ce besoin nous avons choisi d'utiliser Aptly.
 C'est un **gestionnaire de paquet APT**. Il permet de faire un miroir d'un répetoire APT exposé sur internet afin de pouvoir le distribuer à l'ensemble des machines de votre tenant qui, elles, n'ont pas forcement accès à internet via un serveur Nginx.
 
 Pour aller plus loin voici quelques liens utiles:
@@ -332,7 +332,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Miroir YUM
-Pour répondre a ce besoin nous avons choisi d'utiliser Nexus.
+Pour répondre à ce besoin nous avons choisi d'utiliser Nexus.
 Nexus est une application pouvant exposer n'importe quel type de répertoire via un serveur Ngnix. Ici notre volonté est de vous proposer une application pouvant **exposer un répertoire YUM** à l'ensemble de vos instances.
 
 Pour aller plus loin voici quelques liens utiles:
@@ -341,7 +341,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Synchronisation de temps
-Pour répondre a ce besoin nous avons choisi d'utiliser NTP.
+Pour répondre à ce besoin nous avons choisi d'utiliser NTP.
 Le conteneur NTP est ici utiliser afin que l'ensemble de vos instances n'ayant pas accès à internet puissent être synchroniser à la même heure et est accès à un **serveur de temps**.
 
 Pour aller plus loin voici quelques liens utiles:
@@ -349,7 +349,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Planificateur de jobs
-Pour répondre a ce besoin nous avons choisi d'utiliser Rundeck.
+Pour répondre à ce besoin nous avons choisi d'utiliser Rundeck.
 L'application Rundeck va vous permettre de **programmer et d'organiser l'ensemble des jobs** que vous voulez déployer régulièrement sur l'ensemble de votre tenant via son interface web. Dans notre cas nous avons voulu vous donner la possibilité de mettre en place un script vous permettant de sauvegarder vos serveurs comme nous l'avons vu dans le cadre du *bundle* Duplicity (prochaine version de la toolbox).
 
 Pour aller plus loin voici quelques liens utiles:
@@ -359,7 +359,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Monitoring
-Pour répondre a ce besoin nous avons choisi d'utiliser Zabbix.
+Pour répondre à ce besoin nous avons choisi d'utiliser Zabbix.
 L'application Zabbix est un logiciel libre permettant de **surveiller l'état de divers services réseau, serveurs et autres matériels réseau**; et produisant des graphiques dynamiques de consommation des ressources. Zabbix utilise MySQL, PostgreSQL ou Oracle pour stocker les données. Selon l'importance du nombre de machines et de données à surveiller, le choix du SGBD influe grandement sur les performances. Son interface web est écrite en PHP et fourni une vision temps réel sur les métriques collectées.
 
 Pour aller plus loin voici quelques liens utiles:
