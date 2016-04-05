@@ -136,7 +136,7 @@ resources:
     type: OS::Nova::Server
     properties:
       key_name: { get_param: keypair_name }
-      image: 811c20f7-ad34-4401-85a9-72b9f921a0dd
+      image: d9ee7ae5-1787-4dc0-87ab-fc1e8e3d8799
       flavor: { get_param: flavor_name }
       user_data_format: RAW
       networks:
@@ -779,6 +779,17 @@ resources:
                   username=$os_username
                   password=$os_password
                   tenant-name=$os_tenant
+              - path: /opt/format-data.sh
+                permissions: 0700
+                owner: "root:root"
+                content: |
+                  #!/bin/bash
+                  if [ "$(eval $(blkid /dev/vdb | awk ' { print $4 } '); echo $TYPE)" == "ext4" ]; then
+                    echo 'Volume ready'
+                  else
+                    /usr/sbin/wipefs -f /dev/vdb
+                    /usr/sbin/mkfs.ext4 -F /dev/vdb
+                  fi
               - path: /opt/kubernetes-init-ssl.sh
                 permissions: 0700
                 owner: "root:root"
@@ -833,13 +844,24 @@ resources:
               units:
                 - name: etcd2.service
                   command: start
+                - name: format-data.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Formats the volume
+                    After=dev-vdb.device
+                    Requires=dev-vdb.device
+                    [Service]
+                    Type=oneshot
+                    RemainAfterExit=yes
+                    ExecStart=/opt/format-data.sh
                 - name: data.mount
                   command: start
                   content: |
                     [Unit]
-                    Description=Mount ephemeral to /data
-                    Requires=dev-vdb.device
-                    After=dev-vdb.device
+                    Description=Mount volume to /data
+                    Requires=format-data.service
+                    After=format-data.service
                     [Mount]
                     What=/dev/vdb
                     Where=/data
