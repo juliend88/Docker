@@ -227,9 +227,9 @@ resources:
                     [Unit]
                     Description=Mount volume to /data
                     Requires=rpc-statd.service
-                    After=rpc-statd.service
+                    After=rpc-statd.service flanneld.service
                     [Mount]
-                    What=$master:/data
+                    What=10.0.2.3:/data
                     Where=/data
                     DirectoryMode=0777
                     Type=nfs

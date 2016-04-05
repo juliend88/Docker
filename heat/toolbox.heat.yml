@@ -498,7 +498,7 @@ resources:
                       name: glusterfs-storage
                     spec:
                       PortalIP: None
-                      ClusterIP: None
+                      ClusterIP: 10.0.2.3
                       ports:
                       - name: ssh
                         port: 22
