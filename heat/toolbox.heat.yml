@@ -88,7 +88,7 @@ resources:
   volume_attachement:
     type: OS::Cinder::VolumeAttachment
     properties:
-      instance_uuid: { get_resource: server }
+      instance_uuid: { get_resource: master }
       mountpoint: /dev/vdb
       volume_id: { get_resource: volume }
 
