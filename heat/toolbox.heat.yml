@@ -55,7 +55,43 @@ parameters:
           - n1.cw.standard-12
           - n1.cw.standard-16
 
+
+  volume_size:
+    default: 10
+    label: Backup Volume Size
+    description: Size of Volume for Toolbox Storage (Gigabytes)
+    type: number
+    constraints:
+      - range: { min: 10, max: 10000 }
+        description: Volume must be at least 10 gigabytes
+
+  volume_type:
+    default: standard
+    label: Backup Volume Type
+    description: Performance flavor of the linked Volume for DevKit Storage
+    type: string
+    constraints:
+      - allowed_values:
+          - standard
+          - performant
+
 resources:
+
+  volume:
+    type: OS::Cinder::Volume
+    properties:
+      size: { get_param: volume_size }
+      volume_type: { get_param: volume_type }
+      metadata:
+        fs_type: ext4
+
+  volume_attachement:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: { get_resource: master }
+      mountpoint: /dev/vdb
+      volume_id: { get_resource: volume }
+
   network:
     type: OS::Neutron::Net
 
@@ -797,6 +833,18 @@ resources:
               units:
                 - name: etcd2.service
                   command: start
+                - name: data.mount
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Mount ephemeral to /data
+                    Requires=dev-vdb.device
+                    After=dev-vdb.device
+                    [Mount]
+                    What=/dev/vdb
+                    Where=/data
+                    DirectoryMode=0777
+                    Type=ext4
                 - name: generatekey.service
                   command: start
                   content: |
@@ -832,8 +880,8 @@ resources:
                     - name: 40-flannel.conf
                       content: |
                         [Unit]
-                        Requires=flanneld.service
-                        After=flanneld.service
+                        Requires=data.mount flanneld.service
+                        After=data.mount flanneld.service
                 - name: kubelet.service
                   command: start
                   content: |
