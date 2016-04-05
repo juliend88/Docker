@@ -793,7 +793,7 @@ resources:
             coreos:
               etcd2:
                 name: "%H"
-                discovery-srv: default.svc.$domain
+                discovery: default.svc.$domain
                 advertise-client-urls: http://$private_ipv4:2379
                 initial-advertise-peer-urls: http://$private_ipv4:2380
                 initial-cluster-token: etcd-kube

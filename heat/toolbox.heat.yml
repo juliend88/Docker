@@ -1002,3 +1002,4 @@ resources:
           nodename: node-%index%
           keypair_name: { get_param: keypair_name }
           flavor_name: { get_param: flavor_name }
+          volume: { get_resource: volume }
