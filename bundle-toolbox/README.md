@@ -309,7 +309,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Miroir ClamAV - Antivirus
-Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **antivirus** distribuées par ClamAV et ensuite le paquet récupéré sera exposé à vos instances via Ngnix. Ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
+Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **virus** distribuées par ClamAV et ensuite le paquet récupéré sera exposé à vos instances via Ngnix. Ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
 
 Pour aller plus loin voici quelques liens utiles:
   * https://www.clamav.net/documents/private-local-mirrors
