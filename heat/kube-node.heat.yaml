@@ -226,8 +226,8 @@ resources:
                   content: |
                     [Unit]
                     Description=Mount volume to /data
-                    Requires=format-data.service
-                    After=format-data.service
+                    Requires=rpc-statd.service
+                    After=rpc-statd.service
                     [Mount]
                     What=$master:/data
                     Where=/data
