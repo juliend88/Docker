@@ -1,6 +1,9 @@
 heat_template_version: 2013-05-23
 
 parameters:
+  volume:
+    label: volume
+    type: string
   master:
     label: master
     type: string
@@ -62,6 +65,13 @@ parameters:
           - n1.cw.standard-16
 
 resources:
+  volume_attachement:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: { get_resource: master }
+      mountpoint: /dev/vdb
+      volume_id: { get_param: volume }
+
   master_port:
     type: OS::Neutron::Port
     properties:
@@ -82,7 +92,7 @@ resources:
         str_replace:
           params:
             $private_ipv4: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }
-            $public_ipv4: { get_param: public_ipv4 }
+            $public_ipv4: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }
             $domain: { get_param: domain }
             $os_username: { get_param: os_username }
             $os_password: { get_param: os_password }
@@ -242,7 +252,7 @@ resources:
                         path: /etc/kubernetes/openstack.conf
                       name: openstack-config
                     - hostPath:
-                        path: /etc/kubernetes/ssl
+                        path: /data/kubernetes/ssl
                       name: ssl-certs-kubernetes
                     - hostPath:
                         path: /usr/share/ca-certificates
@@ -370,7 +380,7 @@ resources:
                         path: /etc/kubernetes/openstack.conf
                       name: openstack-config
                     - hostPath:
-                        path: /etc/kubernetes/ssl
+                        path: /data/kubernetes/ssl
                       name: ssl-certs-kubernetes
                     - hostPath:
                         path: /usr/share/ca-certificates
@@ -628,6 +638,14 @@ resources:
                             env:
                               - name: DOMAIN
                                 value: $domain
+                              - name: OS_AUTH_URL
+                                value: $os_auth
+                              - name: OS_TENANT_NAME
+                                value: $os_tenant
+                              - name: OS_USERNAME
+                                value: $os_username
+                              - name: OS_PASSWORD
+                                value: $os_password
                             ports:
                               - containerPort: 3000
               - path: /etc/kubernetes/descriptors/rethinkdb-service.yaml
@@ -708,13 +726,24 @@ resources:
                   username=$os_username
                   password=$os_password
                   tenant-name=$os_tenant
+              - path: /opt/format-data.sh
+                permissions: 0700
+                owner: "root:root"
+                content: |
+                  #!/bin/bash
+                  if [ "$(eval $(blkid /dev/vdb | awk ' { print $4 } '); echo $TYPE)" == "ext4" ]; then
+                    echo 'Volume ready'
+                  else
+                    /usr/sbin/wipefs -f /dev/vdb
+                    /usr/sbin/mkfs.ext4 -F /dev/vdb
+                  fi
               - path: /opt/kubernetes-init-ssl.sh
                 permissions: 0700
                 owner: "root:root"
                 content: |
                   #!/bin/bash
-                  mkdir -p /etc/kubernetes/ssl
-                  cd /etc/kubernetes/ssl
+                  mkdir -p /data/kubernetes/ssl
+                  cd /data/kubernetes/ssl
                   # Config
                   cat <<EOF > openssl.cnf
                   [req]
@@ -733,6 +762,19 @@ resources:
                   IP.1 = 10.0.2.1
                   IP.2 = $private_ipv4
                   EOF
+                  # Worker Config
+                  cat <<EOF > worker-openssl.cnf
+                  [req]
+                  req_extensions = v3_req
+                  distinguished_name = req_distinguished_name
+                  [req_distinguished_name]
+                  [ v3_req ]
+                  basicConstraints = CA:FALSE
+                  keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+                  subjectAltName = @alt_names
+                  [alt_names]
+                  IP.1 = \$ENV::WORKER_IP
+                  EOF
                   # Root CA
                   openssl genrsa -out ca-key.pem 2048
                   openssl req -x509 -new -nodes -key ca-key.pem -days 10000 -out ca.pem -subj "/CN=kube-ca"
@@ -744,24 +786,46 @@ resources:
                   openssl genrsa -out admin-key.pem 2048
                   openssl req -new -key admin-key.pem -out admin.csr -subj "/CN=kube-admin"
                   openssl x509 -req -in admin.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out admin.pem -days 365
-                  # Export CA to Etcd
-                  curl --silent -X PUT --data-urlencode value@ca.pem "http://$private_ipv4:2379/v2/keys/ssl/ca"
-                  curl --silent -X PUT --data-urlencode value@ca-key.pem "http://$private_ipv4:2379/v2/keys/ssl/key"
                   # Set permissions
-                  chmod 600 /etc/kubernetes/ssl/*-key.pem
-                  chown root:root /etc/kubernetes/ssl/*-key.pem
+                  chmod 600 /data/kubernetes/ssl/*-key.pem
+                  chown root:root /data/kubernetes/ssl/*-key.pem
 
             coreos:
               etcd2:
                 name: "%H"
+                discovery-srv: default.svc.$domain
                 advertise-client-urls: http://$private_ipv4:2379
                 initial-advertise-peer-urls: http://$private_ipv4:2380
-                initial-cluster: "%H=http://$private_ipv4:2380"
-                listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
+                initial-cluster-token: etcd-kube
+                initial-cluster-state: new
+                listen-client-urls: http://$private_ipv4:2379,http://$private_ipv4:4001
                 listen-peer-urls: http://$private_ipv4:2380
               units:
                 - name: etcd2.service
                   command: start
+                - name: format-data.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Formats the volume
+                    After=dev-vdb.device
+                    Requires=dev-vdb.device
+                    [Service]
+                    Type=oneshot
+                    RemainAfterExit=yes
+                    ExecStart=/opt/format-data.sh
+                - name: data.mount
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Mount volume to /data
+                    Requires=format-data.service
+                    After=format-data.service
+                    [Mount]
+                    What=/dev/vdb
+                    Where=/data
+                    DirectoryMode=0777
+                    Type=ext4
                 - name: generatekey.service
                   command: start
                   content: |
@@ -779,7 +843,7 @@ resources:
                     [Unit]
                     Requires=etcd2.service
                     After=etcd2.service
-                    ConditionPathExists=!/etc/kubernetes/ssl
+                    ConditionPathExists=!/data/kubernetes/ssl
                     Description=Kubernetes Keys Generator
 
                     [Service]
@@ -797,8 +861,8 @@ resources:
                     - name: 40-flannel.conf
                       content: |
                         [Unit]
-                        Requires=flanneld.service
-                        After=flanneld.service
+                        Requires=data.mount flanneld.service
+                        After=data.mount flanneld.service
                 - name: kubelet.service
                   command: start
                   content: |

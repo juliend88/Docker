@@ -305,7 +305,7 @@ resources:
                         path: /etc/kubernetes/openstack.conf
                       name: openstack-config
                     - hostPath:
-                        path: /etc/kubernetes/ssl
+                        path: /data/kubernetes/ssl
                       name: ssl-certs-kubernetes
                     - hostPath:
                         path: /usr/share/ca-certificates
@@ -433,7 +433,7 @@ resources:
                         path: /etc/kubernetes/openstack.conf
                       name: openstack-config
                     - hostPath:
-                        path: /etc/kubernetes/ssl
+                        path: /data/kubernetes/ssl
                       name: ssl-certs-kubernetes
                     - hostPath:
                         path: /usr/share/ca-certificates
@@ -795,8 +795,8 @@ resources:
                 owner: "root:root"
                 content: |
                   #!/bin/bash
-                  mkdir -p /etc/kubernetes/ssl
-                  cd /etc/kubernetes/ssl
+                  mkdir -p /data/kubernetes/ssl
+                  cd /data/kubernetes/ssl
                   # Config
                   cat <<EOF > openssl.cnf
                   [req]
@@ -815,6 +815,19 @@ resources:
                   IP.1 = 10.0.2.1
                   IP.2 = $private_ipv4
                   EOF
+                  # Worker Config
+                  cat <<EOF > worker-openssl.cnf
+                  [req]
+                  req_extensions = v3_req
+                  distinguished_name = req_distinguished_name
+                  [req_distinguished_name]
+                  [ v3_req ]
+                  basicConstraints = CA:FALSE
+                  keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+                  subjectAltName = @alt_names
+                  [alt_names]
+                  IP.1 = \$ENV::WORKER_IP
+                  EOF
                   # Root CA
                   openssl genrsa -out ca-key.pem 2048
                   openssl req -x509 -new -nodes -key ca-key.pem -days 10000 -out ca.pem -subj "/CN=kube-ca"
@@ -826,12 +839,9 @@ resources:
                   openssl genrsa -out admin-key.pem 2048
                   openssl req -new -key admin-key.pem -out admin.csr -subj "/CN=kube-admin"
                   openssl x509 -req -in admin.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out admin.pem -days 365
-                  # Export CA to Etcd
-                  curl --silent -X PUT --data-urlencode value@ca.pem "http://$private_ipv4:2379/v2/keys/ssl/ca"
-                  curl --silent -X PUT --data-urlencode value@ca-key.pem "http://$private_ipv4:2379/v2/keys/ssl/key"
                   # Set permissions
-                  chmod 600 /etc/kubernetes/ssl/*-key.pem
-                  chown root:root /etc/kubernetes/ssl/*-key.pem
+                  chmod 600 /data/kubernetes/ssl/*-key.pem
+                  chown root:root /data/kubernetes/ssl/*-key.pem
 
             coreos:
               etcd2:
@@ -884,7 +894,7 @@ resources:
                     [Unit]
                     Requires=etcd2.service
                     After=etcd2.service
-                    ConditionPathExists=!/etc/kubernetes/ssl
+                    ConditionPathExists=!/data/kubernetes/ssl
                     Description=Kubernetes Keys Generator
 
                     [Service]
@@ -983,7 +993,7 @@ resources:
     properties:
       count: 1
       resource_def:
-        type: kube-node.heat.yaml
+        type: https://raw.githubusercontent.com/juliend88/Docker/kube/heat/kube-node.heat.yaml
         properties:
           domain: { get_param: domain }
           master: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }

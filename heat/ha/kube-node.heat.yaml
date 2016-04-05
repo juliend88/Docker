@@ -1,6 +1,9 @@
 heat_template_version: 2013-05-23
 
 parameters:
+  volume:
+    label: volume
+    type: string
   master:
     label: master
     type: string
@@ -38,6 +41,13 @@ parameters:
           - n1.cw.standard-16
 
 resources:
+  volume_attachement:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: { get_resource: node }
+      mountpoint: /dev/vdb
+      volume_id: { get_param: volume }
+
   port:
     type: OS::Neutron::Port
     properties:
@@ -132,7 +142,7 @@ resources:
                           path: "/etc/kubernetes/worker-kubeconfig.yaml"
                       - name: "etc-kube-ssl"
                         hostPath:
-                          path: "/etc/kubernetes/ssl"
+                          path: "/data/kubernetes/ssl"
               - path: /opt/bin/kubelet-wrapper
                 permissions: 0700
                 owner: "root:root"
@@ -187,21 +197,8 @@ resources:
                 owner: "root:root"
                 content: |
                   #!/bin/bash
-                  mkdir -p /etc/kubernetes/ssl
-                  cd /etc/kubernetes/ssl
-                  # Config
-                  cat <<EOF > worker-openssl.cnf
-                  [req]
-                  req_extensions = v3_req
-                  distinguished_name = req_distinguished_name
-                  [req_distinguished_name]
-                  [ v3_req ]
-                  basicConstraints = CA:FALSE
-                  keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-                  subjectAltName = @alt_names
-                  [alt_names]
-                  IP.1 = \$ENV::WORKER_IP
-                  EOF
+                  mkdir -p /data/kubernetes/ssl
+                  cd /data/kubernetes/ssl
                   # Worker CA
                   echo "Waiting for Kubernetes to be Started..."
                   K8S="http://$master:8080"
@@ -217,14 +214,12 @@ resources:
                           break
                       fi
                   done
-                  etcdctl get /ssl/ca > ca.pem
-                  etcdctl get /ssl/key > ca-key.pem
-                  openssl genrsa -out worker-key.pem 2048
-                  WORKER_IP=$private_ipv4 openssl req -new -key worker-key.pem -out worker.csr -subj "/CN=$fqdn" -config worker-openssl.cnf
-                  WORKER_IP=$private_ipv4 openssl x509 -req -in worker.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out worker.pem -days 365 -extensions v3_req -extfile worker-openssl.cnf
+                  openssl genrsa -out worker-$fqdn-key.pem 2048
+                  WORKER_IP=$private_ipv4 openssl req -new -key worker-$fqdn-key.pem -out worker-$fqdn.csr -subj "/CN=$fqdn" -config worker-openssl.cnf
+                  WORKER_IP=$private_ipv4 openssl x509 -req -in worker-$fqdn.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out worker-$fqdn.pem -days 365 -extensions v3_req -extfile worker-openssl.cnf
                   # Set permissions
-                  chmod 600 /etc/kubernetes/ssl/*-key.pem
-                  chown root:root /etc/kubernetes/ssl/*-key.pem
+                  chmod 600 /data/kubernetes/ssl/*-key.pem
+                  chown root:root /data/kubernetes/ssl/*-key.pem
             coreos:
               etcd2:
                 proxy: on
@@ -262,7 +257,7 @@ resources:
                     [Unit]
                     Requires=etcd2.service
                     After=etcd2.service
-                    ConditionPathExists=!/etc/kubernetes/ssl
+                    ConditionPathExists=!/data/kubernetes/ssl
                     Description=Kubernetes Keys Generator
 
                     [Service]
@@ -296,8 +291,8 @@ resources:
                       --hostname-override=$private_ipv4 \
                       --cluster-dns=10.0.2.2 \
                       --cluster-domain=$domain \
-                      --tls-cert-file=/etc/kubernetes/ssl/worker.pem \
-                      --tls-private-key-file=/etc/kubernetes/ssl/worker-key.pem \
+                      --tls-cert-file=/data/kubernetes/ssl/worker-$fqdn.pem \
+                      --tls-private-key-file=/data/kubernetes/ssl/worker-$fqdn-key.pem \
                       --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
                     Restart=always
                     RestartSec=10

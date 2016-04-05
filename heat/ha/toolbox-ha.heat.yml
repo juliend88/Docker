@@ -54,7 +54,24 @@ parameters:
           - n1.cw.standard-8
           - n1.cw.standard-12
           - n1.cw.standard-16
+  volume_size:
+    default: 10
+    label: Backup Volume Size
+    description: Size of Volume for Toolbox Storage (Gigabytes)
+    type: number
+    constraints:
+      - range: { min: 10, max: 10000 }
+        description: Volume must be at least 10 gigabytes
 
+  volume_type:
+    default: standard
+    label: Backup Volume Type
+    description: Performance flavor of the linked Volume for DevKit Storage
+    type: string
+    constraints:
+      - allowed_values:
+          - standard
+          - performant
 resources:
   network:
     type: OS::Neutron::Net
@@ -92,17 +109,13 @@ resources:
         - { direction: ingress }
         - { direction: egress }
 
-
-  floating_ip:
-    type: OS::Neutron::FloatingIP
+  volume:
+    type: OS::Cinder::Volume
     properties:
-      floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
-
-  floating_ip_link:
-    type: OS::Nova::FloatingIPAssociation
-    properties:
-      floating_ip: { get_resource: floating_ip }
-      server_id: { get_resource: master }
+      size: { get_param: volume_size }
+      volume_type: { get_param: volume_type }
+      metadata:
+        fs_type: ext4
 
   masters:
     type: OS::Heat::ResourceGroup
@@ -112,16 +125,16 @@ resources:
         type: kube-node.heat.yaml
         properties:
           domain: { get_param: domain }
-          public_ipv4: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }
           security_group: { get_resource: security_group }
           network: { get_resource: network }
           nodename: master-%index%
           keypair_name: { get_param: keypair_name }
-          os_username: { get_param: flavor_name }
-          os_password: { get_param: flavor_name }
-          os_tenant: { get_param: flavor_name }
-          os_auth: { get_param: flavor_name }
+          os_username: { get_param: os_username }
+          os_password: { get_param: os_password }
+          os_tenant: { get_param: os_tenant }
+          os_auth: { get_param: os_auth }
           flavor_name: { get_param: flavor_name }
+          volume: { get_resource: volume }
 
   masterpool:
     type: OS::Neutron::Pool
@@ -141,7 +154,7 @@ resources:
   nodes:
     type: OS::Heat::ResourceGroup
     properties:
-      count: 1
+      count: 3
       resource_def:
         type: kube-node.heat.yaml
         properties:
@@ -152,3 +165,4 @@ resources:
           nodename: node-%index%
           keypair_name: { get_param: keypair_name }
           flavor_name: { get_param: flavor_name }
+          volume: { get_resource: volume }
