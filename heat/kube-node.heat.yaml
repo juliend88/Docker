@@ -41,13 +41,6 @@ parameters:
           - n1.cw.standard-16
 
 resources:
-  volume_attachement:
-    type: OS::Cinder::VolumeAttachment
-    properties:
-      instance_uuid: { get_resource: node }
-      mountpoint: /dev/vdb
-      volume_id: { get_param: volume }
-
   port:
     type: OS::Neutron::Port
     properties:
@@ -228,17 +221,9 @@ resources:
               units:
                 - name: etcd2.service
                   command: start
-                - name: format-data.service
+                - name: rpc-statd.service
                   command: start
-                  content: |
-                    [Unit]
-                    Description=Formats the volume
-                    After=dev-vdb.device
-                    Requires=dev-vdb.device
-                    [Service]
-                    Type=oneshot
-                    RemainAfterExit=yes
-                    ExecStart=/opt/format-data.sh
+                  enable: true
                 - name: data.mount
                   command: start
                   content: |
@@ -247,10 +232,10 @@ resources:
                     Requires=format-data.service
                     After=format-data.service
                     [Mount]
-                    What=/dev/vdb
+                    What=$master:/data
                     Where=/data
                     DirectoryMode=0777
-                    Type=ext4
+                    Type=nfs
                 - name: generatessl.service
                   command: start
                   content: |

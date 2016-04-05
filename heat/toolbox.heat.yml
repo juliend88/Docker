@@ -790,6 +790,9 @@ resources:
                     /usr/sbin/wipefs -f /dev/vdb
                     /usr/sbin/mkfs.ext4 -F /dev/vdb
                   fi
+              - path: /etc/exports
+                permissions: '0644'
+                content: /data/ 10.0.1.0/24(rw,async,no_subtree_check,no_root_squash,fsid=0)
               - path: /opt/kubernetes-init-ssl.sh
                 permissions: 0700
                 owner: "root:root"
@@ -933,6 +936,12 @@ resources:
                     RestartSec=10
                     [Install]
                     WantedBy=multi-user.target
+                - name: rpc-mountd.service
+                  command: start
+                  enable: true
+                - name: nfsd.service
+                  command: start
+                  enable: true
                 - name: openvpn-init.service
                   command: start
                   content: |
@@ -1002,4 +1011,3 @@ resources:
           nodename: node-%index%
           keypair_name: { get_param: keypair_name }
           flavor_name: { get_param: flavor_name }
-          volume: { get_resource: volume }
