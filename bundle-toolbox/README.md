@@ -301,14 +301,14 @@ Dans cette section, nous allons vous présenter les différents services de cett
 
 ### Miroir APT
 Pour répondre à ce besoin nous avons choisi d'utiliser Aptly.
-C'est un **gestionnaire de paquet APT**. Il permet de faire un miroir d'un répetoire APT exposé sur internet afin de pouvoir le distribuer à l'ensemble des machines de votre tenant qui, elles, n'ont pas forcement accès à internet via un serveur Nginx.
+C'est un **gestionnaire de paquet APT**. Il permet de faire un miroir d'un répertoire APT exposé sur internet afin de pouvoir le distribuer à l'ensemble des machines de votre tenant qui, elles, n'ont pas forcement accès à internet via un serveur Nginx.
 
 Pour aller plus loin voici quelques liens utiles:
   * https://www.aptly.info/
   * http://korben.info/aptly-loutil-ultime-pour-gerer-vos-depots-debian.html/
 
 
-### Miroir ClamAV - antivirus
+### Miroir ClamAV - Antivirus
 Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **antivirus** distribuées par ClamAV et ensuite le paquet récupéré sera exposé à vos instances via Ngnix. Ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
 
 Pour aller plus loin voici quelques liens utiles:
