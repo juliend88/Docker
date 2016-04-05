@@ -273,7 +273,9 @@ Une fois le script appliqué sur l'instance choisie celle-ci doit apparaitre dan
 
 ![appdisable](img/appdisable.png)
 
-Comme vous pouvez le voir, l'ensemble des logos des applications de la toolbox sont grisés.
+**A titre d'information** Si vous souhaitez créer une instance via la console Cloudwatt, il vous ai possible de lancer *le script d'attachement* avant la validation. Cependant vous êtes dans l'obligation d'attacher votre instance au réseau de la toolbox.
+
+![launchinstance](img/launchinstance.png)
 
 **Lancer les services souhaitées sur l'instance :**
 
@@ -286,7 +288,7 @@ Une fois l'application installée, le logo de l'application passe en couleur, ce
 
 Il vous est possible d'annuler une tache en attente en cas d'erreur dans le menu **tasks** en cliquant sur ![horloge](img/horloge.png) ce qui vous affichera ensuite ce logo ![poubelle](img/poubelle.png).
 
-Nous avons aussi mis en place une section **audit** afin que vous puissiez voir l'ensemble de actions effectuées sur chacune de vos instances et un export en Excel (.xlsx) si vous souhaitez effectuer un post-processing ou garder ces informations pour des raisons de sécurité.
+Nous avons aussi mis en place une section **audit** afin que vous puissiez voir l'ensemble de actions effectuées sur chacune de vos instances et un export en Excel (.xlsx) si vous souhaitez effectuer un post-processing ou garder ces informations pour des raisons de sécurité via le bouton ![xlsx](img/xlsx.png) .
 
 ![audit](img/audit.png)
 
