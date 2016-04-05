@@ -655,6 +655,14 @@ resources:
                             env:
                               - name: DOMAIN
                                 value: $domain
+                              - name: OS_AUTH_URL
+                                value: $os_auth
+                              - name: OS_TENANT_NAME
+                                value: $os_tenant
+                              - name: OS_USERNAME
+                                value: $os_username
+                              - name: OS_PASSWORD
+                                value: $os_password
                             ports:
                               - containerPort: 3000
               - path: /etc/kubernetes/descriptors/rethinkdb-service.yaml
