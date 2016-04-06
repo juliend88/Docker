@@ -46,35 +46,23 @@ Une fois ceci fait, les outils de ligne de commande d'OpenStack peuvent interagi
 
 ### Ajuster les paramètres
 
-Dans le fichier `bundle-toolbox.heat.yml` vous trouverez en haut une section `parameters`. Cette stack à besoin de l'ensemble de vos informations utilisateur afin de pouvoir interagir avec l'ensemble de vos instances qui seront connecté au *routeur* de cette Toolbox.
+ Cette stack à besoin de l'ensemble de vos informations utilisateur afin de pouvoir interagir avec l'ensemble de vos instances qui seront connecté au *routeur* de cette Toolbox.
 
 **Un conseil** : Afin que la toolbox n'ait pas l'ensemble des droits sur votre tenant, vous pouvez lui créer un compte avec des droits restreints. Un compte avec les droits de lecture suffit (TENANT_SHOW).
 C'est dans ce même fichier que vous pouvez ajuster la taille de l'instance par le paramètre `flavor`. Afin de ne pas avoir de problème éventuel de performance, nous vous conseillons d'utiliser une instance de type "standard-4". De plus vous pouvez indiquer la taille du volume qui sera attaché à votre stack via le paramètre `volume_size`.
 
 
-
 ### Démarrer la stack
 
-Dans un shell, lancer le script `stack-start.sh` en passant en paramètre le nom de la stack que vous souhaitez lui attribuer :
+La Toolbox se lance par le **OneClick** de **Cloudwatt** via le portail
+[Applications](https://www.cloudwatt.com/fr/applications/index.html) du site de Cloudwatt. Choisissez l'application Toolbox, appuyez sur DEPLOYER et laisser vous guider... 2 minutes plus tard un bouton vert apparait... ACCEDER : vous avez votre toolbox !
 
-~~~ bash
-$ ./stack-start.sh Toolbox
-+--------------------------------------+------------+--------------------+----------------------+
-| id                                   | stack_name | stack_status       | creation_time        |
-+--------------------------------------+------------+--------------------+----------------------+
-| ed4ac18a-4415-467e-928c-1bef193e4f38 | Toolbox    | CREATE_IN_PROGRESS | 2016-03-24T08:29:45Z |
-+--------------------------------------+------------+--------------------+----------------------+
-~~~
-
-
-~~~
-Le script `start-stack.sh` s'occupe de lancer les appels nécessaires sur les API Cloudwatt pour :
+Le **OneClick** s'occupe de lancer les appels nécessaires sur les API Cloudwatt pour :
 
 * démarrer une instance basée sur coreos,
 * créer et attacher un volume block,
 * lancer le conteneur **toolbox**,
 * lancer le conteneur **SkyDNS**,
-
 
 
 La stack va se créer automatiquement (vous pouvez en voir la progression cliquant sur son nom). Quand tous les modules deviendront « verts », la création sera terminée. Ne vous reste plus qu'à récupérer le fichier de configuration **Openvpn** `cloud.ovpn`.
@@ -87,11 +75,12 @@ Une fois cette opération réalisée ajoutez le fichier de configuration à votr
 
 C’est (déjà) FINI !
 
-Bon... en fait oui ! Allez sur la page [Applications](https://www.cloudwatt.com/fr/applications/index.html) du site de Cloudwatt, choisissez l'appli, appuyez sur DEPLOYER et laisser vous guider... 2 minutes plus tard un bouton vert apparait... ACCEDER : vous avez votre toolbox !
+Bon... en fait oui ! Allez sur la page
 
 ## Enjoy
+Après avoir *téléchargé* le client [Openvpn](https://openvpn.net/) et le fichier de configuration `cloud.ovpn` via la commande expliquée ci-dessus. Lancer la connexion VPN.
 
-Une fois connecté au VPN sur la stack vous avez maintenant accès à l'interface d'administration via l'url **http://manager**. L'accès a l'interface et aux différentes applications se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **Go** ou via une requête URL (par exemple : http://zabbix/).
+Vous pouvez maintenant accéder à l'interface d'administration via l'url **http://manager**. L'accès a l'interface et aux différentes applications se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **Go** ou via une requête URL (par exemple : http://zabbix/).
 
 Nous avons attaché un volume à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master dans le répertoire `/dev/vdb`.
 
