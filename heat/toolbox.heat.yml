@@ -98,6 +98,10 @@ resources:
       network_id: { get_resource: network }
       ip_version: 4
       cidr: 10.0.1.0/24
+      dns_nameservers:
+        - 10.0.1.254
+        - 185.23.94.244
+        - 185.23.94.245
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
 
@@ -126,6 +130,9 @@ resources:
     type: OS::Neutron::Port
     properties:
       network: { get_resource: network }
+      fixed_ips:
+        - ip_address: 10.0.1.254
+          subnet_id: { get_resource: subnet }
       security_groups:
         - { get_resource: security_group }
 
@@ -244,11 +251,11 @@ resources:
                       echo "Unexpected error configuring Kubernetes Namespace : $RES"
                   else
                       echo "Created kube-system namespace"
-                      mkdir -p /opt/bin
-                      curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.2.0/bin/linux/amd64/kubectl
-                      chmod +x /opt/bin/kubectl
-                      /opt/bin/kubectl create -f /etc/kubernetes/descriptors
                   fi
+                  mkdir -p /opt/bin
+                  curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.2.0/bin/linux/amd64/kubectl
+                  chmod +x /opt/bin/kubectl
+                  /opt/bin/kubectl create -f /etc/kubernetes/descriptors
               - path: /etc/kubernetes/manifests/kube-apiserver.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -273,6 +280,7 @@ resources:
                       - --cloud-config=/openstack.conf
                       - --allow-privileged=true
                       - --service-cluster-ip-range=10.0.2.0/24
+                      - --service-node-port-range=1-40000
                       - --secure-port=443
                       - --advertise-address=$private_ipv4
                       - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
@@ -460,133 +468,6 @@ resources:
                           port: 10251
                         initialDelaySeconds: 15
                         timeoutSeconds: 1
-              - path: /etc/kubernetes/descriptors/glusterfs.yaml
-                permissions: 0666
-                owner: "root:root"
-                content: |
-                  kind: List
-                  apiVersion: v1
-                  items:
-                  - kind: ServiceAccount
-                    apiVersion: v1
-                    metadata:
-                      name: glusterfs
-                  - kind: SecurityContextConstraints
-                    apiVersion: v1
-                    metadata:
-                      name: glusterfs
-                      labels:
-                        name: glusterfs
-                    allowPrivilegedContainer: true
-                    allowHostDirVolumePlugin: true
-                    allowedCapabilities:
-                    - SYS_ADMIN
-                    runAsUser:
-                      type: RunAsAny
-                    seLinuxContext:
-                      type: RunAsAny
-                    users:
-                    - system:serviceaccounts:default:glusterfs
-                    groups:
-                    - system:cluster-admins
-                  - kind: Service
-                    apiVersion: v1
-                    metadata:
-                      name: glusterfs-storage
-                    spec:
-                      PortalIP: None
-                      ClusterIP: 10.0.2.3
-                      ports:
-                      - name: ssh
-                        port: 22
-                        targetPort: 22
-                      - name: glusterfs-api
-                        port: 24007
-                        targetPort: 24007
-                      - name: glusterfs-infiniband
-                        port: 24008
-                        targetPort: 24008
-                      - name: glusterfs-brick0
-                        port: 49152
-                        targetPort: 49152
-                      - name: glusterfs-nfs-0
-                        port: 38465
-                        targetPort: 38465
-                      - name: glusterfs-nfs-1
-                        port: 38466
-                        targetPort: 38466
-                      - name: glusterfs-nfs-2
-                        port: 38467
-                        targetPort: 38467
-                      - name: nfs-rpc
-                        port: 111
-                        targetPort: 111
-                      - name: nfs-rpc-udp
-                        port: 111
-                        targetPort: 111
-                        protocol: UDP
-                      - name: nfs-portmap
-                        port: 2049
-                        targetPort: 2049
-                      selector:
-                        component: glusterfs-storage
-                  - kind: ReplicationController
-                    apiVersion: v1
-                    metadata:
-                      labels:
-                        component: glusterfs-storage
-                      name: glusterfs-storage
-                    spec:
-                      replicas: 2
-                      selector:
-                        component: glusterfs-storage
-                      template:
-                        metadata:
-                          labels:
-                            component: glusterfs-storage
-                        spec:
-                          serviceAccount: glusterfs
-                          containers:
-                          - name: glusterfs-server
-                            image: hoolia/kubernetes-glusterfs-server:latest
-                            ports:
-                            - containerPort: 22
-                            - containerPort: 24007
-                            - containerPort: 24008
-                            - containerPort: 49152
-                            - containerPort: 38465
-                            - containerPort: 38466
-                            - containerPort: 38467
-                            - containerPort: 2049
-                            - containerPort: 111
-                            - containerPort: 111
-                              protocol: UDP
-                            env:
-                            - name: GLUSTER_VOL
-                              value: data
-                            - name: GLUSTER_BRICK_PATH
-                              value: /data
-                            - name: SERVICE_NAME
-                              value: glusterfs-storage.default.svc.$domain
-                            - name: ROOT_PASSWORD
-                              value: container_root_password
-                            - name: DEBUG
-                              value: "1"
-                            - name: SSH_PORT
-                              value: "22"
-                            volumeMounts:
-                              - name: local0
-                                mountPath: /data
-                            securityContext:
-                              privileged: true
-                              runAsUser: 0
-                              capabilities:
-                                add:
-                                - SYS_ADMIN
-                          volumes:
-                            - name: local0
-                              hostPath:
-                                path: "/data"
               - path: /etc/kubernetes/descriptors/skydns-rc.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -721,13 +602,16 @@ resources:
                     selector:
                       k8s-app: kube-dns
                     clusterIP: 10.0.2.2
+                    type: NodePort
                     ports:
                     - name: dns
                       port: 53
                       protocol: UDP
+                      nodePort: 53
                     - name: dns-tcp
                       port: 53
                       protocol: TCP
+                      nodePort: 53
               - path: /etc/kubernetes/descriptors/rabbitmq-service.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -903,6 +787,11 @@ resources:
                   username=$os_username
                   password=$os_password
                   tenant-name=$os_tenant
+              - path: /etc/exports
+                permissions: "0666"
+                owner: "root:root"
+                content: |
+                  /data/ 10.0.1.0/24(rw,async,no_subtree_check,no_root_squash,fsid=0)
               - path: /opt/format-data.sh
                 permissions: 0700
                 owner: "root:root"
@@ -993,7 +882,7 @@ resources:
                   command: start
                   content: |
                     [Unit]
-                    Description=Mount volume to /data
+                    Description=Mount volume to /gluster
                     Requires=format-data.service
                     After=format-data.service
                     [Mount]
@@ -1001,29 +890,6 @@ resources:
                     Where=/data
                     DirectoryMode=0777
                     Type=ext4
-                - name: generatekey.service
-                  command: start
-                  content: |
-                    [Unit]
-                    ConditionPathExists=!/home/core/keys/key
-                    Description=Toolbox KeyPair Generator
-
-                    [Service]
-                    Type=oneshot
-                    ExecStartPre=-/usr/bin/mkdir /home/core/keys
-                    ExecStart=/usr/bin/ssh-keygen -t rsa -f /home/core/keys/key -N ""
-                - name: generatessl.service
-                  command: start
-                  content: |
-                    [Unit]
-                    Requires=etcd2.service
-                    After=etcd2.service
-                    ConditionPathExists=!/data/kubernetes/ssl
-                    Description=Kubernetes Keys Generator
-
-                    [Service]
-                    Type=oneshot
-                    ExecStart=/opt/kubernetes-init-ssl.sh
                 - name: flanneld.service
                   drop-ins:
                     - name: 40-ExecStartPre-symlink.conf
@@ -1038,9 +904,31 @@ resources:
                         [Unit]
                         Requires=data.mount flanneld.service
                         After=data.mount flanneld.service
+                - name: rpc-statd.service
+                  command: start
+                  enable: true
+                - name: nfs-mountd.service
+                  command: start
+                  enable: true
+                - name: generatessl.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Requires=data.mount
+                    After=data.mount
+                    ConditionPathExists=!/data/kubernetes/ssl
+                    Description=Kubernetes Keys Generator
+
+                    [Service]
+                    Type=oneshot
+                    ExecStart=/opt/kubernetes-init-ssl.sh
                 - name: kubelet.service
                   command: start
                   content: |
+                    [Unit]
+                    Requires=generatessl.service
+                    After=generatessl.service
+
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
                     Environment=KUBELET_VERSION=v1.2.0_coreos.0
@@ -1057,6 +945,17 @@ resources:
                     RestartSec=10
                     [Install]
                     WantedBy=multi-user.target
+                - name: generatekey.service
+                  command: start
+                  content: |
+                    [Unit]
+                    ConditionPathExists=!/home/core/keys/key
+                    Description=Toolbox KeyPair Generator
+
+                    [Service]
+                    Type=oneshot
+                    ExecStartPre=-/usr/bin/mkdir /home/core/keys
+                    ExecStart=/usr/bin/ssh-keygen -t rsa -f /home/core/keys/key -N ""
                 - name: openvpn-init.service
                   command: start
                   content: |
