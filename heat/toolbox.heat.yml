@@ -927,16 +927,16 @@ resources:
                     Type=oneshot
                     RemainAfterExit=yes
                     ExecStart=/opt/format-data.sh
-                - name: data.mount
+                - name: gluster.mount
                   command: start
                   content: |
                     [Unit]
-                    Description=Mount volume to /data
+                    Description=Mount volume to /gluster
                     Requires=format-data.service
                     After=format-data.service
                     [Mount]
                     What=/dev/vdb
-                    Where=/data
+                    Where=/gluster
                     DirectoryMode=0777
                     Type=ext4
                 - name: flanneld.service
@@ -951,8 +951,8 @@ resources:
                     - name: 40-flannel.conf
                       content: |
                         [Unit]
-                        Requires=data.mount flanneld.service
-                        After=data.mount flanneld.service
+                        Requires=gluster.mount flanneld.service
+                        After=gluster.mount flanneld.service
                 - name: glusterfs.service
                   command: start
                   content: |
@@ -967,8 +967,23 @@ resources:
                     ExecStartPre=-/usr/bin/docker kill gluster
                     ExecStartPre=-/usr/bin/docker rm gluster
                     ExecStartPre=/usr/bin/docker pull paulczar/glusterfs
-                    ExecStart=/usr/bin/docker run --name=gluster -v /data:/export/vol1 --cap-add=SYS_ADMIN paulczar/glusterfs
+                    ExecStart=/usr/bin/docker run --restart=always --name=gluster -v /gluster:/export --cap-add=SYS_ADMIN paulczar/glusterfs
                     ExecStop=/usr/bin/docker stop gluster
+                - name: rpc-statd.service
+                  command: start
+                  enable: true
+                - name: data.mount
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Mount volume to /data
+                    Requires=rpc-statd.service glusterfs.service
+                    After=rpc-statd.service glusterfs.service
+                    [Mount]
+                    What=$master:/data
+                    Where=/data
+                    DirectoryMode=0777
+                    Type=nfs
                 - name: generatessl.service
                   command: start
                   content: |
