@@ -1,7 +1,6 @@
-# 5 Minutes Stacks, épisode 26 : Toolbox Beta #
+# 5 Minutes Stacks, épisode 27 : Toolbox Beta #
 
-## Episode 26 : Toolbox Beta
-
+## Episode 27 : Toolbox Beta
 
 La toolbox (version Beta) est une stack différente de tout ce que l'équipe a pu vous partager jusqu'à présent. Celle-ci a pour but de vous apporter un ensemble d'outils afin **d'unifier, d'harmoniser et monitorer votre tenant**. En effet celle-ci renferme un lot d'applications variées qui a pour vocation de vous aider dans la gestion au jour le jour de vos instances.
 
@@ -11,19 +10,6 @@ Afin de sécuriser au maximum cette toolbox aucun port n'est exposé sur interne
 
 
 ## Preparations
-
-### Les versions
-
-  - CoreOS Stable 899.13.0
-  - Docker 1.10.3
-  - Zabbix 3.0
-  - Rundeck 2.6.2
-  - Graylog 1.3.4
-  - Nexus 2.12.1-01
-  - Nginx 1.9.12
-  - Aptly  0.9.6
-  - SkyDNS 2.5.3a
-  - Etcd 2.0.3
 
 ### Les pré-requis pour déployer cette stack
 
@@ -38,17 +24,8 @@ Ceci devrait être une routine à présent:
 ### Taille de l'instance
 Par défaut, le script propose un déploiement sur une instance de type "standard-4" (n2.cw.standard-4). Il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
 
-Vous pouvez ajuster les paramètres de la stack à votre goût.
+vous pouvez passer directement à la version ["Je lance avec la console"](#console)...
 
-### Au fait...
-
-Si vous n’aimez pas les lignes de commande, vous pouvez passer directement à la version ["Je lance avec la console"](#console)...
-
-## Tour du propriétaire
-
-Une fois le dépôt cloné, vous trouverez le répertoire `bundle-toolbox/`
-
-* `bundle-toolbox.heat.yml`: Template d'orchestration HEAT, qui servira à déployer l'infrastructure nécessaire.
 
 ## Démarrage
 
@@ -74,77 +51,7 @@ Dans le fichier `bundle-toolbox.heat.yml` vous trouverez en haut une section `pa
 **Un conseil** : Afin que la toolbox n'ait pas l'ensemble des droits sur votre tenant, vous pouvez lui créer un compte avec des droits restreints. Un compte avec les droits de lecture suffit (TENANT_SHOW).
 C'est dans ce même fichier que vous pouvez ajuster la taille de l'instance par le paramètre `flavor`. Afin de ne pas avoir de problème éventuel de performance, nous vous conseillons d'utiliser une instance de type "standard-4". De plus vous pouvez indiquer la taille du volume qui sera attaché à votre stack via le paramètre `volume_size`.
 
-~~~ yaml
 
-heat_template_version: 2013-05-23
-
-description: Toolbox stack for Cloudwatt
-
-
-parameters:
-  keypair_name:
-    description: Keypair to inject in instance
-    label: SSH Keypair
-    type: string
-
-  os_username:
-    description: OpenStack Username
-    label: OpenStack Username
-    type: string
-
-  os_password:
-    description: OpenStack Password
-    label: OpenStack Password
-    type: string
-
-  os_tenant:
-    description: OpenStack Tenant Name
-    label: OpenStack Tenant Name
-    type: string
-
-  os_auth:
-    description: OpenStack Auth URL
-    default: https://identity.fr1.cloudwatt.com/v2.0
-    label: OpenStack Auth URL
-    type: string
-
-  domain:
-    description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
-    label: Cloud DNS
-    type: string
-
-  flavor_name:
-    default: n1.cw.standard-4
-    description: Flavor to use for the deployed instance
-    type: string
-    label: Instance Type (Flavor)
-    constraints:
-      - allowed_values:
-          - n1.cw.standard-4
-          - n1.cw.standard-8
-          - n1.cw.standard-12
-          - n1.cw.standard-16
-
-
-  volume_size:
-    default: 10
-    label: Backup Volume Size
-    description: Size of Volume for Toolbox Storage (Gigabytes)
-    type: number
-    constraints:
-      - range: { min: 10, max: 10000 }
-        description: Volume must be at least 10 gigabytes
-
-  volume_type:
-    default: standard
-    label: Backup Volume Type
-    description: Performance flavor of the linked Volume for DevKit Storage
-    type: string
-    constraints:
-      - allowed_values:
-          - standard
-          - performant
- ~~~
 
 ### Démarrer la stack
 
@@ -159,23 +66,6 @@ $ ./stack-start.sh Toolbox
 +--------------------------------------+------------+--------------------+----------------------+
 ~~~
 
-Enfin, attendez **5 minutes** que le déploiement soit complet.
-
-~~~bash
-$ heat resource-list Toolbox
-+-------------------+-------------------------------------------------------------------------------------+---------------------------------+-----------------+----------------------+
-| resource_name     | physical_resource_id                                                                | resource_type                   | resource_status | updated_time         |
-+-------------------+-------------------------------------------------------------------------------------+---------------------------------+-----------------+----------------------+
-| floating_ip       | c683dbfa-3c9a-4cd6-a38d-2839fb203e9c                                                | OS::Neutron::FloatingIP         | CREATE_COMPLETE | 2016-03-15T10:34:01Z |
-| network           | b87a5d95-61fb-4586-ba1c-d531d2f638c9                                                | OS::Neutron::Net                | CREATE_COMPLETE | 2016-03-15T10:34:02Z |
-| security_group    | 8d7745dd-c517-461a-bf57-b95cc1fcbeba                                                | OS::Neutron::SecurityGroup      | CREATE_COMPLETE | 2016-03-15T10:34:02Z |
-| router            | b0977098-3fa4-461a-9a79-6715d3604822                                                | OS::Neutron::Router             | CREATE_COMPLETE | 2016-03-15T10:34:03Z |
-| subnet            | 7f531a2c-4a3e-41d3-aa33-64396cb5f2d2                                                | OS::Neutron::Subnet             | CREATE_COMPLETE | 2016-03-15T10:34:04Z |
-| ports             | ab7791ee-3a07-4cc3-9a3b-da7cc53fb8aa                                                | OS::Neutron::Port               | CREATE_COMPLETE | 2016-03-15T10:34:09Z |
-| toolbox_interface | b0977098-3fa4-461a-9a79-6715d3604822:subnet_id=7f531a2c-4a3e-41d3-aa33-64396cb5f2d2 | OS::Neutron::RouterInterface    | CREATE_COMPLETE | 2016-03-15T10:34:09Z |
-| server            | f45d47a2-9686-44a9-9634-22d6012ef497                                                | OS::Nova::Server                | CREATE_COMPLETE | 2016-03-15T10:34:11Z |
-| floating_ip_link  | c683dbfa-3c9a-4cd6-a38d-2839fb203e9c-84.39.44.44                                    | OS::Nova::FloatingIPAssociation | CREATE_COMPLETE | 2016-03-15T10:34:34Z |
-+-------------------+-------------------------------------------------------------------------------------+---------------------------------+-----------------+----------------------+
 
 ~~~
 Le script `start-stack.sh` s'occupe de lancer les appels nécessaires sur les API Cloudwatt pour :
@@ -186,24 +76,6 @@ Le script `start-stack.sh` s'occupe de lancer les appels nécessaires sur les AP
 * lancer le conteneur **SkyDNS**,
 
 
-<a name="console" />
-
-## C’est bien tout ça, mais...
-
-### Vous n’auriez pas un moyen de lancer l’application par la console ?
-
-Et bien si ! En utilisant la console, vous pouvez déployer la Toolbox:
-
-1.	Allez sur le Github Cloudwatt dans le répertoire [applications/bundle-toolbox](https://github.com/cloudwatt/applications/tree/master/bundle-trusty-cozycloud)
-2.	Cliquez sur le fichier nommé `bundle-toolbox.heat.yml`
-3.	Cliquez sur RAW, une page web apparait avec le détail du script
-4.	Enregistrez-sous le contenu sur votre PC dans un fichier avec le nom proposé par votre navigateur (enlever le .txt à la fin)
-5.  Rendez-vous à la section « [Stacks](https://console.cloudwatt.com/project/stacks/) » de la console.
-6.	Cliquez sur « Lancer la stack », puis cliquez sur « fichier du modèle » et sélectionnez le fichier que vous venez de sauvegarder sur votre PC, puis cliquez sur « SUIVANT »
-7.	Donnez un nom à votre stack dans le champ « Nom de la stack »
-8.	Entrez votre keypair dans le champ « keypair_name »
-9.  Donner l'ensemble des informations du compte pouvant accéder à votre tenant,
-10.	Choisissez la taille de votre instance parmi le menu déroulant « flavor_name » et cliquez sur « LANCER »
 
 La stack va se créer automatiquement (vous pouvez en voir la progression cliquant sur son nom). Quand tous les modules deviendront « verts », la création sera terminée. Ne vous reste plus qu'à récupérer le fichier de configuration **Openvpn** `cloud.ovpn`.
 
@@ -215,8 +87,6 @@ Une fois cette opération réalisée ajoutez le fichier de configuration à votr
 
 C’est (déjà) FINI !
 
-### Vous n’auriez pas un moyen de lancer l’application en 1-clic ?
-
 Bon... en fait oui ! Allez sur la page [Applications](https://www.cloudwatt.com/fr/applications/index.html) du site de Cloudwatt, choisissez l'appli, appuyez sur DEPLOYER et laisser vous guider... 2 minutes plus tard un bouton vert apparait... ACCEDER : vous avez votre toolbox !
 
 ## Enjoy
@@ -225,7 +95,7 @@ Une fois connecté au VPN sur la stack vous avez maintenant accès à l'interfac
 
 Nous avons attaché un volume à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master dans le répertoire `/dev/vdb`.
 
-#### Présentation de l'interface
+### Présentation de l'interface
 
 Voici l'accueil de la toolbox, chaque vignette représentant une application prête à être lancée. Afin d'être le plus scalable et flexible possible, l'ensemble des applications de cette toolbox sont des conteneurs (Docker).
 
@@ -264,7 +134,7 @@ Dans la section **Parameters** vous pouvez ici inscrire l'ensemble des paramètr
 Afin d'identifier les applications lancées de celles qui ne le sont pas, nous avons mis en place un code couleur. Une application démarrée sera entourée d'un halo vert.
 ![appstart](img/appstart.png)
 
-#### Ajouter des instances à ma Toolbox
+### Ajouter des instances à ma Toolbox
 
 Afin d'ajouter des instances à la toolbox, 3 étapes :
 
@@ -320,26 +190,17 @@ Nous avons aussi mis en place une section **audit** afin que vous puissiez voir 
 Enfin, toujours dans le but de vous aider au maximum, nous avons intégré 2 liens dans le menu de la toolbox : **My Instances** et **My Account**. Ils servent respectivement à accéder à vos instances via la console Horizon Cloudwatt et à accéder à la gestion de votre compte via l'interface Cockpit.
 
 
-## Les Services
+## Les Services fournis pour les applications embarquées
 
 Dans cette section, nous allons vous présenter les différents services de cette Toolbox.
 
-### Miroir APT
-Pour répondre à ce besoin nous avons choisi d'utiliser Aptly.
-C'est un **gestionnaire de paquet APT**. Il permet de faire un miroir d'un répertoire APT exposé sur internet afin de pouvoir le distribuer à l'ensemble des machines de votre tenant qui, elles, n'ont pas forcement accès à internet via un serveur Nginx.
+### Monitoring et Supervision
+Nous avons choisi d'utiliser Zabbix.
+L'application Zabbix est un logiciel libre permettant de **surveiller l'état de divers services réseau, serveurs et autres matériels réseau**; et produisant des graphiques dynamiques de consommation des ressources. Zabbix utilise MySQL, PostgreSQL ou Oracle pour stocker les données. Selon l'importance du nombre de machines et de données à surveiller, le choix du SGBD influe grandement sur les performances. Son interface web est écrite en PHP et fourni une vision temps réel sur les métriques collectées.
 
 Pour aller plus loin voici quelques liens utiles:
-  * https://www.aptly.info/
-  * http://korben.info/aptly-loutil-ultime-pour-gerer-vos-depots-debian.html/
-
-
-### Miroir ClamAV - Antivirus
-Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **virus** distribuées par ClamAV et ensuite le paquet récupéré sera exposé à vos instances via Ngnix. Ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
-
-Pour aller plus loin voici quelques liens utiles:
-  * https://www.clamav.net/documents/private-local-mirrors
-  * https://github.com/vrtadmin/clamav-faq/blob/master/mirrors/MirrorHowto.md
-
+  * http://www.zabbix.com/
+  * https://www.zabbix.com/documentation/3.0/start
 
 ### Log Management
 Nous avons choisi Graylog qui est le produit du moment pour la gestion des logs, en voici une petite présentation :
@@ -358,6 +219,33 @@ Pour aller plus loin voici quelques liens utiles:
   * https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/
 
 
+### Planificateur de jobs
+Pour répondre à ce besoin nous avons choisi d'utiliser Rundeck.
+L'application Rundeck va vous permettre de **programmer et d'organiser l'ensemble des jobs** que vous voulez déployer régulièrement sur l'ensemble de votre tenant via son interface web. Dans notre cas nous avons voulu vous donner la possibilité de mettre en place un script vous permettant de sauvegarder vos serveurs comme nous l'avons vu dans le cadre du *bundle* Duplicity (prochaine version de la toolbox).
+
+Pour aller plus loin voici quelques liens utiles:
+  * http://rundeck.org/
+  * http://blog.admin-linux.org/administration/rundeck-ordonnanceur-centralise-opensource-vient-de-sortir-sa-v2-0
+  * http://dev.cloudwatt.com/fr/blog/5-minutes-stacks-episode-vingt-trois-duplicity.html
+
+
+### Miroir ClamAV - Antivirus
+Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **virus** distribuées par ClamAV et ensuite le paquet récupéré sera exposé à vos instances via Ngnix. Ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
+
+Pour aller plus loin voici quelques liens utiles:
+  * https://www.clamav.net/documents/private-local-mirrors
+  * https://github.com/vrtadmin/clamav-faq/blob/master/mirrors/MirrorHowto.md
+
+
+### Miroir APT
+Pour répondre à ce besoin nous avons choisi d'utiliser Aptly.
+C'est un **gestionnaire de paquet APT**. Il permet de faire un miroir d'un répertoire APT exposé sur internet afin de pouvoir le distribuer à l'ensemble des machines de votre tenant qui, elles, n'ont pas forcement accès à internet via un serveur Nginx.
+
+Pour aller plus loin voici quelques liens utiles:
+  * https://www.aptly.info/
+  * http://korben.info/aptly-loutil-ultime-pour-gerer-vos-depots-debian.html/
+
+
 ### Miroir YUM
 Nous avons choisi d'utiliser Nexus.
 Nexus est une application pouvant exposer n'importe quel type de répertoire via un serveur Ngnix. Ici notre volonté est de vous proposer une application pouvant **exposer un répertoire YUM** à l'ensemble de vos instances.
@@ -374,25 +262,18 @@ Le conteneur NTP est ici utiliser afin que l'ensemble de vos instances n'ayant p
 Pour aller plus loin voici quelques liens utiles:
   * http://www.pool.ntp.org/fr/
 
+### Les versions Toolbox Beta v1
 
-### Planificateur de jobs
-Pour répondre à ce besoin nous avons choisi d'utiliser Rundeck.
-L'application Rundeck va vous permettre de **programmer et d'organiser l'ensemble des jobs** que vous voulez déployer régulièrement sur l'ensemble de votre tenant via son interface web. Dans notre cas nous avons voulu vous donner la possibilité de mettre en place un script vous permettant de sauvegarder vos serveurs comme nous l'avons vu dans le cadre du *bundle* Duplicity (prochaine version de la toolbox).
-
-Pour aller plus loin voici quelques liens utiles:
-  * http://rundeck.org/
-  * http://blog.admin-linux.org/administration/rundeck-ordonnanceur-centralise-opensource-vient-de-sortir-sa-v2-0
-  * http://dev.cloudwatt.com/fr/blog/5-minutes-stacks-episode-vingt-trois-duplicity.html
-
-
-### Monitoring
-Nous avons choisi d'utiliser Zabbix.
-L'application Zabbix est un logiciel libre permettant de **surveiller l'état de divers services réseau, serveurs et autres matériels réseau**; et produisant des graphiques dynamiques de consommation des ressources. Zabbix utilise MySQL, PostgreSQL ou Oracle pour stocker les données. Selon l'importance du nombre de machines et de données à surveiller, le choix du SGBD influe grandement sur les performances. Son interface web est écrite en PHP et fourni une vision temps réel sur les métriques collectées.
-
-Pour aller plus loin voici quelques liens utiles:
-  * http://www.zabbix.com/
-  * https://www.zabbix.com/documentation/3.0/start
-
+  - CoreOS Stable 899.13.0
+  - Docker 1.10.3
+  - Zabbix 3.0
+  - Rundeck 2.6.2
+  - Graylog 1.3.4
+  - Nexus 2.12.1-01
+  - Nginx 1.9.12
+  - Aptly  0.9.6
+  - SkyDNS 2.5.3a
+  - Etcd 2.0.3
 
 ## So watt  ?
 
