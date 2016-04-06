@@ -227,9 +227,9 @@ resources:
                     [Unit]
                     Description=Mount volume to /data
                     Requires=rpc-statd.service
-                    After=rpc-statd.service flanneld.service
+                    After=rpc-statd.service
                     [Mount]
-                    What=10.0.2.3:/data
+                    What=$master:/data
                     Where=/data
                     DirectoryMode=0777
                     Type=nfs
@@ -237,8 +237,8 @@ resources:
                   command: start
                   content: |
                     [Unit]
-                    Requires=etcd2.service
-                    After=etcd2.service
+                    Requires=data.mount
+                    After=data.mount
                     ConditionPathExists=!/data/kubernetes/ssl
                     Description=Kubernetes Keys Generator
 
@@ -262,8 +262,8 @@ resources:
                   command: start
                   content: |
                     [Unit]
-                    Requires=docker.service
-                    After=docker.service
+                    Requires=docker.service generatessl.service
+                    After=docker.service generatessl.service
 
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests

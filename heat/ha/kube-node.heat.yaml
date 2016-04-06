@@ -255,8 +255,8 @@ resources:
                   command: start
                   content: |
                     [Unit]
-                    Requires=etcd2.service
-                    After=etcd2.service
+                    Requires=docker.service
+                    After=docker.service
                     ConditionPathExists=!/data/kubernetes/ssl
                     Description=Kubernetes Keys Generator
 
