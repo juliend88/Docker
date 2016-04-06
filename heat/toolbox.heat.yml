@@ -1016,7 +1016,7 @@ resources:
     properties:
       count: 1
       resource_def:
-        type: https://raw.githubusercontent.com/juliend88/Docker/kube/heat/kube-node.heat.yaml
+        type: https://raw.githubusercontent.com/juliend88/Docker/master/heat/kube-node.heat.yaml
         properties:
           domain: { get_param: domain }
           master: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }
