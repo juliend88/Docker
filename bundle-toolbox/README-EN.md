@@ -75,7 +75,7 @@ With the `bundle-toolbox.heat.yml` file, you will find at the top a section name
 This stack to need all of your user information in order to interact with all of your instances will be connected to the *router* of this Toolbox .
 
 **Advice** : So that the toolbox does not have all the rights to your holding , you can create him an account with restricted rights. An account with read rights is sufficient (TENANT_SHOW).
-It is in this same file you can adjust the size of the instance by the parameter `flavor`. In order not to have any performance problem, we recommend that you use an instance of type "standard-4". You can also indicate the volume_size who will attach on your stack.
+It is in this same file you can adjust the size of the instance by the parameter `flavor`. In order not to have any performance problem, we recommend that you use an instance of type "standard-4". You can also indicate the `volume_size` who will attach on your stack.
 
 ~~~ yaml
 
@@ -225,6 +225,7 @@ It's (already) over !
 ## Enjoy
 
 Once connected to the VPN on the stack you now have access to the administration interface via the URL **http://manager**. Access to the interface and the various applications is via **DNS** names. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the short names in place. You can access different web interfaces for applications by clicking **Go** or via URL request (ex: http://zabbix/).
+
 Also we attached a volume to your stack in order to save all **data** containers of the toolbox , so you can go back in a new instance. The volume is mounted on the master instance in the directory `/dev/vdb`.
 
 #### Interface Overview
