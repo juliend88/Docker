@@ -75,11 +75,11 @@ With the `bundle-toolbox.heat.yml` file, you will find at the top a section name
 This stack to need all of your user information in order to interact with all of your instances will be connected to the *router* of this Toolbox .
 
 **Advice** : So that the toolbox does not have all the rights to your holding , you can create him an account with restricted rights. An account with read rights is sufficient (TENANT_SHOW).
-It is in this same file you can adjust the size of the instance by the parameter `flavor`. In order not to have any performance problem, we recommend that you use an instance of type "standard -4".
+It is in this same file you can adjust the size of the instance by the parameter `flavor`. In order not to have any performance problem, we recommend that you use an instance of type "standard-4". You can also indicate the volume_size who will attach on your stack.
 
 ~~~ yaml
-heat_template_version: 2013-05-23
 
+heat_template_version: 2013-05-23
 
 description: Toolbox stack for Cloudwatt
 
@@ -111,19 +111,42 @@ parameters:
     label: OpenStack Auth URL
     type: string
 
+  domain:
+    description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
+    label: Cloud DNS
+    type: string
+
   flavor_name:
-    default: n2.cw.standard-4
+    default: n1.cw.standard-4
     description: Flavor to use for the deployed instance
     type: string
     label: Instance Type (Flavor)
     constraints:
       - allowed_values:
-          - s1.cw.small-1
-          - n2.cw.standard-1
-          - n2.cw.standard-2
-          - n2.cw.standard-4
-          - n2.cw.standard-8
-          - n2.cw.standard-16
+          - n1.cw.standard-4
+          - n1.cw.standard-8
+          - n1.cw.standard-12
+          - n1.cw.standard-16
+
+
+  volume_size:
+    default: 10
+    label: Backup Volume Size
+    description: Size of Volume for Toolbox Storage (Gigabytes)
+    type: number
+    constraints:
+      - range: { min: 10, max: 10000 }
+        description: Volume must be at least 10 gigabytes
+
+  volume_type:
+    default: standard
+    label: Backup Volume Type
+    description: Performance flavor of the linked Volume for DevKit Storage
+    type: string
+    constraints:
+      - allowed_values:
+          - standard
+          - performant
 
  ~~~
 
@@ -162,6 +185,7 @@ $ watch heat resource-list Toolbox
 The `start-stack.sh` script takes care of running the API necessary requests to execute the normal heat template which:
 
 * Starts an CoreOS based instance
+* create and attach a block volume,
 * Launch **toolbox** container
 * Launch **SkyDNS** container
 
@@ -200,7 +224,8 @@ It's (already) over !
 
 ## Enjoy
 
-Once connected to the VPN on the stack you now have access to the administration interface via the URL **http://manager**. Access to the interface and the various applications is via **DNS** names. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the short names in place. You can access different web interfaces for applications by clicking **Go** or via a URL request (ex: http://zabbix/).
+Once connected to the VPN on the stack you now have access to the administration interface via the URL **http://manager**. Access to the interface and the various applications is via **DNS** names. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the short names in place. You can access different web interfaces for applications by clicking **Go** or via URL request (ex: http://zabbix/).
+Also we attached a volume to your stack in order to save all **data** containers of the toolbox , so you can go back in a new instance .
 
 #### Interface Overview
 
@@ -315,7 +340,7 @@ In this section, we will present the different services of this Toolbox.
 
 ### APT mirror
 To meet this need we have chosen to use Aptly.
-This is a **APT package manager**. It allows you to mirror a web presentation on APT directory in order to distribute it to all your machines into which they do not necessarily have access to the internet via a Nginx server.
+This is a **APT package manager**. It allows you to mirror a web APT directory to distribute it to all your machines into which they do not necessarily  access to internet via a Nginx server.
 
 To go further, here are some helpful links :
 * https://www.aptly.info/
@@ -323,7 +348,7 @@ To go further, here are some helpful links :
 
 
 ### Mirror ClamAV - Antivirus
-This application is a Ngnix server. A **CRON** script will run every day to fetch the latest **virus** definition distributed by ClamAV and then the recovered packet will be exposed to your instances via Ngnix. Allowing you to have customers **ClamAV** update without access internet in your instances.
+This application is a Ngnix server. A **CRON** script will run every day to fetch the latest **virus** definition distributed by ClamAV and then the recovered packet will be exposed to your instances via Ngnix. Allowing you to have customers **ClamAV** up to date without access internet.
 
 To go further, here are some helpful links :
 * https://www.clamav.net/documents/private-local-mirrors
@@ -348,7 +373,7 @@ To go further, here are some helpful links :
 * https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/
 
 ###Mirror YUM
-To meet this need we have chosen to use Nexus.
+We have chosen to use Nexus.
 Nexus is an application that can display any type of directory server via a Ngnix . Here our aim is to offer an application that can **expose a YUM repository** for all of your instances.
 
 To go further, here are some helpful links :
@@ -357,14 +382,14 @@ To go further, here are some helpful links :
 
 ### Time Synchronisation
 
-To meet this need we have chosen to use NTP.
+We have chosen to use NTP.
 NTP container is used here so that all of your instances without access to the internet can be synchronized to the same time and access to **a server time**.
 
 To go further, here are some helpful links :
   * http://www.pool.ntp.org/fr/
 
 ### Job Scheduler
-To meet this need we have chosen to use Rundeck.
+We have chosen to use Rundeck.
 The Rundeck application will allow you **to schedule and organize all jobs** that you want to deploy consistently on all of your holding via its web interface. In our case we wanted to give you the opportunity to set up a script to back up your servers as we saw in the *bundle* Duplicity (next version of the toolbox).
 
 To go further, here are some helpful links :
@@ -373,7 +398,7 @@ To go further, here are some helpful links :
 * http://dev.cloudwatt.com/fr/blog/5-minutes-stacks-episode-vingt-trois-duplicity.html
 
 ### Monitoring
-To meet this need we have chosen to use Zabbix.
+We have chosen to use Zabbix.
 Zabbix application is free software **to monitor the status of various network services , servers and other network devices**; and producing dynamic graphics resource consumption.
 Zabbix uses MySQL, PostgreSQL or Oracle to store data. According to the large number of machines and data to monitor the choice of SGBD greatly affects performance. Its web interface is written in PHP and provided a real-time view on the collected metrics.
 
@@ -385,11 +410,24 @@ To go further, here are some helpful links :
 
 The goal of this tutorial is to accelerate your start. At this point **you** are the master of the stack.
 
-You now have an SSH access point on your virtual machine through the floating-IP and your private keypair (default user name `cloud`).
+You now have an SSH access point on your virtual machine through the floating-IP and your private keypair (default user name `core`).
 
-* You have access to the web interface with https via the floating IP from ubuntu server.
+* Get the OpenVPN configuration file on the instance of the toolbox
+* Once connected to the VPN toolbox, you have access to the web interface via the url **http://manager**.
 
-* Here are some news sites to learn more:
 
-- https://www.pfsense.org/
-- https://forum.pfsense.org
+## And afterwards?
+
+This article will acquaint you with this first version of the toolbox. It is available to all users Cloudwatt in Beta mode and therefore currently free.
+
+
+The intention of the CAT ( Cloudwatt Automation Team) is to provide improvements on a monthly basis. In our roadmap, we expect among others:
+* A French version
+* Add the backup function
+* HA Version
+* An additional menu to contact Cloudwatt supporting teams
+
+-----
+Have fun. Hack in peace.
+
+The CAT

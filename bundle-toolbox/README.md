@@ -72,11 +72,11 @@ Une fois ceci fait, les outils de ligne de commande d'OpenStack peuvent interagi
 Dans le fichier `bundle-toolbox.heat.yml` vous trouverez en haut une section `parameters`. Cette stack à besoin de l'ensemble de vos informations utilisateur afin de pouvoir interagir avec l'ensemble de vos instances qui seront connecté au *routeur* de cette Toolbox.
 
 **Un conseil** : Afin que la toolbox n'ait pas l'ensemble des droits sur votre tenant, vous pouvez lui créer un compte avec des droits restreints. Un compte avec les droits de lecture suffit (TENANT_SHOW).
-C'est dans ce même fichier que vous pouvez ajuster la taille de l'instance par le paramètre `flavor`. Afin de ne pas avoir de problème éventuel de performance, nous vous conseillons d'utiliser une instance de type "standard-4".
+C'est dans ce même fichier que vous pouvez ajuster la taille de l'instance par le paramètre `flavor`. Afin de ne pas avoir de problème éventuel de performance, nous vous conseillons d'utiliser une instance de type "standard-4". De plus vous pouvez indiquer la taille du volume qui sera attaché à votre stack via le paramètre volume_size.
 
 ~~~ yaml
-heat_template_version: 2013-05-23
 
+heat_template_version: 2013-05-23
 
 description: Toolbox stack for Cloudwatt
 
@@ -108,20 +108,42 @@ parameters:
     label: OpenStack Auth URL
     type: string
 
+  domain:
+    description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
+    label: Cloud DNS
+    type: string
+
   flavor_name:
-    default: n2.cw.standard-4
+    default: n1.cw.standard-4
     description: Flavor to use for the deployed instance
     type: string
     label: Instance Type (Flavor)
     constraints:
       - allowed_values:
-          - s1.cw.small-1
-          - n2.cw.standard-1
-          - n2.cw.standard-2
-          - n2.cw.standard-4
-          - n2.cw.standard-8
-          - n2.cw.standard-16
+          - n1.cw.standard-4
+          - n1.cw.standard-8
+          - n1.cw.standard-12
+          - n1.cw.standard-16
 
+
+  volume_size:
+    default: 10
+    label: Backup Volume Size
+    description: Size of Volume for Toolbox Storage (Gigabytes)
+    type: number
+    constraints:
+      - range: { min: 10, max: 10000 }
+        description: Volume must be at least 10 gigabytes
+
+  volume_type:
+    default: standard
+    label: Backup Volume Type
+    description: Performance flavor of the linked Volume for DevKit Storage
+    type: string
+    constraints:
+      - allowed_values:
+          - standard
+          - performant
  ~~~
 
 ### Démarrer la stack
@@ -159,8 +181,9 @@ $ heat resource-list Toolbox
 Le script `start-stack.sh` s'occupe de lancer les appels nécessaires sur les API Cloudwatt pour :
 
 * démarrer une instance basée sur coreos,
-* lancer le conteneur **toolbox**
-* lancer le conteneur **SkyDNS**
+* créer et attacher un volume block,
+* lancer le conteneur **toolbox**,
+* lancer le conteneur **SkyDNS**,
 
 
 <a name="console" />
@@ -198,7 +221,7 @@ Bon... en fait oui ! Allez sur la page [Applications](https://www.cloudwatt.com/
 
 ## Enjoy
 
-Une fois connecté au VPN sur la stack vous avez maintenant accès à l'interface d'administration via l'url **http://manager**. L'accès a l'interface et aux différentes applications se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **Go** ou via une requête URL (par exemple : http://zabbix/).
+Une fois connecté au VPN sur la stack vous avez maintenant accès à l'interface d'administration via l'url **http://manager**. L'accès a l'interface et aux différentes applications se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **Go** ou via une requête URL (par exemple : http://zabbix/). De plus nous avons attaché un volume à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance.
 
 #### Présentation de l'interface
 
@@ -334,7 +357,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Miroir YUM
-Pour répondre à ce besoin nous avons choisi d'utiliser Nexus.
+Nous avons choisi d'utiliser Nexus.
 Nexus est une application pouvant exposer n'importe quel type de répertoire via un serveur Ngnix. Ici notre volonté est de vous proposer une application pouvant **exposer un répertoire YUM** à l'ensemble de vos instances.
 
 Pour aller plus loin voici quelques liens utiles:
@@ -343,7 +366,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Synchronisation de temps
-Pour répondre à ce besoin nous avons choisi d'utiliser NTP.
+Nous avons choisi d'utiliser NTP.
 Le conteneur NTP est ici utiliser afin que l'ensemble de vos instances n'ayant pas accès à internet puissent être synchroniser à la même heure et est accès à un **serveur de temps**.
 
 Pour aller plus loin voici quelques liens utiles:
@@ -361,7 +384,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Monitoring
-Pour répondre à ce besoin nous avons choisi d'utiliser Zabbix.
+Nous avons choisi d'utiliser Zabbix.
 L'application Zabbix est un logiciel libre permettant de **surveiller l'état de divers services réseau, serveurs et autres matériels réseau**; et produisant des graphiques dynamiques de consommation des ressources. Zabbix utilise MySQL, PostgreSQL ou Oracle pour stocker les données. Selon l'importance du nombre de machines et de données à surveiller, le choix du SGBD influe grandement sur les performances. Son interface web est écrite en PHP et fourni une vision temps réel sur les métriques collectées.
 
 Pour aller plus loin voici quelques liens utiles:
