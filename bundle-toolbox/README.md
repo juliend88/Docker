@@ -16,7 +16,7 @@ Cette toolbox a entièrement été développée par l'équipe CAT (Cloudwatt Aut
 * L'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes
 * De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible.
 
-Afin de sécuriser au maximum cette toolbox aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration Openvpn.
+Afin de sécuriser au maximum cette toolbox, aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration OpenVPN.
 
 
 ## Preparations
@@ -28,7 +28,7 @@ Ceci devrait être une routine à présent:
  * Un shell linux
  * Un [compte Cloudwatt](https://www.cloudwatt.com/cockpit/#/create-contact) avec une [ paire de clés existante](https://console.cloudwatt.com/project/access_and_security/?tab=access_security_tabs__keypairs_tab)
  * Les outils [OpenStack CLI](http://docs.openstack.org/cli-reference/content/install_clients.html)
- * Un client [Openvpn](https://openvpn.net/)
+ * Un client [OpenVPN](https://openvpn.net/)
 
 ### Initialiser l'environnement
 
@@ -61,7 +61,7 @@ Après avoir entré vos login/password de votre compte, le wizard de lancement a
 
 Par défaut, le wizard propose un déploiement sur une instance de type "standard-4" (n2.cw.standard-4). Il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
 
-Vous devrez indiquer la taille du volume bloc performant qui sera attaché à votre stack via le paramètre `volume_size`.
+Vous devrez indiquer le type (standard ou performant) et la taille du volume bloc qui sera attaché à votre stack via le paramètre `volume_size`.
 
 Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* sans noeud *slave*. Au maximum, la toolbox v1 se déploie sur 1 instance *master* et 3 noeud *slave*.
 
@@ -69,7 +69,7 @@ Appuyer sur LANCER.
 
 Le **1-clic** s'occupe de lancer les appels nécessaires sur les API Cloudwatt pour :
 
-* démarrer une instance basée sur coreos,
+* démarrer une instance basée sur CoreOS,
 * créer et attacher un volume block,
 * lancer le conteneur **toolbox**,
 * lancer le conteneur **SkyDNS**
@@ -97,7 +97,7 @@ C’est (déjà) FINI !
 
 ## Enjoy
 
-L'accès à l'interface et aux différents services se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **Go** ou via une requête URL (par exemple : http://zabbix/).
+L'accès à l'interface et aux différents services se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **GO** ou via une requête URL (par exemple : http://zabbix/).
 
 Nous avons attaché un volume à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master de la toolbox dans le répertoire `/dev/vdb`.
 
@@ -201,7 +201,7 @@ Nous avons aussi mis en place une section **audit** afin que vous puissiez voir 
 
 ![audit](img/audit.png)
 
-Enfin, toujours dans le but de vous aider au maximum, nous avons intégré 2 liens dans le menu de la toolbox : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
+Enfin, nous avons intégré 2 liens dans le menu de la toolbox : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
 
 
 ## Les Services fournis par les applications
@@ -312,6 +312,8 @@ L'intention de la CAT (Cloudwatt Automation Team) est de fournir des améliorati
 * une version HA
 * un menu additionnel pour contacter les équipes support Cloudwatt
 * bien d'autres choses
+
+Des suggestions d'améliorations ? Des services que vous souhaiteriez voir ? N'hésitez pas à nous contacter [apps@cloudwatt.com](mailto:apps@cloudwatt.com)
 
 -----
 Have fun. Hack in peace.
