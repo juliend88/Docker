@@ -176,7 +176,7 @@ resources:
                     --stage1-path=/usr/share/rkt/stage1-fly.aci \
                     ${KUBELET_ACI}:${KUBELET_VERSION} --exec=/kubelet -- "$@"
               - path: /etc/environment
-                permissions: 0644
+                permissions: 0666
                 owner: "root:root"
                 content: |
                   COREOS_PRIVATE_IPV4=$private_ipv4

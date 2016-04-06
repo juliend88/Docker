@@ -72,6 +72,14 @@ parameters:
           - standard
           - performant
 
+  node_count:
+    default: 1
+    label: Node Count
+    description: Additional node counts
+    type: number
+    constraints:
+      - range: { min: 0, max: 30 }
+
 resources:
 
   volume:
@@ -772,7 +780,7 @@ resources:
                           - name: rethinkdb-storage
                             emptyDir: {}
               - path: /etc/environment
-                permissions: 0644
+                permissions: 0666
                 owner: "root:root"
                 content: |
                   COREOS_PRIVATE_IPV4=$private_ipv4
@@ -1016,7 +1024,7 @@ resources:
   nodes:
     type: OS::Heat::ResourceGroup
     properties:
-      count: 1
+      count: { get_param: node_count }
       resource_def:
         type: https://raw.githubusercontent.com/juliend88/Docker/master/heat/kube-node.heat.yaml
         properties:
