@@ -15,7 +15,7 @@ Cette toolbox a entièrement été développée par l'équipe CAT (Cloudwatt Aut
 * Elle repose sur une instance CoreOS
 * L'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes
 * De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible.
-Afin de sécuriser au maximum cette toolbox aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration Openvpn.
+Afin de sécuriser au maximum cette toolbox aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration OpenVPN.
 
 
 ## Preparations
@@ -27,7 +27,7 @@ Ceci devrait être une routine à présent:
  * Un shell linux
  * Un [compte Cloudwatt](https://www.cloudwatt.com/cockpit/#/create-contact) avec une [ paire de clés existante](https://console.cloudwatt.com/project/access_and_security/?tab=access_security_tabs__keypairs_tab)
  * Les outils [OpenStack CLI](http://docs.openstack.org/cli-reference/content/install_clients.html)
- * Un client [Openvpn](https://openvpn.net/)
+ * Un client [OpenVPN](https://openvpn.net/)
 
 ### Initialiser l'environnement
 
