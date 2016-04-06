@@ -71,7 +71,7 @@ resources:
                 content: |
                   FLANNELD_IFACE=$private_ipv4
                   FLANNELD_ETCD_ENDPOINTS=http://localhost:2379
-              - path: /etc/kubernetes/worker-kubeconfig.yaml
+              - path: /data/kubernetes/worker-$fqdn-kubeconfig.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
@@ -84,8 +84,8 @@ resources:
                   users:
                   - name: kubelet
                     user:
-                      client-certificate: /etc/kubernetes/ssl/worker.pem
-                      client-key: /etc/kubernetes/ssl/worker-key.pem
+                      client-certificate: /etc/kubernetes/ssl/worker-$fqdn.pem
+                      client-key: /etc/kubernetes/ssl/worker-$fqdn-key.pem
                   contexts:
                   - context:
                       cluster: local
@@ -159,7 +159,7 @@ resources:
                   mkdir --parents /run/kubelet
 
                   exec /usr/bin/rkt run \
-                    --volume etc-kubernetes,kind=host,source=/etc/kubernetes \
+                    --volume etc-kubernetes,kind=host,source=/data/kubernetes \
                     --volume etc-ssl-certs,kind=host,source=/usr/share/ca-certificates \
                     --volume var-lib-docker,kind=host,source=/var/lib/docker \
                     --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet \
@@ -277,9 +277,9 @@ resources:
                       --hostname-override=$private_ipv4 \
                       --cluster-dns=10.0.2.2 \
                       --cluster-domain=$domain \
-                      --tls-cert-file=/data/kubernetes/ssl/worker-$fqdn.pem \
-                      --tls-private-key-file=/data/kubernetes/ssl/worker-$fqdn-key.pem \
-                      --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
+                      --tls-cert-file=/etc/kubernetes/ssl/worker-$fqdn.pem \
+                      --tls-private-key-file=/etc/kubernetes/ssl/worker-$fqdn-key.pem \
+                      --kubeconfig=/etc/kubernetes/worker-$fqdn-kubeconfig.yaml
                     Restart=always
                     RestartSec=10
                     [Install]
