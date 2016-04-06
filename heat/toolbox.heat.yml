@@ -774,7 +774,8 @@ resources:
                                 name: rethinkdb-storage
                         volumes:
                           - name: rethinkdb-storage
-                            emptyDir: {}
+                            hostPath:
+                              path: /data/rethinkdb
               - path: /etc/environment
                 permissions: 0666
                 owner: "root:root"
