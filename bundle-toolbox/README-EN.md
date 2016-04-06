@@ -225,7 +225,7 @@ It's (already) over !
 ## Enjoy
 
 Once connected to the VPN on the stack you now have access to the administration interface via the URL **http://manager**. Access to the interface and the various applications is via **DNS** names. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the short names in place. You can access different web interfaces for applications by clicking **Go** or via URL request (ex: http://zabbix/).
-Also we attached a volume to your stack in order to save all **data** containers of the toolbox , so you can go back in a new instance .
+Also we attached a volume to your stack in order to save all **data** containers of the toolbox , so you can go back in a new instance. The volume is mounted on the master instance in the directory `/dev/vdb`.
 
 #### Interface Overview
 

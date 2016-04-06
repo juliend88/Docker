@@ -221,7 +221,7 @@ Bon... en fait oui ! Allez sur la page [Applications](https://www.cloudwatt.com/
 
 ## Enjoy
 
-Une fois connecté au VPN sur la stack vous avez maintenant accès à l'interface d'administration via l'url **http://manager**. L'accès a l'interface et aux différentes applications se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **Go** ou via une requête URL (par exemple : http://zabbix/). De plus nous avons attaché un volume à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance.
+Une fois connecté au VPN sur la stack vous avez maintenant accès à l'interface d'administration via l'url **http://manager**. L'accès a l'interface et aux différentes applications se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **Go** ou via une requête URL (par exemple : http://zabbix/). De plus nous avons attaché un volume à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master dans le répertoire `/dev/vdb`.
 
 #### Présentation de l'interface
 
