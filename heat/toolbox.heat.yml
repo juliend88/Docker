@@ -266,7 +266,6 @@ resources:
                   curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.2.0/bin/linux/amd64/kubectl
                   chmod +x /opt/bin/kubectl
                   /opt/bin/kubectl create -f /etc/kubernetes/descriptors
-                  /usr/sbin/iptables -t nat -A KUBE-SERVICES -p tcp --dport 53 -j DNAT --to-destination 10.0.2.2:53
               - path: /etc/kubernetes/manifests/kube-apiserver.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -1007,6 +1006,21 @@ resources:
                     ExecStartPre=/usr/bin/docker pull kylemanna/openvpn
                     ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --name=openvpn -p 1194:1194/udp --cap-add=NET_ADMIN --net=host kylemanna/openvpn
                     ExecStop=/usr/bin/docker stop openvpn
+                - name: dns-slave.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Toolbox DNS
+                    After=docker.service
+                    Requires=docker.service
+
+                    [Service]
+                    TimeoutStartSec=0
+                    ExecStartPre=-/usr/bin/docker kill dns-slave
+                    ExecStartPre=-/usr/bin/docker rm dns-slave
+                    ExecStartPre=/usr/bin/docker pull andyshinn/dnsmasq:2.75
+                    ExecStart=/usr/bin/docker run --name=dns-slave -p 53:53/tcp -p 53:53/udp --cap-add=NET_ADMIN andyshinn/dnsmasq:2.75 -S /$domain/10.0.2.2
+                    ExecStop=/usr/bin/docker stop dns-slave
   floating_ip:
     type: OS::Neutron::FloatingIP
     properties:
