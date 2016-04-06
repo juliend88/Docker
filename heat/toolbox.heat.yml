@@ -107,9 +107,9 @@ resources:
       ip_version: 4
       cidr: 10.0.1.0/24
       dns_nameservers:
-        - 10.0.1.254:5300
         - 185.23.94.244
         - 185.23.94.245
+        - 10.0.1.254
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
 
@@ -290,7 +290,6 @@ resources:
                       - --cloud-config=/openstack.conf
                       - --allow-privileged=true
                       - --service-cluster-ip-range=10.0.2.0/24
-                      - --service-node-port-range=1024-40000
                       - --secure-port=443
                       - --advertise-address=$private_ipv4
                       - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
@@ -612,16 +611,13 @@ resources:
                     selector:
                       k8s-app: kube-dns
                     clusterIP: 10.0.2.2
-                    type: NodePort
                     ports:
                     - name: dns
                       port: 53
                       protocol: UDP
-                      nodePort: 5300
                     - name: dns-tcp
                       port: 53
                       protocol: TCP
-                      nodePort: 5300
               - path: /etc/kubernetes/descriptors/rabbitmq-service.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -966,6 +962,17 @@ resources:
                     Type=oneshot
                     ExecStartPre=-/usr/bin/mkdir /home/core/keys
                     ExecStart=/usr/bin/ssh-keygen -t rsa -f /home/core/keys/key -N ""
+                - name: dns-host.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Expose DNS
+                    After=kubelet.service
+                    Requires=kubelet.service
+                    [Service]
+                    Type=oneshot
+                    TimeoutStartSec=0
+                    ExecStart=/usr/sbin/iptables -t nat -A KUBE-SERVICES -p tcp --dport 53 -j DNAT --to-destination 10.0.2.2:53
                 - name: openvpn-init.service
                   command: start
                   content: |
