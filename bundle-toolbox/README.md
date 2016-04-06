@@ -15,6 +15,7 @@ Cette toolbox a entièrement été développée par l'équipe CAT (Cloudwatt Aut
 * Elle repose sur une instance CoreOS
 * L'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes
 * De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible.
+
 Afin de sécuriser au maximum cette toolbox aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration Openvpn.
 
 
@@ -31,6 +32,8 @@ Ceci devrait être une routine à présent:
 
 ### Initialiser l'environnement
 
+Ceci vous sera utile pour lancer la connexion VPN sécurisée.
+
 Munissez-vous de vos identifiants Cloudwatt, et cliquez [ICI](https://console.cloudwatt.com/project/access_and_security/api_access/openrc/).
 Si vous n'êtes pas connecté, vous passerez par l'écran d'authentification, puis le téléchargement d'un script démarrera. C'est grâce à celui-ci que vous pourrez initialiser les accès shell aux API Cloudwatt.
 
@@ -42,14 +45,14 @@ Sourcez le fichier téléchargé dans votre shell et entrez votre mot de passe l
 
  ~~~
 
-Une fois ceci fait, les outils de ligne de commande d'OpenStack peuvent interagir avec votre compte Cloudwatt. Ceci vous sera utile pour lancer la connexion VPN.
+Une fois ceci fait, les outils de ligne de commande d'OpenStack peuvent interagir avec votre compte Cloudwatt.
 
 
 ## Installer la toolbox
 
 ### Le 1-clic
 
-La Toolbox se lance par le **OneClick** de **Cloudwatt** via la page web
+La Toolbox se lance par le **1-clic** de **Cloudwatt** via la page web
 [Applications](https://www.cloudwatt.com/fr/applications/index.html) du site de Cloudwatt. Choisissez l'application Toolbox, appuyez sur DEPLOYER.
 
 Après avoir entré vos login/password de votre compte, le wizard de lancement apparait :
@@ -57,21 +60,24 @@ Après avoir entré vos login/password de votre compte, le wizard de lancement a
 <photo one clic>
 
 Par défaut, le wizard propose un déploiement sur une instance de type "standard-4" (n2.cw.standard-4). Il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
+
 Vous devrez indiquer la taille du volume bloc performant qui sera attaché à votre stack via le paramètre `volume_size`.
-Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* sans noeud *slave*. Au maximum, la toolbox se déploie sur 1 instance *master* et 3 noeud *slave*.
+
+Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* sans noeud *slave*. Au maximum, la toolbox v1 se déploie sur 1 instance *master* et 3 noeud *slave*.
 
 Appuyer sur LANCER.
 
-Le **OneClick** s'occupe de lancer les appels nécessaires sur les API Cloudwatt pour :
+Le **1-clic** s'occupe de lancer les appels nécessaires sur les API Cloudwatt pour :
 
 * démarrer une instance basée sur coreos,
 * créer et attacher un volume block,
 * lancer le conteneur **toolbox**,
-* lancer le conteneur **SkyDNS**,
+* lancer le conteneur **SkyDNS**
 
 La stack se crée automatiquement. Vous pouvez en voir la progression cliquant sur son nom ce qui vous menera à la console Horizon. Quand tous les modules deviendront « verts », la création sera terminée.
 
-Attendez **2 minutes** que l'ensemble de la stack soit complètement initialisée.
+Attendez **2 minutes** que l'ensemble soit complètement initialisé.
+
 
 ### Finaliser l'accès OpenVPN
 
@@ -82,7 +88,7 @@ Ne vous reste plus qu'à récupérer le fichier de configuration **OpenVPN** `cl
 ```bash
 scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
 ```
-* Une fois cette opération réalisée, ajouter le fichier de configuration à votre client Openvpn (par exemple sur windows, double cliquez sur fichier `cloud.ovpn`)
+* Une fois cette opération réalisée, ajouter le fichier de configuration à votre client OpenVPN (par exemple sur windows, double cliquer sur fichier `cloud.ovpn`)
 
 Vous pouvez maintenant accéder à l'interface d'administration via l'url **http://manager**. 
 
@@ -94,6 +100,7 @@ C’est (déjà) FINI !
 L'accès à l'interface et aux différents services se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **Go** ou via une requête URL (par exemple : http://zabbix/).
 
 Nous avons attaché un volume à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master de la toolbox dans le répertoire `/dev/vdb`.
+
 
 ### Présentation de l'interface
 
@@ -115,35 +122,37 @@ Les **tasks** permettent un suivi des actions effectuées sur la toolbox. Elles 
 
 ![tasks](img/tasks.png)
 
-L'ensemble des conteneurs présents peuvent être paramétrés grâce au bouton **Settings** ![settings](img/settings.png) présent sur chaque vignette.
+L'ensemble des conteneurs présents sont paramétrables grâce au bouton **Settings** ![settings](img/settings.png) présent sur chaque vignette.
 
 Comme vous pouvez le constater, nous les avons séparés en différentes sections.
  ![params](img/params.png)
 
 Dans la section **Infos** vous allez retrouver une présentation de l'application avec quelques liens utiles sur l'application concernée.
-
 ![appresume](img/appresume.png)
 
 
 Dans la section **Environments** vous pouvez ici inscrire l'ensemble des paramètres qui serviront à configurer les variables d'environnement du conteneur à son lancement.
 ![paramsenv](img/paramenv.png)
 
+
 Dans la section **Parameters** vous pouvez ici inscrire l'ensemble des paramètres de configuration des différentes applications.
 ![paramapp](img/paramapp.png)
+
 
 Afin d'identifier les applications lancées de celles qui ne le sont pas, nous avons mis en place un code couleur. Une application démarrée sera entourée d'un **halo vert**.
 ![appstart](img/appstart.png)
 
 
-### Ajouter des instances à ma Toolbox
+### Ajouter des instances à la Toolbox
 
 Afin d'ajouter des instances à la toolbox, 3 étapes :
 
-  * Attacher votre instance au routeur de la toolbox
-  * Lancer le script d'attachement
-  * Lancer les services souhaités
+  1. Attacher votre instance au routeur de la toolbox
+  2. Lancer le script d'attachement
+  3. Lancer les services souhaités
 
-**Attacher son instance au routeur de l'instance :**
+
+#### 1. Attacher son instance au routeur de la toolbox :
 
  ~~~bash
  $ neutron router-interface-add $Toolbox_ROUTER_ID $Instance_subnet_ID
@@ -157,25 +166,29 @@ $ heat resource-list $stack_name
 
 Un fois ceci effectué vous êtes maintenant dans la capacité d'ajouter votre instance à la toolbox afin de l'instrumentaliser.
 
+<<<<< snapshot attachement router console >>>>>>
 
-**Lancer le script d'attachement :**
 
-Aller dans le menu **instance** et cliquer le bouton ![bouton](img/plus.png) en bas a droite.
+#### 2. Lancer le script d'attachement :
 
-Vous devez avoir 2 commandes, un **Curl** et un **Wget** sélectionnez *celle de votre choix* et copier là sur l'instance à instrumentaliser.
+Dans la toolbox, aller dans le menu **instance** et cliquer sur le bouton ![bouton](img/plus.png) en bas a droite.
+
+Nous proposons 2 commandes au choix: un **Curl** et un **Wget**. Copiez la sur l'instance à instrumentaliser dans un shell.
 
 ![addinstance](img/addinstance.png)
 
-Une fois le script appliqué sur l'instance choisie celle-ci doit apparaitre dans le menu **instance** de votre toolbox.
+Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu **instance** de votre toolbox.
 
 ![appdisable](img/appdisable.png)
 
-**A titre d'information** Si vous souhaitez créer une instance via la console Cloudwatt, il vous ai possible de lancer *le script d'attachement* avant la validation. Cependant vous êtes dans l'obligation d'attacher votre instance au réseau de la toolbox.
+**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre toolbox, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de la toolbox (ou un réseau connecté lui-même au réseau de la toolbox) et - à l'étape 4 - coller la commande **Curl** ou **Wget** dans le champ Script personnalisé.
+
+
 
 ![launchinstance](img/launchinstance.png)
 
 
-**Lancer les services souhaitées sur l'instance :**
+#### 3. Lancer les services souhaitées sur l'instance :
 
 Afin de vous aider au maximum, nous avons créé des playbooks Ansible permettant d'installer et configurer automatiquement les agents des différentes applications sur vos instances.
 
@@ -193,7 +206,7 @@ Nous avons aussi mis en place une section **audit** afin que vous puissiez voir 
 Enfin, toujours dans le but de vous aider au maximum, nous avons intégré 2 liens dans le menu de la toolbox : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
 
 
-## Les Services fournis pour les applications embarquées
+## Les Services fournis par les applications
 
 Dans cette section, nous allons vous présenter les différents services de cette Toolbox.
 
@@ -280,6 +293,7 @@ Pour aller plus loin voici quelques liens utiles:
   - Aptly  0.9.6
   - SkyDNS 2.5.3a
   - Etcd 2.0.3
+
 
 ## So watt  ?
 
