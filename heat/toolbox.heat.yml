@@ -107,7 +107,7 @@ resources:
       ip_version: 4
       cidr: 10.0.1.0/24
       dns_nameservers:
-        - 10.0.1.254
+        - 10.0.1.254:5300
         - 185.23.94.244
         - 185.23.94.245
       allocation_pools:
@@ -290,7 +290,7 @@ resources:
                       - --cloud-config=/openstack.conf
                       - --allow-privileged=true
                       - --service-cluster-ip-range=10.0.2.0/24
-                      - --service-node-port-range=1-40000
+                      - --service-node-port-range=1024-40000
                       - --secure-port=443
                       - --advertise-address=$private_ipv4
                       - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
@@ -617,11 +617,11 @@ resources:
                     - name: dns
                       port: 53
                       protocol: UDP
-                      nodePort: 53
+                      nodePort: 5300
                     - name: dns-tcp
                       port: 53
                       protocol: TCP
-                      nodePort: 53
+                      nodePort: 5300
               - path: /etc/kubernetes/descriptors/rabbitmq-service.yaml
                 permissions: 0666
                 owner: "root:root"
