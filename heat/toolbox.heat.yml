@@ -108,7 +108,6 @@ resources:
       cidr: 10.0.1.0/24
       dns_nameservers:
         - 185.23.94.244
-        - 185.23.94.245
         - 10.0.1.254
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
@@ -715,6 +714,13 @@ resources:
                                 value: $os_password
                             ports:
                               - containerPort: 3000
+                            volumeMounts:
+                              - mountPath: /data/keys
+                                name: keys-storage
+                        volumes:
+                          - name: keys-storage
+                            hostPath:
+                              path: /data/keys
               - path: /etc/kubernetes/descriptors/rethinkdb-service.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -956,13 +962,15 @@ resources:
                   command: start
                   content: |
                     [Unit]
-                    ConditionPathExists=!/home/core/keys/key
+                    Requires=data.mount
+                    After=data.mount
+                    ConditionPathExists=!/data/keys/key
                     Description=Toolbox KeyPair Generator
 
                     [Service]
                     Type=oneshot
-                    ExecStartPre=-/usr/bin/mkdir /home/core/keys
-                    ExecStart=/usr/bin/ssh-keygen -t rsa -f /home/core/keys/key -N ""
+                    ExecStartPre=-/usr/bin/mkdir /data/keys
+                    ExecStart=/usr/bin/ssh-keygen -t rsa -f /data/keys/key -N ""
                 - name: openvpn-init.service
                   command: start
                   content: |
