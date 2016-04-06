@@ -10,7 +10,7 @@ Cette première version de la toolbox (version Beta) est une stack différente d
 * Mirroir yum et apt
 * Synchronisation de temps
 
-Cette toolbox a entièrement été développée par l'équipe CAT (Cloudwatt Automation Team). 
+Cette toolbox a entièrement été développée par l'équipe CAT (Cloudwatt Automation Team).
 * L'interface utilisateur est construite en technologie React
 * Elle repose sur une instance CoreOS
 * L'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes
@@ -90,7 +90,7 @@ scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
 ```
 * Une fois cette opération réalisée, ajouter le fichier de configuration à votre client OpenVPN (par exemple sur windows, double cliquer sur fichier `cloud.ovpn`)
 
-Vous pouvez maintenant accéder à l'interface d'administration via l'url **http://manager**. 
+Vous pouvez maintenant accéder à l'interface d'administration via l'url **http://manager**.
 
 C’est (déjà) FINI !
 
@@ -166,8 +166,6 @@ $ heat resource-list $stack_name
 
 Un fois ceci effectué vous êtes maintenant dans la capacité d'ajouter votre instance à la toolbox afin de l'instrumentaliser.
 
-<<<<< snapshot attachement router console >>>>>>
-
 
 #### 2. Lancer le script d'attachement :
 
@@ -183,7 +181,7 @@ Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu 
 
 **Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre toolbox, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de la toolbox (ou un réseau connecté lui-même au réseau de la toolbox) et - à l'étape 4 - coller la commande **Curl** ou **Wget** dans le champ Script personnalisé.
 
-
+![attachnetwork](img/attachnetwork.png)
 
 ![launchinstance](img/launchinstance.png)
 
@@ -237,7 +235,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 ### Planificateur de taches
 Pour répondre à ce besoin nous avons choisi d'utiliser Rundeck.
-L'application Rundeck vous permet de **programmer et d'organiser l'ensemble des taches** que vous voulez déployer régulièrement sur  votre tenant via son interface web. 
+L'application Rundeck vous permet de **programmer et d'organiser l'ensemble des taches** que vous voulez déployer régulièrement sur  votre tenant via son interface web.
 
 Dans une prochaine version de la toolbox, nous automatiserons la sauvegarde de vos serveurs comme nous l'avons vu dans le cadre du *bundle* Duplicity.
 
