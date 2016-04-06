@@ -239,7 +239,7 @@ resources:
                     [Unit]
                     Requires=data.mount
                     After=data.mount
-                    ConditionPathExists=!/data/kubernetes/ssl
+                    ConditionPathExists=!/data/kubernetes/ssl/worker-$fqdn-key.pem
                     Description=Kubernetes Keys Generator
 
                     [Service]

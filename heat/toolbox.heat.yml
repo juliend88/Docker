@@ -790,6 +790,11 @@ resources:
                   username=$os_username
                   password=$os_password
                   tenant-name=$os_tenant
+              - path: /etc/exports
+                permissions: "0666"
+                owner: "root:root"
+                content: |
+                  /data/ 10.0.1.0/24(rw,async,no_subtree_check,no_root_squash,fsid=0)
               - path: /opt/format-data.sh
                 permissions: 0700
                 owner: "root:root"
@@ -876,7 +881,7 @@ resources:
                     Type=oneshot
                     RemainAfterExit=yes
                     ExecStart=/opt/format-data.sh
-                - name: gluster.mount
+                - name: data.mount
                   command: start
                   content: |
                     [Unit]
@@ -885,7 +890,7 @@ resources:
                     After=format-data.service
                     [Mount]
                     What=/dev/vdb
-                    Where=/gluster
+                    Where=/data
                     DirectoryMode=0777
                     Type=ext4
                 - name: flanneld.service
@@ -900,39 +905,14 @@ resources:
                     - name: 40-flannel.conf
                       content: |
                         [Unit]
-                        Requires=gluster.mount flanneld.service
-                        After=gluster.mount flanneld.service
-                - name: glusterfs.service
-                  command: start
-                  content: |
-                    [Unit]
-                    Description=Toolbox Storage
-                    After=docker.service
-                    Requires=docker.service
-
-                    [Service]
-                    TimeoutStartSec=0
-                    Environment=/etc/environment
-                    ExecStartPre=-/usr/bin/docker kill gluster
-                    ExecStartPre=-/usr/bin/docker rm gluster
-                    ExecStartPre=/usr/bin/docker pull paulczar/glusterfs
-                    ExecStart=/usr/bin/docker run --net=host --restart=always --name=gluster -v /gluster:/export --cap-add=SYS_ADMIN paulczar/glusterfs
-                    ExecStop=/usr/bin/docker stop gluster
+                        Requires=data.mount flanneld.service
+                        After=data.mount flanneld.service
                 - name: rpc-statd.service
                   command: start
                   enable: true
-                - name: data.mount
+                - name: nfs-mountd.service
                   command: start
-                  content: |
-                    [Unit]
-                    Description=Mount volume to /data
-                    Requires=rpc-statd.service glusterfs.service
-                    After=rpc-statd.service glusterfs.service
-                    [Mount]
-                    What=localhost:/data
-                    Where=/data
-                    DirectoryMode=0777
-                    Type=nfs
+                  enable: true
                 - name: generatessl.service
                   command: start
                   content: |
