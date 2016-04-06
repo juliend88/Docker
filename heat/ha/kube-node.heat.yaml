@@ -1,6 +1,9 @@
 heat_template_version: 2013-05-23
 
 parameters:
+  volume:
+    label: volume
+    type: string
   master:
     label: master
     type: string
@@ -38,6 +41,13 @@ parameters:
           - n1.cw.standard-16
 
 resources:
+  volume_attachement:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: { get_resource: node }
+      mountpoint: /dev/vdb
+      volume_id: { get_param: volume }
+
   port:
     type: OS::Neutron::Port
     properties:
@@ -218,21 +228,29 @@ resources:
               units:
                 - name: etcd2.service
                   command: start
-                - name: rpc-statd.service
+                - name: format-data.service
                   command: start
-                  enable: true
+                  content: |
+                    [Unit]
+                    Description=Formats the volume
+                    After=dev-vdb.device
+                    Requires=dev-vdb.device
+                    [Service]
+                    Type=oneshot
+                    RemainAfterExit=yes
+                    ExecStart=/opt/format-data.sh
                 - name: data.mount
                   command: start
                   content: |
                     [Unit]
                     Description=Mount volume to /data
-                    Requires=rpc-statd.service
-                    After=rpc-statd.service flanneld.service
+                    Requires=format-data.service
+                    After=format-data.service
                     [Mount]
-                    What=10.0.2.3:/data
+                    What=/dev/vdb
                     Where=/data
                     DirectoryMode=0777
-                    Type=nfs
+                    Type=ext4
                 - name: generatessl.service
                   command: start
                   content: |

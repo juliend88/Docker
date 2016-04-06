@@ -14,6 +14,5 @@ ADD templates/* /etc/confd/templates/
 CMD ["/entrypoint.sh"]
 
 EXPOSE 4440
-EXPOSE 4443
 VOLUME /etc/rundeck
 VOLUME /var/rundeck
