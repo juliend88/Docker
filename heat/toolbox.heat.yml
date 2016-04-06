@@ -266,6 +266,7 @@ resources:
                   curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.2.0/bin/linux/amd64/kubectl
                   chmod +x /opt/bin/kubectl
                   /opt/bin/kubectl create -f /etc/kubernetes/descriptors
+                  /usr/sbin/iptables -t nat -A KUBE-SERVICES -p tcp --dport 53 -j DNAT --to-destination 10.0.2.2:53
               - path: /etc/kubernetes/manifests/kube-apiserver.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -962,17 +963,6 @@ resources:
                     Type=oneshot
                     ExecStartPre=-/usr/bin/mkdir /home/core/keys
                     ExecStart=/usr/bin/ssh-keygen -t rsa -f /home/core/keys/key -N ""
-                - name: dns-host.service
-                  command: start
-                  content: |
-                    [Unit]
-                    Description=Expose DNS
-                    After=kubelet.service
-                    Requires=kubelet.service
-                    [Service]
-                    Type=oneshot
-                    TimeoutStartSec=0
-                    ExecStart=/usr/sbin/iptables -t nat -A KUBE-SERVICES -p tcp --dport 53 -j DNAT --to-destination 10.0.2.2:53
                 - name: openvpn-init.service
                   command: start
                   content: |
