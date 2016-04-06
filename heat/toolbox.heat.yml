@@ -1060,12 +1060,6 @@ resources:
                     RestartSec=10
                     [Install]
                     WantedBy=multi-user.target
-                - name: rpc-mountd.service
-                  command: start
-                  enable: true
-                - name: nfsd.service
-                  command: start
-                  enable: true
                 - name: openvpn-init.service
                   command: start
                   content: |
