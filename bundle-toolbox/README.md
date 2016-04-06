@@ -1,12 +1,21 @@
-# 5 Minutes Stacks, épisode 27 : Toolbox Beta #
+# 5 Minutes Stacks, épisode 27 : Toolbox (Beta) #
 
-## Episode 27 : Toolbox Beta
+## Episode 27 : Toolbox (Beta)
 
-La toolbox (version Beta) est une stack différente de tout ce que l'équipe a pu vous partager jusqu'à présent. Celle-ci a pour but de vous apporter un ensemble d'outils afin **d'unifier, d'harmoniser et monitorer votre tenant**. En effet celle-ci renferme un lot d'applications variées qui a pour vocation de vous aider dans la gestion au jour le jour de vos instances.
+Cette première version de la toolbox (version Beta) est une stack différente de tout ce que l'équipe a pu vous partager jusqu'à présent. Celle-ci a pour but de vous apporter un ensemble d'outils afin **d'unifier, d'harmoniser et monitorer votre tenant**. En effet celle-ci renferme un lot d'applications variées qui a pour vocation de vous aider dans la gestion au jour le jour de vos instances:
+* Monitoring et Supervision
+* Log management
+* Planificateur de taches
+* Miroir ClamAV - Antivirus
+* Mirroir yum et apt
+* Synchronisation de temps
 
-Cette toolbox a entièrement été développée par l'équipe CAT (Cloudwatt Automation Team). L'interface utilisateur est faite en technologie react; elle repose sur une instance CoreOS et l'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes. De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible.
-
-Afin de sécuriser au maximum cette toolbox aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration Openvpn. Cette méthode est expliquée plus bas dans l'article.
+Cette toolbox a entièrement été développée par l'équipe CAT (Cloudwatt Automation Team). 
+* L'interface utilisateur est construite en technologie React
+* Elle repose sur une instance CoreOS
+* L'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes
+* De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible.
+Afin de sécuriser au maximum cette toolbox aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration Openvpn.
 
 
 ## Preparations
@@ -18,16 +27,7 @@ Ceci devrait être une routine à présent:
  * Un shell linux
  * Un [compte Cloudwatt](https://www.cloudwatt.com/cockpit/#/create-contact) avec une [ paire de clés existante](https://console.cloudwatt.com/project/access_and_security/?tab=access_security_tabs__keypairs_tab)
  * Les outils [OpenStack CLI](http://docs.openstack.org/cli-reference/content/install_clients.html)
- * Un clone local du dépôt git [Cloudwatt applications](https://github.com/cloudwatt/applications)
  * Un client [Openvpn](https://openvpn.net/)
-
-### Taille de l'instance
-Par défaut, le script propose un déploiement sur une instance de type "standard-4" (n2.cw.standard-4). Il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
-
-vous pouvez passer directement à la version ["Je lance avec la console"](#console)...
-
-
-## Démarrage
 
 ### Initialiser l'environnement
 
@@ -42,20 +42,25 @@ Sourcez le fichier téléchargé dans votre shell et entrez votre mot de passe l
 
  ~~~
 
-Une fois ceci fait, les outils de ligne de commande d'OpenStack peuvent interagir avec votre compte Cloudwatt.
-
-### Ajuster les paramètres
-
- Cette stack à besoin de l'ensemble de vos informations utilisateur afin de pouvoir interagir avec l'ensemble de vos instances qui seront connecté au *routeur* de cette Toolbox.
-
-**Un conseil** : Afin que la toolbox n'ait pas l'ensemble des droits sur votre tenant, vous pouvez lui créer un compte avec des droits restreints. Un compte avec les droits de lecture suffit (TENANT_SHOW).
-C'est dans ce même fichier que vous pouvez ajuster la taille de l'instance par le paramètre `flavor`. Afin de ne pas avoir de problème éventuel de performance, nous vous conseillons d'utiliser une instance de type "standard-4". De plus vous pouvez indiquer la taille du volume qui sera attaché à votre stack via le paramètre `volume_size`.
+Une fois ceci fait, les outils de ligne de commande d'OpenStack peuvent interagir avec votre compte Cloudwatt. Ceci vous sera utile pour lancer la connexion VPN.
 
 
-### Démarrer la stack
+## Installer la toolbox
 
-La Toolbox se lance par le **OneClick** de **Cloudwatt** via le portail
-[Applications](https://www.cloudwatt.com/fr/applications/index.html) du site de Cloudwatt. Choisissez l'application Toolbox, appuyez sur DEPLOYER et laisser vous guider... 2 minutes plus tard un bouton vert apparait... ACCEDER : vous avez votre toolbox !
+### Le 1-clic
+
+La Toolbox se lance par le **OneClick** de **Cloudwatt** via la page web
+[Applications](https://www.cloudwatt.com/fr/applications/index.html) du site de Cloudwatt. Choisissez l'application Toolbox, appuyez sur DEPLOYER.
+
+Après avoir entré vos login/password de votre compte, le wizard de lancement apparait :
+
+<photo one clic>
+
+Par défaut, le wizard propose un déploiement sur une instance de type "standard-4" (n2.cw.standard-4). Il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
+Vous devrez indiquer la taille du volume bloc performant qui sera attaché à votre stack via le paramètre `volume_size`.
+Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* sans noeud *slave*. Au maximum, la toolbox se déploie sur 1 instance *master* et 3 noeud *slave*.
+
+Appuyer sur LANCER.
 
 Le **OneClick** s'occupe de lancer les appels nécessaires sur les API Cloudwatt pour :
 
@@ -64,33 +69,39 @@ Le **OneClick** s'occupe de lancer les appels nécessaires sur les API Cloudwatt
 * lancer le conteneur **toolbox**,
 * lancer le conteneur **SkyDNS**,
 
+La stack se crée automatiquement. Vous pouvez en voir la progression cliquant sur son nom ce qui vous menera à la console Horizon. Quand tous les modules deviendront « verts », la création sera terminée.
 
-La stack va se créer automatiquement (vous pouvez en voir la progression cliquant sur son nom). Quand tous les modules deviendront « verts », la création sera terminée. Ne vous reste plus qu'à récupérer le fichier de configuration **Openvpn** `cloud.ovpn`.
+Attendez **2 minutes** que l'ensemble de la stack soit complètement initialisée.
 
+### Finaliser l'accès OpenVPN
+
+Ne vous reste plus qu'à récupérer le fichier de configuration **OpenVPN** `cloud.ovpn` pour finaliser l'installation et avoir l'accès à la toolbox.
+
+* Télécharger le client [OpenVPN](https://openvpn.net/) en choisissant le client correspondant à l'OS de votre PC (windows, mac, linux).
+* Dans un shell, lancer la commande pour récupérer le fichier `cloud.ovpn` :
 ```bash
 scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
 ```
-Si celui-ci n'est pas disponible, attendez **2 minutes** que l'ensemble de la stack soit disponible.
-Une fois cette opération réalisée ajoutez le fichier de configuration à votre client openvpn et connectez-vous à votre toolbox.
+* Une fois cette opération réalisée, ajouter le fichier de configuration à votre client Openvpn (par exemple sur windows, double cliquez sur fichier `cloud.ovpn`)
+
+Vous pouvez maintenant accéder à l'interface d'administration via l'url **http://manager**. 
 
 C’est (déjà) FINI !
 
-Bon... en fait oui ! Allez sur la page
 
 ## Enjoy
-Après avoir *téléchargé* le client [Openvpn](https://openvpn.net/) et le fichier de configuration `cloud.ovpn` via la commande expliquée ci-dessus. Lancer la connexion VPN.
 
-Vous pouvez maintenant accéder à l'interface d'administration via l'url **http://manager**. L'accès a l'interface et aux différentes applications se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **Go** ou via une requête URL (par exemple : http://zabbix/).
+L'accès à l'interface et aux différents services se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **Go** ou via une requête URL (par exemple : http://zabbix/).
 
-Nous avons attaché un volume à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master dans le répertoire `/dev/vdb`.
+Nous avons attaché un volume à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master de la toolbox dans le répertoire `/dev/vdb`.
 
 ### Présentation de l'interface
 
-Voici l'accueil de la toolbox, chaque vignette représentant une application prête à être lancée. Afin d'être le plus scalable et flexible possible, l'ensemble des applications de cette toolbox sont des conteneurs (Docker).
+Voici l'accueil de la toolbox: chaque vignette représente une application prête à être lancée. Afin d'être le plus scalable et flexible possible, les applications de cette toolbox sont des conteneurs Docker.
 
 ![accueil](img/accueil.png)
 
-Un menu est présent en haut en gauche de la page, il permet de vous déplacer dans les différentes sections de la toolbox, nous allons vous les détailler par la suite.
+Grâce au menu présent en haut en gauche de la page, vous pouvez vous déplacer dans les différentes sections de la toolbox. Nous allons vous les détailler par la suite.
 * Apps : liste des applications
 * Instances : liste des instances visibles de la toolbox
 * Tasks : ensemble des taches en cours ou terminées
@@ -104,7 +115,7 @@ Les **tasks** permettent un suivi des actions effectuées sur la toolbox. Elles 
 
 ![tasks](img/tasks.png)
 
-L'ensemble des conteneurs présents peuvent être paramétrés grace au bouton **Settings** ![settings](img/settings.png) présent sur chaque vignette.
+L'ensemble des conteneurs présents peuvent être paramétrés grâce au bouton **Settings** ![settings](img/settings.png) présent sur chaque vignette.
 
 Comme vous pouvez le constater, nous les avons séparés en différentes sections.
  ![params](img/params.png)
@@ -120,8 +131,9 @@ Dans la section **Environments** vous pouvez ici inscrire l'ensemble des paramè
 Dans la section **Parameters** vous pouvez ici inscrire l'ensemble des paramètres de configuration des différentes applications.
 ![paramapp](img/paramapp.png)
 
-Afin d'identifier les applications lancées de celles qui ne le sont pas, nous avons mis en place un code couleur. Une application démarrée sera entourée d'un halo vert.
+Afin d'identifier les applications lancées de celles qui ne le sont pas, nous avons mis en place un code couleur. Une application démarrée sera entourée d'un **halo vert**.
 ![appstart](img/appstart.png)
+
 
 ### Ajouter des instances à ma Toolbox
 
@@ -145,6 +157,7 @@ $ heat resource-list $stack_name
 
 Un fois ceci effectué vous êtes maintenant dans la capacité d'ajouter votre instance à la toolbox afin de l'instrumentaliser.
 
+
 **Lancer le script d'attachement :**
 
 Aller dans le menu **instance** et cliquer le bouton ![bouton](img/plus.png) en bas a droite.
@@ -161,12 +174,13 @@ Une fois le script appliqué sur l'instance choisie celle-ci doit apparaitre dan
 
 ![launchinstance](img/launchinstance.png)
 
+
 **Lancer les services souhaitées sur l'instance :**
 
-Afin de vous aider au maximum nous avons créé des playbooks Ansible afin de pouvoir installer et configurer automatiquement les agents des différentes applications.
+Afin de vous aider au maximum, nous avons créé des playbooks Ansible permettant d'installer et configurer automatiquement les agents des différentes applications sur vos instances.
 
 Pour cela il suffit de cliquer sur la ou les application(s) que vous souhaitez installer sur votre machine. Le playbook Ansible concerné va s'installer automatiquement.
-Une fois l'application installée, le logo de l'application passe en couleur, ce qui vous permet, d'un simple coup d'oeil, d'identifier les applications installées sur vos instances.
+Ceci fait, le logo de l'application passe en couleur, ce qui vous permet, d'un simple coup d'oeil, d'identifier les applications en fonctionnement sur vos instances.
 
 ![appenable](img/appenable.png)
 
@@ -176,7 +190,7 @@ Nous avons aussi mis en place une section **audit** afin que vous puissiez voir 
 
 ![audit](img/audit.png)
 
-Enfin, toujours dans le but de vous aider au maximum, nous avons intégré 2 liens dans le menu de la toolbox : **My Instances** et **My Account**. Ils servent respectivement à accéder à vos instances via la console Horizon Cloudwatt et à accéder à la gestion de votre compte via l'interface Cockpit.
+Enfin, toujours dans le but de vous aider au maximum, nous avons intégré 2 liens dans le menu de la toolbox : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
 
 
 ## Les Services fournis pour les applications embarquées
@@ -184,7 +198,7 @@ Enfin, toujours dans le but de vous aider au maximum, nous avons intégré 2 lie
 Dans cette section, nous allons vous présenter les différents services de cette Toolbox.
 
 ### Monitoring et Supervision
-Nous avons choisi d'utiliser Zabbix.
+Nous avons choisi d'utiliser Zabbix, l'application la plus en vogue pour le monitoring, supervision et alerting.
 L'application Zabbix est un logiciel libre permettant de **surveiller l'état de divers services réseau, serveurs et autres matériels réseau**; et produisant des graphiques dynamiques de consommation des ressources. Zabbix utilise MySQL, PostgreSQL ou Oracle pour stocker les données. Selon l'importance du nombre de machines et de données à surveiller, le choix du SGBD influe grandement sur les performances. Son interface web est écrite en PHP et fourni une vision temps réel sur les métriques collectées.
 
 Pour aller plus loin voici quelques liens utiles:
@@ -208,9 +222,11 @@ Pour aller plus loin voici quelques liens utiles:
   * https://docs.mongodb.org/manual/tutorial/install-mongodb-on-ubuntu/
 
 
-### Planificateur de jobs
+### Planificateur de taches
 Pour répondre à ce besoin nous avons choisi d'utiliser Rundeck.
-L'application Rundeck va vous permettre de **programmer et d'organiser l'ensemble des jobs** que vous voulez déployer régulièrement sur l'ensemble de votre tenant via son interface web. Dans notre cas nous avons voulu vous donner la possibilité de mettre en place un script vous permettant de sauvegarder vos serveurs comme nous l'avons vu dans le cadre du *bundle* Duplicity (prochaine version de la toolbox).
+L'application Rundeck vous permet de **programmer et d'organiser l'ensemble des taches** que vous voulez déployer régulièrement sur  votre tenant via son interface web. 
+
+Dans une prochaine version de la toolbox, nous automatiserons la sauvegarde de vos serveurs comme nous l'avons vu dans le cadre du *bundle* Duplicity.
 
 Pour aller plus loin voici quelques liens utiles:
   * http://rundeck.org/
@@ -219,7 +235,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Miroir ClamAV - Antivirus
-Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **virus** distribuées par ClamAV et ensuite le paquet récupéré sera exposé à vos instances via Ngnix. Ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
+Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **virus** distribuées par ClamAV. Le paquet récupéré sera exposé à vos instances via Ngnix ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
 
 Pour aller plus loin voici quelques liens utiles:
   * https://www.clamav.net/documents/private-local-mirrors
@@ -246,12 +262,13 @@ Pour aller plus loin voici quelques liens utiles:
 
 ### Synchronisation de temps
 Nous avons choisi d'utiliser NTP.
-Le conteneur NTP est ici utiliser afin que l'ensemble de vos instances n'ayant pas accès à internet puissent être synchroniser à la même heure et est accès à un **serveur de temps**.
+Le conteneur NTP est ici utilisé afin que l'ensemble de vos instances n'ayant pas accès à internet puissent être synchronisées à la même heure et aient accès à un **serveur de temps**.
 
 Pour aller plus loin voici quelques liens utiles:
   * http://www.pool.ntp.org/fr/
 
-### Les versions Toolbox Beta v1
+
+## Les versions Toolbox **v1** (Beta)
 
   - CoreOS Stable 899.13.0
   - Docker 1.10.3
@@ -270,20 +287,19 @@ Ce tutoriel a pour but d'accélerer votre démarrage. A ce stade **vous** êtes 
 
 Vous avez un point d'entrée sur votre machine virtuelle en SSH via l'IP flottante exposée et votre clé privée (utilisateur `core` par défaut).
 
-* Récupérer le fichier de configuration openvpn sur l'instance de la toolbox.
-* Une fois connecté en VPN à la toolbox, vous avez acces à l'interface web via l'url **http://manager**.
+**http://manager**
 
 
 ## Et la suite ?
 
-Cet article permet de vous familiariser avec cette première version de la toolbox. Elle est mise à la disposition de tous les utilisateurs Cloudwatt en mode Beta et donc pour le moment gratuitement.
+Cet article permet de vous familiariser avec cette première version de la toolbox. Elle est mise à la disposition de tous les utilisateurs Cloudwatt en **mode Beta** et donc pour le moment gratuitement.
 
 L'intention de la CAT (Cloudwatt Automation Team) est de fournir des améliorations sur une base mensuelle. Dans notre roadmap, nous prévoyons entre autre :
 * une version francaise
 * l'ajout de la fonction backup
 * une version HA
 * un menu additionnel pour contacter les équipes support Cloudwatt
-
+* bien d'autres choses
 
 -----
 Have fun. Hack in peace.
