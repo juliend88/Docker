@@ -276,6 +276,7 @@ resources:
                       - --cloud-config=/openstack.conf
                       - --allow-privileged=true
                       - --service-cluster-ip-range=10.0.2.0/24
+                      - --service-node-port-range=10000-40000
                       - --secure-port=443
                       - --advertise-address=$private_ipv4
                       - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
@@ -474,31 +475,13 @@ resources:
                     apiVersion: v1
                     metadata:
                       name: glusterfs
-                  - kind: SecurityContextConstraints
-                    apiVersion: v1
-                    metadata:
-                      name: glusterfs
-                      labels:
-                        name: glusterfs
-                    allowPrivilegedContainer: true
-                    allowHostDirVolumePlugin: true
-                    allowedCapabilities:
-                    - SYS_ADMIN
-                    runAsUser:
-                      type: RunAsAny
-                    seLinuxContext:
-                      type: RunAsAny
-                    users:
-                    - system:serviceaccounts:default:glusterfs
-                    groups:
-                    - system:cluster-admins
                   - kind: Service
                     apiVersion: v1
                     metadata:
                       name: glusterfs-storage
                     spec:
-                      PortalIP: None
-                      ClusterIP: 10.0.2.3
+                      clusterIP: 10.0.2.3
+                      type: NodePort
                       ports:
                       - name: ssh
                         port: 22
@@ -514,12 +497,15 @@ resources:
                         targetPort: 49152
                       - name: glusterfs-nfs-0
                         port: 38465
+                        nodePort: 38465
                         targetPort: 38465
                       - name: glusterfs-nfs-1
                         port: 38466
+                        nodePort: 38466
                         targetPort: 38466
                       - name: glusterfs-nfs-2
                         port: 38467
+                        nodePort: 38467
                         targetPort: 38467
                       - name: nfs-rpc
                         port: 111
@@ -572,17 +558,12 @@ resources:
                             - name: SERVICE_NAME
                               value: glusterfs-storage.default.svc.$domain
                             - name: ROOT_PASSWORD
-                              value: container_root_password
-                            - name: DEBUG
-                              value: "1"
-                            - name: SSH_PORT
-                              value: "22"
+                              value: toolbox
                             volumeMounts:
                               - name: local0
                                 mountPath: /data
                             securityContext:
                               privileged: true
-                              runAsUser: 0
                               capabilities:
                                 add:
                                 - SYS_ADMIN
@@ -1044,6 +1025,10 @@ resources:
                 - name: kubelet.service
                   command: start
                   content: |
+                    [Unit]
+                    Requires=docker.service
+                    After=docker.service
+
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
                     Environment=KUBELET_VERSION=v1.2.0_coreos.0

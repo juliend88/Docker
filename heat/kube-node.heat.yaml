@@ -261,6 +261,10 @@ resources:
                 - name: kubelet.service
                   command: start
                   content: |
+                    [Unit]
+                    Requires=docker.service
+                    After=docker.service
+
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 
