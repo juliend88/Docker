@@ -58,6 +58,9 @@ Après avoir entré vos login/password de votre compte, le wizard de lancement a
 
 ![oneclick](img/oneclick.png)
 
+Comme vous avez pu le constater le wizard du 1-Click vous demande de saisir une nouvelle fois vos identifiants Openstack, cela sera fixé lors d'une prochaine version de la toolbox.
+Vous trouverez [ici](https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) votre **tenant ID**, il est identique a l'**ID du projet**.
+
 Par défaut, le wizard propose un déploiement sur une instance de type "standard-4" (n2.cw.standard-4). Il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
 
 Vous devrez indiquer le type (standard ou performant) et la taille du volume bloc qui sera attaché à votre stack via le paramètre `volume_size`.
@@ -306,10 +309,11 @@ Vous avez un point d'entrée sur votre machine virtuelle en SSH via l'IP flottan
 Cet article permet de vous familiariser avec cette première version de la toolbox. Elle est mise à la disposition de tous les utilisateurs Cloudwatt en **mode Beta** et donc pour le moment gratuitement.
 
 L'intention de la CAT (Cloudwatt Automation Team) est de fournir des améliorations sur une base mensuelle. Dans notre roadmap, nous prévoyons entre autre :
-* une version francaise
-* l'ajout de la fonction backup
-* une version HA
-* un menu additionnel pour contacter les équipes support Cloudwatt
+* une version francaise,
+* Ne plus saisir ses identifiants Openstack 2 fois,
+* l'ajout de la fonction backup,
+* une version HA,
+* un menu additionnel pour contacter les équipes support Cloudwatt,
 * bien d'autres choses
 
 Des suggestions d'améliorations ? Des services que vous souhaiteriez voir ? N'hésitez pas à nous contacter [apps@cloudwatt.com](mailto:apps@cloudwatt.com)
