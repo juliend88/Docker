@@ -108,9 +108,11 @@ resources:
       host_routes:
         - destination: 10.0.2.0/24
           nexthop: 10.0.1.254
+        - destination: 0.0.0.0/0
+          nexthop: 10.0.0.1
       dns_nameservers:
-        - 10.0.2.2
         - 185.23.94.244
+        - 10.0.2.2
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
 

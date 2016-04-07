@@ -231,6 +231,7 @@ resources:
                     [Mount]
                     What=$master:/data
                     Where=/data
+                    TimeoutSec=0
                     DirectoryMode=0777
                     Type=nfs
                 - name: generatessl.service
