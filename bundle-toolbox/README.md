@@ -42,7 +42,6 @@ Sourcez le fichier téléchargé dans votre shell et entrez votre mot de passe l
  ~~~ bash
  $ source COMPUTE-[...]-openrc.sh
  Please enter your OpenStack Password:
-
  ~~~
 
 Une fois ceci fait, les outils de ligne de commande d'OpenStack peuvent interagir avec votre compte Cloudwatt.
@@ -53,7 +52,7 @@ Une fois ceci fait, les outils de ligne de commande d'OpenStack peuvent interagi
 ### Le 1-clic
 
 La Toolbox se lance par le **1-clic** de **Cloudwatt** via la page web
-[Applications](https://www.cloudwatt.com/fr/applications/index.html) du site de Cloudwatt. Choisissez l'application Toolbox, appuyez sur DEPLOYER.
+[Applications](https://www.cloudwatt.com/fr/applications/index.html) du site de Cloudwatt. Choisissez l'application Toolbox, appuyez sur **DEPLOYER**.
 
 Après avoir entré vos login/password de votre compte, le wizard de lancement apparait :
 
@@ -65,7 +64,7 @@ Vous devrez indiquer le type (standard ou performant) et la taille du volume blo
 
 Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* sans noeud *slave*. Au maximum, la toolbox v1 se déploie sur 1 instance *master* et 3 noeud *slave*.
 
-Appuyer sur LANCER.
+Appuyer sur **LANCER**.
 
 Le **1-clic** s'occupe de lancer les appels nécessaires sur les API Cloudwatt pour :
 
@@ -299,7 +298,7 @@ Ce tutoriel a pour but d'accélerer votre démarrage. A ce stade **vous** êtes 
 
 Vous avez un point d'entrée sur votre machine virtuelle en SSH via l'IP flottante exposée et votre clé privée (utilisateur `core` par défaut).
 
-**http://manager**
+<p align="center"> **http://manager** </p>
 
 
 ## Et la suite ?
