@@ -21,7 +21,7 @@ To secure maximum toolbox that no port is exposed on the internet except port 22
 
 ## Preparations
 
-### The prerequisites for deploying this stack
+### The prerequisites
 
 These should be routine by now:
  * Internet access
@@ -56,6 +56,10 @@ After entering your login / password to your account, launch the wizard appears:
 
 ![oneclick](img/oneclick.png)
 
+
+As you may have noticed the 1-Click wizard asked to reenter your password Openstack, this will be fixed in a future version of the toolbox.
+You will find [her]((https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) your **tenant ID**, it's  same as **Projet ID**.
+
 By default, the stack deploys on an instance of type "standard-4" (n2.cw.standard-4). A variety of other instance types exist to suit your various needs, allowing you to pay only for the services you need. Instances are charged by the minute and capped at their monthly price (you can find more details on the [Pricing page](https://www.cloudwatt.com/en/pricing.html) on the Cloudwatt website).
 
 You must indicate the type (standard or high performance ) and the size of the block volume that will be attached to your stack via the `volume_size` parameter.
@@ -84,9 +88,16 @@ Only remains for you to retrieve the configuration file **Openvpn** `cloud.ovpn`
 ```bash
 scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
 ```
+If you work with Windows you will need to bring a downloadable customer Winscp [her](https://winscp.net/download/winscp577setup.exe).
+
+* You must have your keypair and injected into the **Winscp** client, clicking on **Advanced** and then go into **SSH> Authentication**.
+![winscpconfen](img/winscpconfen.png)
+
+![addsshkeyen](img/addsshkeyen.png)
+
 * Once this is done , add the configuration file to your OpenVPN client (ex on windows, double click on `cloud.ovpn` file)
 
-You can now access to the admin interface via l'url **http://maanger**.
+You can now access to the admin interface via l'url **http://manager**.
 
 It's (already) over !
 
