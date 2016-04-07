@@ -296,7 +296,7 @@ Pour aller plus loin voici quelques liens utiles:
   - Zabbix 3.0
   - Rundeck 2.6.2
   - Graylog 1.3.4
-  - Nexus 2.12.1-01
+  - Nexus 3.0
   - Nginx 1.9.12
   - Aptly  0.9.6
   - SkyDNS 2.5.3a
