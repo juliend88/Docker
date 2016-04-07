@@ -105,10 +105,13 @@ resources:
     properties:
       network_id: { get_resource: network }
       ip_version: 4
-      cidr: 10.0.1.0/24
+      cidr: 10.0.0.0/16
+      host_routes:
+        - destination: 10.0.2.0/24
+          nexthop: 10.0.1.254
       dns_nameservers:
+        - 10.0.2.2
         - 185.23.94.244
-        - 10.0.1.254
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
 
@@ -1015,21 +1018,6 @@ resources:
                     ExecStartPre=/usr/bin/docker pull kylemanna/openvpn
                     ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --name=openvpn -p 1194:1194/udp --cap-add=NET_ADMIN --net=host kylemanna/openvpn
                     ExecStop=/usr/bin/docker stop openvpn
-                - name: dns-slave.service
-                  command: start
-                  content: |
-                    [Unit]
-                    Description=Toolbox DNS
-                    After=docker.service
-                    Requires=docker.service
-
-                    [Service]
-                    TimeoutStartSec=0
-                    ExecStartPre=-/usr/bin/docker kill dns-slave
-                    ExecStartPre=-/usr/bin/docker rm dns-slave
-                    ExecStartPre=/usr/bin/docker pull andyshinn/dnsmasq:2.75
-                    ExecStart=/usr/bin/docker run --name=dns-slave -p 53:53/tcp -p 53:53/udp --cap-add=NET_ADMIN andyshinn/dnsmasq:2.75 -S /$domain/10.0.2.2
-                    ExecStop=/usr/bin/docker stop dns-slave
   floating_ip:
     type: OS::Neutron::FloatingIP
     properties:
