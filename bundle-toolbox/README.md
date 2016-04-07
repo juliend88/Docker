@@ -21,9 +21,8 @@ Afin de sécuriser au maximum cette toolbox, aucun port n'est exposé sur intern
 
 ## Preparations
 
-### Les pré-requis pour déployer cette stack
+### Les pré-requis
 
-Ceci devrait être une routine à présent:
  * Un accès internet
  * Un shell linux
  * Un [compte Cloudwatt](https://www.cloudwatt.com/cockpit/#/create-contact) avec une [ paire de clés existante](https://console.cloudwatt.com/project/access_and_security/?tab=access_security_tabs__keypairs_tab)
@@ -90,6 +89,15 @@ Ne vous reste plus qu'à récupérer le fichier de configuration **OpenVPN** `cl
 ```bash
 scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
 ```
+
+Si vous travailler avec windows il faudra vous munir d'un client Winscp téléchargeable [ici](https://winscp.net/download/winscp577setup.exe)
+
+* il faut vous munir de votre keypair et l'injecté dans le client **Winscp** en cliquant sur **Avancé...** et ensuite aller dans **SSH > Authentification**.
+
+![winscpconf](img/winscpconf.png)
+
+![addsshkey](img/addsshkey.png)
+
 * Une fois cette opération réalisée, ajouter le fichier de configuration à votre client OpenVPN (par exemple sur windows, double cliquer sur fichier `cloud.ovpn`)
 
 Vous pouvez maintenant accéder à l'interface d'administration via l'url **http://manager**.
