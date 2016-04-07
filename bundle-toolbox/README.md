@@ -178,7 +178,7 @@ Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu 
 
 ![appdisable](img/appdisable.png)
 
-**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre toolbox, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de la toolbox (ou un réseau connecté lui-même au réseau de la toolbox) et - à l'étape 4 - coller la commande **Curl** ou **Wget** dans le champ Script personnalisé.
+**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre toolbox, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de la toolbox et - à l'étape 4 - coller la commande **Curl** ou **Wget** dans le champ Script personnalisé.
 
 ![attachnetwork](img/attachnetwork.png)
 
