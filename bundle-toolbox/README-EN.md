@@ -299,7 +299,7 @@ The goal of this tutorial is to accelerate your start. At this point **you** are
 
 You now have an SSH access point on your virtual machine through the floating-IP and your private keypair (default user name `core`).
 
-<p align="center">**http://manager**</p>
+<p align="center">**[manager](http://manager/)**</p>
 
 
 ## And afterwards?
