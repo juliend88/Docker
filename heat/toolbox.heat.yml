@@ -41,16 +41,15 @@ parameters:
     type: string
 
   flavor_name:
-    default: n1.cw.standard-4
+    default: n2.cw.standard-4
     description: Flavor to use for the deployed instance
     type: string
     label: Instance Type (Flavor)
     constraints:
       - allowed_values:
-          - n1.cw.standard-4
-          - n1.cw.standard-8
-          - n1.cw.standard-12
-          - n1.cw.standard-16
+          - n2.cw.standard-4
+          - n2.cw.standard-8
+          - n2.cw.standard-16
 
 
   volume_size:
