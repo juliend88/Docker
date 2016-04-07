@@ -298,7 +298,7 @@ Ce tutoriel a pour but d'accélerer votre démarrage. A ce stade **vous** êtes 
 
 Vous avez un point d'entrée sur votre machine virtuelle en SSH via l'IP flottante exposée et votre clé privée (utilisateur `core` par défaut).
 
-<p align="center">**http://manager**</p>
+[Admin Toolbox](http://manager/)
 
 
 ## Et la suite ?
