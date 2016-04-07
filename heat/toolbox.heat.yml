@@ -739,6 +739,10 @@ resources:
                     ports:
                       - port: 28015
                         targetPort: 28015
+                        name: driver
+                      - port: 80
+                        targetPort: 8080
+                        name: web
                     selector:
                       db: rethinkdb
               - path: /etc/kubernetes/descriptors/rethinkdb-rc.yaml
