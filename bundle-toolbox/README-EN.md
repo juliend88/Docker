@@ -54,7 +54,7 @@ This toolbox can be launch with the **1-click** of **Cloudwatt** via the web pag
 
 After entering your login / password to your account, launch the wizard appears:
 
-<photo one clic>
+![oneclick](img/oneclick.png)
 
 By default, the stack deploys on an instance of type "standard-4" (n2.cw.standard-4). A variety of other instance types exist to suit your various needs, allowing you to pay only for the services you need. Instances are charged by the minute and capped at their monthly price (you can find more details on the [Pricing page](https://www.cloudwatt.com/en/pricing.html) on the Cloudwatt website).
 

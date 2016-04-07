@@ -56,7 +56,7 @@ La Toolbox se lance par le **1-clic** de **Cloudwatt** via la page web
 
 Après avoir entré vos login/password de votre compte, le wizard de lancement apparait :
 
-<photo one clic>
+![oneclick](img/oneclick.png)
 
 Par défaut, le wizard propose un déploiement sur une instance de type "standard-4" (n2.cw.standard-4). Il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
 
