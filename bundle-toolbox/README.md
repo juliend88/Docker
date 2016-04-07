@@ -11,15 +11,15 @@ Cette première version de la toolbox (version Beta) est une stack différente d
 * Synchronisation de temps
 
 Cette toolbox a entièrement été développée par l'équipe CAT (Cloudwatt Automation Team).
-* L'interface utilisateur est construite en technologie React
 * Elle repose sur une instance CoreOS
 * L'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes
+* L'interface utilisateur est construite en technologie React
 * De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible.
 
 Afin de sécuriser au maximum cette toolbox, aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration OpenVPN.
 
 
-## Preparations
+## Préparations
 
 ### Les pré-requis
 
@@ -57,25 +57,25 @@ Après avoir entré vos login/password de votre compte, le wizard de lancement a
 
 ![oneclick](img/oneclick.png)
 
-Comme vous avez pu le constater le wizard du 1-Click vous demande de saisir une nouvelle fois vos identifiants Openstack, cela sera fixé lors d'une prochaine version de la toolbox.
-Vous trouverez [ici](https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) votre **tenant ID**, il est identique a l'**ID du projet**.
+Comme vous avez pu le constater le wizard du 1-Clic vous demande de saisir une nouvelle fois vos identifiants Openstack (cela sera fixé lors d'une prochaine version de la toolbox).
+Vous trouverez [ici](https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) votre **tenant ID**, il est identique a l'**ID du projet**. Il vous sera nécrssaire pour compléter le wizard.
 
 Par défaut, le wizard propose un déploiement sur une instance de type "standard-4" (n2.cw.standard-4). Il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
 
 Vous devrez indiquer le type (standard ou performant) et la taille du volume bloc qui sera attaché à votre stack via le paramètre `volume_size`.
 
-Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* sans noeud *slave*. Au maximum, la toolbox v1 se déploie sur 1 instance *master* et 3 noeud *slave*.
+Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* sans noeud *slave*. Au maximum, la toolbox beta se déploie sur 1 instance *master* et 3 noeuds *slave*.
 
 Appuyer sur **LANCER**.
 
 Le **1-clic** s'occupe de lancer les appels nécessaires sur les API Cloudwatt pour :
 
 * démarrer une instance basée sur CoreOS,
-* créer et attacher un volume block,
+* créer et attacher un volume bloc standard ou performant selon votre choix,
 * lancer le conteneur **toolbox**,
 * lancer le conteneur **SkyDNS**
 
-La stack se crée automatiquement. Vous pouvez en voir la progression cliquant sur son nom ce qui vous menera à la console Horizon. Quand tous les modules deviendront « verts », la création sera terminée.
+La stack se crée automatiquement. Vous pouvez en voir la progression en cliquant sur son nom ce qui vous menera à la console Horizon. Quand tous les modules deviendront « verts », la création sera terminée.
 
 Attendez **2 minutes** que l'ensemble soit complètement initialisé.
 
@@ -92,15 +92,15 @@ scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
 
 Si vous travailler avec windows il faudra vous munir d'un client Winscp téléchargeable [ici](https://winscp.net/download/winscp577setup.exe).
 
-* il faut vous munir de votre keypair et l'injecté dans le client **Winscp** en cliquant sur **Avancé...** et ensuite aller dans **SSH > Authentification**.
+* Il faut vous munir de votre keypair et l'injecter dans le client **Winscp** en cliquant sur **Avancé...** et ensuite aller dans **SSH > Authentification**.
 
 ![winscpconf](img/winscpconf.png)
 
 ![addsshkey](img/addsshkey.png)
 
-* Une fois cette opération réalisée, ajouter le fichier de configuration à votre client OpenVPN (par exemple sur windows, double cliquer sur fichier `cloud.ovpn`)
+* Une fois cette opération réalisée, ajouter le fichier de configuration à votre client OpenVPN (par exemple sur Windows, double cliquer sur fichier `cloud.ovpn`)
 
-Vous pouvez maintenant accéder à l'interface d'administration via l'url **http://manager**.
+Vous pouvez maintenant accéder à l'interface d'administration de la toolbox via l'url **http://manager** et commencer à en tirer tout le bénéfice.
 
 C’est (déjà) FINI !
 
