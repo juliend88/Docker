@@ -42,7 +42,7 @@ parameters:
     type: string
 
   flavor_name:
-    default: n1.cw.standard-4
+    default: n2.cw.standard-4
     description: Flavor to use for the deployed instance
     type: string
     label: Instance Type (Flavor)
@@ -153,7 +153,7 @@ resources:
     type: OS::Nova::Server
     properties:
       key_name: { get_param: keypair_name }
-      image: 5ed151c9-a822-4c17-9a42-d26f024013d5
+      image: 5f94566c-f477-4258-9da1-b1594efd8262
       flavor: { get_param: flavor_name }
       user_data_format: RAW
       networks:
@@ -1028,7 +1028,7 @@ resources:
   floating_ip:
     type: OS::Neutron::FloatingIP
     properties:
-      floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
+      floating_network_id: b5dd7532-1533-4b9c-8bf9-e66631a9be1d
 
   floating_ip_link:
     type: OS::Nova::FloatingIPAssociation

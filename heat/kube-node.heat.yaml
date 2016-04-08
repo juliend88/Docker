@@ -23,7 +23,7 @@ parameters:
     type: string
 
   flavor_name:
-    default: n1.cw.standard-4
+    default: n2.cw.standard-4
     description: Flavor to use for the deployed instance
     type: string
     label: Instance Type (Flavor)
@@ -48,7 +48,7 @@ resources:
     type: OS::Nova::Server
     properties:
       key_name: { get_param: keypair_name }
-      image: 5ed151c9-a822-4c17-9a42-d26f024013d5
+      image: 5f94566c-f477-4258-9da1-b1594efd8262 
       flavor: { get_param: flavor_name }
       user_data_format: RAW
       name: {get_param: nodename}
