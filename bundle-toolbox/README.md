@@ -318,10 +318,11 @@ Cet article permet de vous familiariser avec cette première version de la toolb
 
 L'intention de la CAT (Cloudwatt Automation Team) est de fournir des améliorations sur une base mensuelle. Dans notre roadmap, nous prévoyons entre autre :
 * une version francaise,
-* Ne plus saisir ses identifiants Openstack 2 fois,
+* ne plus avoir à resaisir ses identifiants,
 * l'ajout de la fonction backup,
 * une version HA,
 * un menu additionnel pour contacter les équipes support Cloudwatt,
+* la possibilité de la lancer sur notre deuxième région
 * bien d'autres choses
 
 Des suggestions d'améliorations ? Des services que vous souhaiteriez voir ? N'hésitez pas à nous contacter [apps@cloudwatt.com](mailto:apps@cloudwatt.com)
