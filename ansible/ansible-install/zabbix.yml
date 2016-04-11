@@ -12,8 +12,8 @@
     package: zabbix
     service_web: "{{ lookup('env', 'SERVICE_WEB_HOST') }}:{{ lookup('env', 'SERVICE_WEB_PORT') }}"
     service: "{{ lookup('env', 'SERVICE_ACTIVE_HOST') }}:{{ lookup('env', 'SERVICE_ACTIVE_PORT') }}"
-    service_username: "{{ lookup('env', 'ZS_DBUser') }}"
-    service_password: "{{ lookup('env', 'ZS_DBPassword') }}"
+    service_username: "admin"
+    service_password: "zabbix"
 
   tasks:
 
@@ -45,6 +45,13 @@
         line="Server={{ toolbox_address }}"
       notify: restart zabbix
 
+    - name: set StartAgent to 0
+      lineinfile:
+        name=/etc/zabbix/zabbix_agentd.conf
+        regexp=".*Server=.*"
+        line="StartAgent=0"
+      notify: restart zabbix
+
     - name: set Source IP
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
@@ -59,10 +66,6 @@
         line="Hostname={{ ansible_hostname }}"
       notify: restart zabbix
 
-    - name : install zabbix-api
-      pip: name=zabbix-api
-           state=present
-
     - name: register zabbix agent
       local_action:
           module: zabbix_host
@@ -70,11 +73,12 @@
           login_user: "{{ service_username }}"
           login_password: "{{ service_password }}"
           host_name: "{{ ansible_hostname }}"
+          link_templates:
+            - Template OS Linux
           host_groups:
             - Linux servers
           status: enabled
           state: present
-          inventory_mode: automatic
           interfaces:
             - type: 1
               main: 1
