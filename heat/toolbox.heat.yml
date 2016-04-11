@@ -148,7 +148,7 @@ resources:
     type: OS::Nova::Server
     properties:
       key_name: { get_param: keypair_name }
-      image: 5f94566c-f477-4258-9da1-b1594efd8262
+      image: d9ee7ae5-1787-4dc0-87ab-fc1e8e3d8799
       flavor: { get_param: flavor_name }
       user_data_format: RAW
       networks:
@@ -1023,7 +1023,7 @@ resources:
   floating_ip:
     type: OS::Neutron::FloatingIP
     properties:
-      floating_network_id: b5dd7532-1533-4b9c-8bf9-e66631a9be1d
+      floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
 
   floating_ip_link:
     type: OS::Nova::FloatingIPAssociation
