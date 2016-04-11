@@ -299,10 +299,8 @@ resources:
                       - --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem
                       ports:
                       - containerPort: 443
-                        hostPort: 443
                         name: https
                       - containerPort: 8080
-                        hostPort: 8080
                         name: local
                       volumeMounts:
                       - mountPath: /etc/kubernetes/ssl
@@ -631,6 +629,9 @@ resources:
                   spec:
                     ports:
                       - port: 5672
+                        name: main
+                      - port: 15672
+                        name: management
                     selector:
                       component: rabbitmq
               - path: /etc/kubernetes/descriptors/rabbitmq-rc.yaml
@@ -651,11 +652,11 @@ resources:
                           component: rabbitmq
                       spec:
                         containers:
-                          - image: rabbitmq
+                          - image: rabbitmq:management
                             name: rabbitmq
                             ports:
                               - containerPort: 5672
-                                hostPort: 5672
+                              - containerPort: 15672
                             resources:
                               limits:
                                 cpu: 100m
@@ -775,10 +776,8 @@ resources:
                             ports:
                               - containerPort: 8080
                                 name: admin-port
-                                hostPort: 8081
                               - containerPort: 28015
                                 name: driver-port
-                                hostPort: 28015
                               - containerPort: 29015
                                 name: cluster-port
                             volumeMounts:

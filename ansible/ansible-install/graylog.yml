@@ -28,11 +28,3 @@
         name=rsyslog
         state=restarted
 
-
-    - uri:
-        url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/graylog
-        method: PUT
-        HEADER_Content-Type: "application/x-www-form-urlencoded"
-        status_code: 200,201
-        body_format: raw
-        body: "value={{ package }}"

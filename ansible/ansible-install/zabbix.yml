@@ -10,7 +10,10 @@
 
   vars:
     package: zabbix
+    service_web: "{{ lookup('env', 'SERVICE_WEB_HOST') }}:{{ lookup('env', 'SERVICE_WEB_PORT') }}"
     service: "{{ lookup('env', 'SERVICE_ACTIVE_HOST') }}:{{ lookup('env', 'SERVICE_ACTIVE_PORT') }}"
+    service_username: "{{ lookup('env', 'ZS_DBUser') }}"
+    service_password: "{{ lookup('env', 'ZS_DBPassword') }}"
 
   tasks:
 
@@ -56,9 +59,29 @@
         line="Hostname={{ ansible_hostname }}"
       notify: restart zabbix
 
-    - name : install httplib2
-      pip: name=httplib2
-            state=present
+    - name : install zabbix-api
+      pip: name=zabbix-api
+           state=present
+
+    - name: register zabbix agent
+      local_action:
+          module: zabbix_host
+          server_url: "http://{{ service_web }}"
+          login_user: "{{ service_username }}"
+          login_password: "{{ service_password }}"
+          host_name: "{{ ansible_hostname }}"
+          host_groups:
+            - Linux servers
+          status: enabled
+          state: present
+          inventory_mode: automatic
+          interfaces:
+            - type: 1
+              main: 1
+              useip: 1
+              ip: "{{ server_ip }}"
+              dns: "{{ ansible_hostname }}"
+              port: 10050
 
   handlers:
     - name: restart zabbix
