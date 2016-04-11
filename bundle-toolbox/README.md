@@ -1,6 +1,6 @@
-# 5 Minutes Stacks, épisode 27 : Toolbox (Beta) #
+# Innovation Beta: Toolbox #
 
-## Episode 27 : Toolbox (Beta)
+## Toolbox
 
 Cette première version de la toolbox (version Beta) est une stack différente de tout ce que l'équipe a pu vous partager jusqu'à présent. Celle-ci a pour but de vous apporter un ensemble d'outils afin **d'unifier, d'harmoniser et monitorer votre tenant**. En effet celle-ci renferme un lot d'applications variées qui a pour vocation de vous aider dans la gestion au jour le jour de vos instances:
 * Monitoring et Supervision
@@ -10,13 +10,12 @@ Cette première version de la toolbox (version Beta) est une stack différente d
 * Mirroir yum et apt
 * Synchronisation de temps
 
-Cette toolbox a entièrement été développée par l'équipe CAT (Cloudwatt Automation Team).
+Cette toolbox a entièrement été développée par l'équipe CAT - Cloudwatt Automation Team.
 * Elle repose sur une instance CoreOS
 * L'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes
 * L'interface utilisateur est construite en technologie React
-* De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible.
-
-Afin de sécuriser au maximum cette toolbox, aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration OpenVPN.
+* De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible
+* Afin de sécuriser au maximum cette toolbox, aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration OpenVPN.
 
 
 ## Préparations
@@ -62,7 +61,7 @@ Vous trouverez [ici](https://console.cloudwatt.com/project/access_and_security/a
 
 Par défaut, le wizard propose un déploiement sur une instance de type "standard-4" (n2.cw.standard-4). Il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
 
-Vous devrez indiquer le type (standard ou performant) et la taille du volume bloc qui sera attaché à votre stack via le paramètre `volume_size`.
+Vous devrez indiquer le type [(standard ou performant)](https://www.cloudwatt.com/fr/produits/stockage-bloc/) et la taille du volume bloc qui sera attaché à votre stack via le paramètre `volume_size`.
 
 Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* sans noeud *slave*. Au maximum, la toolbox beta se déploie sur 1 instance *master* et 3 noeuds *slave*.
 
@@ -90,7 +89,7 @@ Ne vous reste plus qu'à récupérer le fichier de configuration **OpenVPN** `cl
 scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
 ```
 
-Si vous travailler avec windows il faudra vous munir d'un client Winscp téléchargeable [ici](https://winscp.net/download/winscp577setup.exe).
+Si vous travailler avec Windows il faudra vous munir d'un client Winscp téléchargeable [ici](https://winscp.net/download/winscp577setup.exe).
 
 * Il faut vous munir de votre keypair et l'injecter dans le client **Winscp** en cliquant sur **Avancé...** et ensuite aller dans **SSH > Authentification**.
 
@@ -109,7 +108,7 @@ C’est (déjà) FINI !
 
 L'accès à l'interface et aux différents services se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **GO** ou via une requête URL (par exemple : http://zabbix/).
 
-Nous avons attaché un volume à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master de la toolbox dans le répertoire `/dev/vdb`.
+Nous avons attaché un volume bloc à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master de la toolbox dans le répertoire `/dev/vdb`.
 
 
 ### Présentation de l'interface
@@ -128,11 +127,7 @@ Grâce au menu présent en haut en gauche de la page, vous pouvez vous déplacer
 
 ![menu](img/menu.png)
 
-Les **tasks** permettent un suivi des actions effectuées sur la toolbox. Elles sont indiquées en temps relatif.
-
-![tasks](img/tasks.png)
-
-L'ensemble des conteneurs présents sont paramétrables grâce au bouton **Settings** ![settings](img/settings.png) présent sur chaque vignette.
+L'ensemble des applications présentes dans la section **Apps** sont paramétrables grâce au bouton **Settings** ![settings](img/settings.png) présent sur chaque vignette.
 
 Comme vous pouvez le constater, nous les avons séparés en différentes sections.
  ![params](img/params.png)
@@ -149,8 +144,21 @@ Dans la section **Parameters** vous pouvez ici inscrire l'ensemble des paramètr
 ![paramapp](img/paramapp.png)
 
 
-Afin d'identifier les applications lancées de celles qui ne le sont pas, nous avons mis en place un code couleur. Une application démarrée sera entourée d'un **halo vert**.
+Afin d'identifier les applications lancées de celles qui ne le sont pas, nous avons mis en place un code couleur. Une application démarrée sera entourée d'un **halo vert** et d'un **halo jaune** pendant l'installation.
 ![appstart](img/appstart.png)
+
+
+Les **tasks** permettent un suivi des actions effectuées sur la toolbox. Elles sont indiquées en temps relatif.
+
+![tasks](img/tasks.png)
+
+Il vous est possible d'annuler une tache en attente en cas d'erreur dans le menu **tasks** en cliquant sur ![horloge](img/horloge.png) ce qui vous affichera ensuite ce logo ![poubelle](img/poubelle.png).
+
+Nous avons aussi mis en place une section **audit** afin que vous puissiez voir l'ensemble de actions effectuées sur chacune de vos instances et un export en Excel (.xlsx) si vous souhaitez effectuer un post-processing ou garder ces informations pour des raisons de sécurité via le bouton ![xlsx](img/xlsx.png) .
+
+![audit](img/audit.png)
+
+Enfin, nous avons intégré 2 liens dans le menu de la toolbox : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
 
 
 ### Ajouter des instances à la Toolbox
@@ -162,7 +170,7 @@ Afin d'ajouter des instances à la toolbox, 3 étapes :
   3. Lancer les services souhaités
 
 
-#### 1. Attacher son instance au routeur de la toolbox :
+#### 1. Attacher son instance au routeur de la toolbox
 
  ~~~bash
  $ neutron router-interface-add $Toolbox_ROUTER_ID $Instance_subnet_ID
@@ -177,7 +185,7 @@ $ heat resource-list $stack_name
 Un fois ceci effectué vous êtes maintenant dans la capacité d'ajouter votre instance à la toolbox afin de l'instrumentaliser.
 
 
-#### 2. Lancer le script d'attachement :
+#### 2. Lancer le script d'attachement
 
 Dans la toolbox, aller dans le menu **instance** et cliquer sur le bouton ![bouton](img/plus.png) en bas a droite.
 
@@ -196,7 +204,7 @@ Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu 
 ![launchinstance](img/launchinstance.png)
 
 
-#### 3. Lancer les services souhaitées sur l'instance :
+#### 3. Lancer les services souhaitées sur l'instance
 
 Afin de vous aider au maximum, nous avons créé des playbooks Ansible permettant d'installer et configurer automatiquement les agents des différentes applications sur vos instances.
 
@@ -205,21 +213,13 @@ Ceci fait, le logo de l'application passe en couleur, ce qui vous permet, d'un s
 
 ![appenable](img/appenable.png)
 
-Il vous est possible d'annuler une tache en attente en cas d'erreur dans le menu **tasks** en cliquant sur ![horloge](img/horloge.png) ce qui vous affichera ensuite ce logo ![poubelle](img/poubelle.png).
-
-Nous avons aussi mis en place une section **audit** afin que vous puissiez voir l'ensemble de actions effectuées sur chacune de vos instances et un export en Excel (.xlsx) si vous souhaitez effectuer un post-processing ou garder ces informations pour des raisons de sécurité via le bouton ![xlsx](img/xlsx.png) .
-
-![audit](img/audit.png)
-
-Enfin, nous avons intégré 2 liens dans le menu de la toolbox : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
-
 
 ## Les Services fournis par les applications
 
 Dans cette section, nous allons vous présenter les différents services de cette Toolbox.
 
 ### Monitoring et Supervision
-Nous avons choisi d'utiliser Zabbix, l'application la plus en vogue pour le monitoring, supervision et alerting.
+Nous avons choisi d'utiliser *Zabbix*, l'application la plus en vogue pour le monitoring, supervision et alerting.
 L'application Zabbix est un logiciel libre permettant de **surveiller l'état de divers services réseau, serveurs et autres matériels réseau**; et produisant des graphiques dynamiques de consommation des ressources. Zabbix utilise MySQL, PostgreSQL ou Oracle pour stocker les données. Selon l'importance du nombre de machines et de données à surveiller, le choix du SGBD influe grandement sur les performances. Son interface web est écrite en PHP et fourni une vision temps réel sur les métriques collectées.
 
 Pour aller plus loin voici quelques liens utiles:
@@ -227,7 +227,7 @@ Pour aller plus loin voici quelques liens utiles:
   * https://www.zabbix.com/documentation/3.0/start
 
 ### Log Management
-Nous avons choisi Graylog qui est le produit du moment pour la gestion des logs, en voici une petite présentation :
+Nous avons choisi *Graylog* qui est le produit du moment pour la gestion des logs, en voici une petite présentation :
 C'est une plateforme open source de **gestion de logs** capable de manipuler et présenter les données à partir de pratiquement n'importe quelle source. Ce conteneur est celui proposer officiellement par les équipes Graylog.
   * L'interface graphique web de Graylog est un outil puissant qui permet à quiconque de manipuler la totalité de ce que Graylog a à offrir grâce à cette application Web intuitive et attrayante.
   * Le cœur de Graylog est son moteur. Le serveur Graylog interagit avec tous les autres composants à l'aide d'interfaces API REST de sorte que chaque composant du système peut être adapté sans pour autant compromettre l'intégrité du système dans son ensemble.
@@ -244,7 +244,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Planificateur de taches
-Pour répondre à ce besoin nous avons choisi d'utiliser Rundeck.
+Pour répondre à ce besoin nous avons choisi d'utiliser *Rundeck*.
 L'application Rundeck vous permet de **programmer et d'organiser l'ensemble des taches** que vous voulez déployer régulièrement sur  votre tenant via son interface web.
 
 Dans une prochaine version de la toolbox, nous automatiserons la sauvegarde de vos serveurs comme nous l'avons vu dans le cadre du *bundle* Duplicity.
@@ -256,7 +256,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Miroir ClamAV - Antivirus
-Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **virus** distribuées par ClamAV. Le paquet récupéré sera exposé à vos instances via Ngnix ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
+Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **virus** distribuées par *ClamAV*. Le paquet récupéré sera exposé à vos instances via Ngnix ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
 
 Pour aller plus loin voici quelques liens utiles:
   * https://www.clamav.net/documents/private-local-mirrors
@@ -264,7 +264,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Miroir APT
-Pour répondre à ce besoin nous avons choisi d'utiliser Aptly.
+Pour répondre à ce besoin nous avons choisi d'utiliser *Aptly*.
 C'est un **gestionnaire de paquet APT**. Il permet de faire un miroir d'un répertoire APT exposé sur internet afin de pouvoir le distribuer à l'ensemble des machines de votre tenant qui, elles, n'ont pas forcement accès à internet via un serveur Nginx.
 
 Pour aller plus loin voici quelques liens utiles:
@@ -273,7 +273,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Miroir YUM
-Nous avons choisi d'utiliser Nexus.
+Nous avons choisi d'utiliser *Nexus*.
 Nexus est une application pouvant exposer n'importe quel type de répertoire via un serveur Ngnix. Ici notre volonté est de vous proposer une application pouvant **exposer un répertoire YUM** à l'ensemble de vos instances.
 
 Pour aller plus loin voici quelques liens utiles:
