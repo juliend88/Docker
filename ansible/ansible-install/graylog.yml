@@ -10,6 +10,7 @@
 
   vars:
     package: graylog
+    service: "{{ lookup('env', 'SERVICE_GELF_HOST') }}:{{ lookup('env', 'SERVICE_GELF_PORT') }}"
 
   tasks:
 

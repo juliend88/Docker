@@ -10,7 +10,7 @@
 
   vars:
     package: ntp
-    local_home: "{{ lookup('env') }}"
+    service: "{{ lookup('env', 'SERVICE_HOST') }}:{{ lookup('env', 'SERVICE_PORT') }}"
   tasks:
 
     - apt: update_cache=true upgrade=full
@@ -26,7 +26,7 @@
 
     - name: config ntp client
       lineinfile: dest=/etc/ntp.conf
-                  line="server {{ local_home.SERVICE_HOST}}"
+                  line="server {{ service }}"
 
 
     - name: restart ntp

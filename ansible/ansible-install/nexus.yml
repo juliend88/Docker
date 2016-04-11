@@ -10,7 +10,7 @@
 
   vars:
     package: nexus
-    local_home: "{{ lookup('env') }}"
+    service: "{{ lookup('env', 'SERVICE_HOST') }}:{{ lookup('env', 'SERVICE_PORT') }}"
 
   tasks:
 

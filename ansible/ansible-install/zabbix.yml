@@ -10,7 +10,7 @@
 
   vars:
     package: zabbix
-    local_home: "{{ lookup('env') }}"
+    service: "{{ lookup('env', 'SERVICE_ZABBIX-ACTIVE_HOST') }}:{{ lookup('env', 'SERVICE_ZABBIX-ACTIVE_PORT') }}"
 
   tasks:
 
@@ -33,7 +33,7 @@
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
         regexp=".*ServerActive=.*"
-        line="ServerActive= {{ local_home.SERVICE_HOST }}"
+        line="ServerActive= {{ service }}"
       notify: restart zabbix
 
     - name: zabbix slave hostname
