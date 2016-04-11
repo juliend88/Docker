@@ -1,2 +1,2 @@
 $template GRAYLOGRFC5424,"%protocol-version% %timestamp:::date-rfc3339% %HOSTNAME% %app-name% %procid% %msg%\n"
-*.* @{{ ansible_env.SERVICE_GELF_HOST }}:{{ ansible_env.SERVICE_GELF_PORT }};GRAYLOGRFC5424
+*.* @{{ local_home.SERVICE_GELF_HOST }}:{{ local_home.SERVICE_GELF_PORT }};GRAYLOGRFC5424

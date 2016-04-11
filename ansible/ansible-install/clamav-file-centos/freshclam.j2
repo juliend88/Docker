@@ -230,4 +230,4 @@ DatabaseMirror database.clamav.net
 # the ClamAV mirrors.
 # This option can be used multiple times.
 #ExtraDatabase dbname1
-ExtraDatabase {{ ansible_env.SERVICE_HOST }}:{{ ansible_env.SERVICE_PORT }}
+ExtraDatabase {{ local_home.SERVICE_HOST }}:{{ local_home.SERVICE_PORT }}

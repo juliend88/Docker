@@ -10,6 +10,7 @@
 
   vars:
     package: aptly
+    local_home: "{{ lookup('env') }}"
 
 
   tasks:
@@ -25,12 +26,12 @@
   - name: config repo
     lineinfile:
       dest=/etc/apt/sources.list
-      line="deb http://{{ ansible_env.SERVICE_HOST }}:{{ ansible_env.SERVICE_PORT }}/ {{ ansible_distribution_release }} main"
+      line="deb http://{{ local_home.SERVICE_HOST }}:{{ local_home.SERVICE_PORT }}/ {{ ansible_distribution_release }} main"
     when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
 
   - name: add repository
     yum:
-      name=http://aptly.{{ ansible_env.SERVICE_HOST }}/ {{ ansible_distribution_release }} main
+      name=http://aptly.{{ local_home.SERVICE_HOST }}/ {{ ansible_distribution_release }} main
       state=present
     when: ansible_distribution == "CentOS"
 

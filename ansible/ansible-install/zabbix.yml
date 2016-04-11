@@ -10,6 +10,7 @@
 
   vars:
     package: zabbix
+    local_home: "{{ lookup('env') }}"
 
   tasks:
 
@@ -32,7 +33,7 @@
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
         regexp=".*ServerActive=.*"
-        line="ServerActive= {{ ansible_env.SERVICE_HOST }}"
+        line="ServerActive= {{ local_home.SERVICE_HOST }}"
       notify: restart zabbix
 
     - name: zabbix slave hostname
