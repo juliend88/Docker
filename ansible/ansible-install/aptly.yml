@@ -30,12 +30,12 @@
 
   - name: add repository
     yum:
-      name=http://aptly.{{server_domain}}/ {{ ansible_distribution_release }} main
+      name=http://aptly.{{ ansible_env.SERVICE_HOST }}/ {{ ansible_distribution_release }} main
       state=present
     when: ansible_distribution == "CentOS"
 
   - uri:
-       url: http://{{ toolbox_address }}:2379/v2/keys/servers/{{ openstack_id }}/apps/aptly
+       url: http://{{ ansible_env.SERVICE_HOST }}:2379/v2/keys/servers/{{ openstack_id }}/apps/aptly
        method: PUT
        HEADER_Content-Type: "application/x-www-form-urlencoded"
        status_code: 200,201

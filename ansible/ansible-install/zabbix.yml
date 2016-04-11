@@ -47,7 +47,7 @@
             state=present
 
     - uri:
-        url: http://{{  ansible_env.SERVICE_HOST }}:2379/v2/keys/servers/{{ openstack_id }}/apps/zabbix
+        url: http://{{ ansible_env.SERVICE_HOST }}:2379/v2/keys/servers/{{ openstack_id }}/apps/zabbix
         method: PUT
         HEADER_Content-Type: "application/x-www-form-urlencoded"
         status_code: 200,201
