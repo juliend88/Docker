@@ -107,14 +107,9 @@ resources:
       network_id: { get_resource: network }
       ip_version: 4
       cidr: 10.0.0.0/16
-      host_routes:
-        - destination: 10.0.2.0/24
-          nexthop: 10.0.1.254
-        - destination: 0.0.0.0/0
-          nexthop: 10.0.0.1
       dns_nameservers:
         - 185.23.94.244
-        - 10.0.2.2
+        - 10.0.1.254
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
 
@@ -700,7 +695,7 @@ resources:
                           component: toolbox
                       spec:
                         containers:
-                          - image: cloudwattfr/toolbox:latest
+                          - image: cloudwattfr/toolbox:1.0
                             command:
                               - npm
                               - start
@@ -736,7 +731,7 @@ resources:
                   metadata:
                     labels:
                       db: rethinkdb
-                    name: rethinkdb
+                    name: rethinkdb-driver
                   spec:
                     ports:
                       - port: 28015
@@ -769,7 +764,7 @@ resources:
                           role: replicas
                       spec:
                         containers:
-                          - image: cedbossneo/rethinkdb-kubernetes:latest
+                          - image: cedbossneo/rethinkdb-kubernetes:2.3
                             name: rethinkdb
                             env:
                               - name: POD_NAMESPACE
