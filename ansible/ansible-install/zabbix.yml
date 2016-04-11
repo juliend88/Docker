@@ -10,7 +10,7 @@
 
   vars:
     package: zabbix
-    service: "{{ lookup('env', 'SERVICE_ZABBIX-ACTIVE_HOST') }}:{{ lookup('env', 'SERVICE_ZABBIX-ACTIVE_PORT') }}"
+    service: "{{ lookup('env', 'SERVICE_ACTIVE_HOST') }}:{{ lookup('env', 'SERVICE_ACTIVE_PORT') }}"
 
   tasks:
 
@@ -28,12 +28,25 @@
       with_items:
         - zabbix-agent
 
-
     - name: set ServerActive IP
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
         regexp=".*ServerActive=.*"
-        line="ServerActive= {{ service }}"
+        line="ServerActive={{ service }}"
+      notify: restart zabbix
+
+    - name: set Server IP
+      lineinfile:
+        name=/etc/zabbix/zabbix_agentd.conf
+        regexp=".*Server=.*"
+        line="Server={{ toolbox_address }}"
+      notify: restart zabbix
+
+    - name: set Source IP
+      lineinfile:
+        name=/etc/zabbix/zabbix_agentd.conf
+        regexp=".*SourceIP=.*"
+        line="SourceIP={{ server_ip }}"
       notify: restart zabbix
 
     - name: zabbix slave hostname
