@@ -28,13 +28,6 @@
       lineinfile: dest=/etc/ntp.conf
                   line="server {{ ansible_env.SERVICE_HOST}}"
 
-    - uri:
-        url: http://{{  ansible_env.SERVICE_HOST }}:2379/v2/keys/servers/{{ openstack_id }}/apps/ntpserver
-        method: PUT
-        HEADER_Content-Type: "application/x-www-form-urlencoded"
-        status_code: 200,201
-        body_format: raw
-        body: "value={{ package }}"
 
     - name: restart ntp
       when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
