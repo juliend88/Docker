@@ -696,6 +696,7 @@ resources:
                       spec:
                         containers:
                           - image: cloudwattfr/toolbox:1.0
+                            imagePullPolicy: Always
                             command:
                               - npm
                               - start
