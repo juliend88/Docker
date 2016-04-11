@@ -26,4 +26,4 @@ Bytecode true
 Checks 24
 #DatabaseMirror db.local.clamav.net
 #DatabaseMirror database.clamav.net
-DatabaseMirror clamav.{{server_domain}}
+DatabaseMirror {{ ansible_env.SERVICE_HOST }}:{{ ansible_env.SERVICE_PORT }}

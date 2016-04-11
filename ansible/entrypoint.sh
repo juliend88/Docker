@@ -11,7 +11,6 @@ ansible_ssh_user='cloud'
 toolbox_address=${TOOLBOX_IP}
 openstack_id=${SERVER_ID}
 server_ip=${SERVER_IP}
-server_domain=${SERVER_DOMAIN}
 EOF
 
 bash -c "$*"
