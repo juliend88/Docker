@@ -4,6 +4,12 @@ parameters:
   subnet:
     label: subnet
     type: string
+  volume_size:
+    label: volume_size
+    type: string
+  volume_type:
+    label: volume_type
+    type: string
   network:
     label: network
     type: string
@@ -34,6 +40,21 @@ parameters:
           - n2.cw.standard-16
 
 resources:
+  volume:
+    type: OS::Cinder::Volume
+    properties:
+      size: { get_param: volume_size }
+      volume_type: { get_param: volume_type }
+      metadata:
+        fs_type: ext4
+
+  volume_attachement:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: { get_resource: master }
+      mountpoint: /dev/vdb
+      volume_id: { get_resource: volume }
+
   port:
     type: OS::Neutron::Port
     properties:

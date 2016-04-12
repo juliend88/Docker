@@ -83,21 +83,6 @@ parameters:
 
 resources:
 
-  volume:
-    type: OS::Cinder::Volume
-    properties:
-      size: { get_param: volume_size }
-      volume_type: { get_param: volume_type }
-      metadata:
-        fs_type: ext4
-
-  volume_attachement:
-    type: OS::Cinder::VolumeAttachment
-    properties:
-      instance_uuid: { get_resource: master }
-      mountpoint: /dev/vdb
-      volume_id: { get_resource: volume }
-
   network:
     type: OS::Neutron::Net
 
@@ -147,6 +132,8 @@ resources:
           network: { get_resource: network }
           keypair_name: { get_param: keypair_name }
           flavor_name: { get_param: flavor_name }
+          volume_size: { get_param: volume_size }
+          volume_type: { get_param: volume_type }
 
   nodes:
     type: OS::Heat::ResourceGroup
