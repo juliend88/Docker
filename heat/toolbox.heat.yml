@@ -290,6 +290,7 @@ resources:
                       - --cloud-config=/openstack.conf
                       - --allow-privileged=true
                       - --service-cluster-ip-range=10.0.2.0/24
+                      - --service-node-port-range=1-33000
                       - --secure-port=443
                       - --advertise-address=$private_ipv4
                       - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
