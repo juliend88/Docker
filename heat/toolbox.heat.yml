@@ -150,8 +150,3 @@ resources:
           keypair_name: { get_param: keypair_name }
           flavor_name: { get_param: flavor_name }
 
-outputs:
-  floating_ip:
-    description: IP address of the deployed compute instance
-    value: { get_attr: [floating_ip, floating_ip_address] }
-
