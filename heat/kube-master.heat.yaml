@@ -1,6 +1,9 @@
 heat_template_version: 2013-05-23
 
 parameters:
+  nodename:
+    label: nodename
+    type: string
   subnet:
     label: subnet
     type: string
@@ -84,6 +87,7 @@ resources:
       image: d9ee7ae5-1787-4dc0-87ab-fc1e8e3d8799
       flavor: { get_param: flavor_name }
       user_data_format: RAW
+      name: {get_param: nodename}
       networks:
         - port: { get_resource: port }
       user_data:
