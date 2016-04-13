@@ -1,14 +1,32 @@
 heat_template_version: 2013-05-23
 
 parameters:
-  volume:
-    label: volume
-    type: string
-  master:
-    label: master
-    type: string
   nodename:
     label: nodename
+    type: string
+  nodeip:
+    label: nodeip
+    type: string
+  subnet:
+    label: subnet
+    type: string
+  os_username:
+    label: os_username
+    type: string
+  os_password:
+    label: os_password
+    type: string
+  os_tenant:
+    label: os_tenant
+    type: string
+  os_auth:
+    label: os_auth
+    type: string
+  volume_size:
+    label: volume_size
+    type: string
+  volume_type:
+    label: volume_type
     type: string
   network:
     label: network
@@ -24,30 +42,6 @@ parameters:
     description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
     label: Cloud DNS
     type: string
-  public_ipv4:
-    label: public_ipv4
-    type: string
-
-  os_username:
-    description: OpenStack Username
-    label: OpenStack Username
-    type: string
-
-  os_password:
-    description: OpenStack Password
-    label: OpenStack Password
-    type: string
-
-  os_tenant:
-    description: OpenStack Tenant Name
-    label: OpenStack Tenant Name
-    type: string
-
-  os_auth:
-    description: OpenStack Auth URL
-    default: https://identity.fr1.cloudwatt.com/v2.0
-    label: OpenStack Auth URL
-    type: string
 
   flavor_name:
     default: n1.cw.standard-4
@@ -56,26 +50,36 @@ parameters:
     label: Instance Type (Flavor)
     constraints:
       - allowed_values:
-          - s1.cw.small-1
-          - n1.cw.standard-1
-          - n1.cw.standard-2
           - n1.cw.standard-4
-          - n1.cw.standard-8
-          - n1.cw.standard-12
-          - n1.cw.standard-16
+          - n2.cw.standard-1
+          - n2.cw.standard-2
+          - n2.cw.standard-4
+          - n2.cw.standard-8
+          - n2.cw.standard-16
 
 resources:
+  volume:
+    type: OS::Cinder::Volume
+    properties:
+      size: { get_param: volume_size }
+      volume_type: { get_param: volume_type }
+      metadata:
+        fs_type: ext4
+
   volume_attachement:
     type: OS::Cinder::VolumeAttachment
     properties:
       instance_uuid: { get_resource: master }
       mountpoint: /dev/vdb
-      volume_id: { get_param: volume }
+      volume_id: { get_resource: volume }
 
-  master_port:
+  port:
     type: OS::Neutron::Port
     properties:
       network: { get_param: network }
+      fixed_ips:
+        - ip_address: { get_param: nodeip }
+          subnet_id: { get_param: subnet }
       security_groups:
         - { get_param: security_group }
 
@@ -83,16 +87,17 @@ resources:
     type: OS::Nova::Server
     properties:
       key_name: { get_param: keypair_name }
-      image: 811c20f7-ad34-4401-85a9-72b9f921a0dd
+      image: d9ee7ae5-1787-4dc0-87ab-fc1e8e3d8799
       flavor: { get_param: flavor_name }
       user_data_format: RAW
+      name: {get_param: nodename}
       networks:
-        - port: { get_resource: master_port }
+        - port: { get_resource: port }
       user_data:
         str_replace:
           params:
-            $private_ipv4: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }
-            $public_ipv4: { get_attr: [ master_port, fixed_ips, 0, ip_address ] }
+            $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
+            $public_ipv4: { get_attr: [floating_ip, floating_ip_address] }
             $domain: { get_param: domain }
             $os_username: { get_param: os_username }
             $os_password: { get_param: os_password }
@@ -134,11 +139,13 @@ resources:
 
                   exec /usr/bin/rkt run \
                     --volume etc-kubernetes,kind=host,source=/etc/kubernetes \
+                    --volume etc-kubernetes-ssl,kind=host,source=/data/kubernetes/ssl \
                     --volume etc-ssl-certs,kind=host,source=/usr/share/ca-certificates \
                     --volume var-lib-docker,kind=host,source=/var/lib/docker \
                     --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet \
                     --volume run,kind=host,source=/run \
                     --mount volume=etc-kubernetes,target=/etc/kubernetes \
+                    --mount volume=etc-kubernetes-ssl,target=/etc/kubernetes/ssl \
                     --mount volume=etc-ssl-certs,target=/etc/ssl/certs \
                     --mount volume=var-lib-docker,target=/var/lib/docker \
                     --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
@@ -194,11 +201,11 @@ resources:
                       echo "Unexpected error configuring Kubernetes Namespace : $RES"
                   else
                       echo "Created kube-system namespace"
+                  fi
                       mkdir -p /opt/bin
                       curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.2.0/bin/linux/amd64/kubectl
                       chmod +x /opt/bin/kubectl
                       /opt/bin/kubectl create -f /etc/kubernetes/descriptors
-                  fi
               - path: /etc/kubernetes/manifests/kube-apiserver.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -223,6 +230,7 @@ resources:
                       - --cloud-config=/openstack.conf
                       - --allow-privileged=true
                       - --service-cluster-ip-range=10.0.2.0/24
+                      - --service-node-port-range=1-33000
                       - --secure-port=443
                       - --advertise-address=$private_ipv4
                       - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
@@ -232,10 +240,8 @@ resources:
                       - --service-account-key-file=/etc/kubernetes/ssl/apiserver-key.pem
                       ports:
                       - containerPort: 443
-                        hostPort: 443
                         name: https
                       - containerPort: 8080
-                        hostPort: 8080
                         name: local
                       volumeMounts:
                       - mountPath: /etc/kubernetes/ssl
@@ -564,6 +570,9 @@ resources:
                   spec:
                     ports:
                       - port: 5672
+                        name: main
+                      - port: 15672
+                        name: management
                     selector:
                       component: rabbitmq
               - path: /etc/kubernetes/descriptors/rabbitmq-rc.yaml
@@ -584,11 +593,11 @@ resources:
                           component: rabbitmq
                       spec:
                         containers:
-                          - image: rabbitmq
+                          - image: rabbitmq:management
                             name: rabbitmq
                             ports:
                               - containerPort: 5672
-                                hostPort: 5672
+                              - containerPort: 15672
                             resources:
                               limits:
                                 cpu: 100m
@@ -628,7 +637,8 @@ resources:
                           component: toolbox
                       spec:
                         containers:
-                          - image: cloudwattfr/toolbox:latest
+                          - image: cloudwattfr/toolbox:1.0
+                            imagePullPolicy: Always
                             command:
                               - npm
                               - start
@@ -648,6 +658,13 @@ resources:
                                 value: $os_password
                             ports:
                               - containerPort: 3000
+                            volumeMounts:
+                              - mountPath: /data/keys
+                                name: keys-storage
+                        volumes:
+                          - name: keys-storage
+                            hostPath:
+                              path: /data/keys
               - path: /etc/kubernetes/descriptors/rethinkdb-service.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -657,11 +674,15 @@ resources:
                   metadata:
                     labels:
                       db: rethinkdb
-                    name: rethinkdb
+                    name: rethinkdb-driver
                   spec:
                     ports:
                       - port: 28015
                         targetPort: 28015
+                        name: driver
+                      - port: 80
+                        targetPort: 8080
+                        name: web
                     selector:
                       db: rethinkdb
               - path: /etc/kubernetes/descriptors/rethinkdb-rc.yaml
@@ -686,7 +707,7 @@ resources:
                           role: replicas
                       spec:
                         containers:
-                          - image: cedbossneo/rethinkdb-kubernetes:latest
+                          - image: cedbossneo/rethinkdb-kubernetes:2.3
                             name: rethinkdb
                             env:
                               - name: POD_NAMESPACE
@@ -696,10 +717,8 @@ resources:
                             ports:
                               - containerPort: 8080
                                 name: admin-port
-                                hostPort: 8081
                               - containerPort: 28015
                                 name: driver-port
-                                hostPort: 28015
                               - containerPort: 29015
                                 name: cluster-port
                             volumeMounts:
@@ -707,13 +726,14 @@ resources:
                                 name: rethinkdb-storage
                         volumes:
                           - name: rethinkdb-storage
-                            emptyDir: {}
+                            hostPath:
+                              path: /data/rethinkdb
               - path: /etc/environment
-                permissions: 0644
+                permissions: 0666
                 owner: "root:root"
                 content: |
                   COREOS_PRIVATE_IPV4=$private_ipv4
-                  COREOS_PUBLIC_IPV4=$private_ipv4
+                  COREOS_PUBLIC_IPV4=$public_ipv4
                   ETCD_ADDR=$private_ipv4:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
                   TOOLBOX_DOMAIN=$domain
@@ -726,6 +746,11 @@ resources:
                   username=$os_username
                   password=$os_password
                   tenant-name=$os_tenant
+              - path: /etc/exports
+                permissions: "0666"
+                owner: "root:root"
+                content: |
+                  /data/ 10.0.1.0/24(rw,async,no_subtree_check,no_root_squash,fsid=0)
               - path: /opt/format-data.sh
                 permissions: 0700
                 owner: "root:root"
@@ -793,10 +818,8 @@ resources:
             coreos:
               etcd2:
                 name: "%H"
-                discovery: default.svc.$domain
                 advertise-client-urls: http://$private_ipv4:2379
-                initial-advertise-peer-urls: http://$private_ipv4:2380
-                initial-cluster-token: etcd-kube
+                initial-cluster: "master-0=http://10.0.1.250:2380,master-1=http://10.0.1.251:2380,master-2=http://10.0.1.252:2380"
                 initial-cluster-state: new
                 listen-client-urls: http://$private_ipv4:2379,http://$private_ipv4:4001
                 listen-peer-urls: http://$private_ipv4:2380
@@ -814,41 +837,18 @@ resources:
                     Type=oneshot
                     RemainAfterExit=yes
                     ExecStart=/opt/format-data.sh
-                - name: data.mount
+                - name: gluster.mount
                   command: start
                   content: |
                     [Unit]
-                    Description=Mount volume to /data
+                    Description=Mount volume to /gluster
                     Requires=format-data.service
                     After=format-data.service
                     [Mount]
                     What=/dev/vdb
-                    Where=/data
+                    Where=/gluster
                     DirectoryMode=0777
                     Type=ext4
-                - name: generatekey.service
-                  command: start
-                  content: |
-                    [Unit]
-                    ConditionPathExists=!/home/core/keys/key
-                    Description=Toolbox KeyPair Generator
-
-                    [Service]
-                    Type=oneshot
-                    ExecStartPre=-/usr/bin/mkdir /home/core/keys
-                    ExecStart=/usr/bin/ssh-keygen -t rsa -f /home/core/keys/key -N ""
-                - name: generatessl.service
-                  command: start
-                  content: |
-                    [Unit]
-                    Requires=etcd2.service
-                    After=etcd2.service
-                    ConditionPathExists=!/data/kubernetes/ssl
-                    Description=Kubernetes Keys Generator
-
-                    [Service]
-                    Type=oneshot
-                    ExecStart=/opt/kubernetes-init-ssl.sh
                 - name: flanneld.service
                   drop-ins:
                     - name: 40-ExecStartPre-symlink.conf
@@ -861,11 +861,62 @@ resources:
                     - name: 40-flannel.conf
                       content: |
                         [Unit]
-                        Requires=data.mount flanneld.service
-                        After=data.mount flanneld.service
+                        Requires=gluster.mount flanneld.service
+                        After=gluster.mount flanneld.service
+                - name: rpc-statd.service
+                  command: start
+                  enable: true
+                - name: nfs-mountd.service
+                  command: start
+                  enable: true
+                - name: gluster.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Gluster Service
+                    After=docker.service gluster.mount
+                    Requires=docker.service gluster.mount
+
+                    [Service]
+                    TimeoutStartSec=0
+                    Environment=/etc/environment
+                    ExecStartPre=-/usr/bin/docker kill gluster
+                    ExecStartPre=-/usr/bin/docker rm gluster
+                    ExecStartPre=/usr/bin/docker pull paulczar/glusterfs
+                    ExecStart=/usr/bin/docker run -v /gluster:/export --name=gluster -e HOST=$private_ipv4 -p 2049:2049 --cap-add=SYS_ADMIN paulczar/glusterfs
+                    ExecStop=/usr/bin/docker stop gluster
+                - name: data.mount
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Mount volume to /data
+                    Requires=rpc-statd.service gluster.service
+                    After=rpc-statd.service gluster.service
+                    [Mount]
+                    What=$private_ipv4:/data
+                    Where=/data
+                    TimeoutSec=0
+                    DirectoryMode=0777
+                    Type=nfs
+                - name: generatessl.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Requires=data.mount
+                    After=data.mount
+                    ConditionPathExists=!/data/kubernetes/ssl
+                    Description=Kubernetes Keys Generator
+
+                    [Service]
+                    Type=oneshot
+                    ExecStart=/opt/kubernetes-init-ssl.sh
                 - name: kubelet.service
                   command: start
                   content: |
+                    [Unit]
+                    Requires=generatessl.service
+                    After=generatessl.service
+
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
                     Environment=KUBELET_VERSION=v1.2.0_coreos.0
@@ -882,21 +933,34 @@ resources:
                     RestartSec=10
                     [Install]
                     WantedBy=multi-user.target
+                - name: generatekey.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Requires=data.mount
+                    After=data.mount
+                    ConditionPathExists=!/data/keys/key
+                    Description=Toolbox KeyPair Generator
+
+                    [Service]
+                    Type=oneshot
+                    ExecStartPre=-/usr/bin/mkdir /data/keys
+                    ExecStart=/usr/bin/ssh-keygen -t rsa -f /data/keys/key -N ""
                 - name: openvpn-init.service
                   command: start
                   content: |
                     [Unit]
                     Description=Toolbox VPN Init
-                    After=docker.service
-                    Requires=docker.service
+                    After=data.mount
+                    Requires=data.mount
                     Before=openvpn.service
-                    ConditionPathExists=!/home/core/vpn/openvpn.conf
+                    ConditionPathExists=!/data/vpn/openvpn.conf
 
                     [Service]
                     Type=oneshot
                     TimeoutStartSec=0
                     Environment=/etc/environment
-                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u udp://$private_ipv4:1194 \
+                    ExecStart=/usr/bin/docker run -v /data/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u udp://$private_ipv4:1194 \
                                                                                                                        -n 10.0.2.2 \
                                                                                                                        -n 185.23.94.244 \
                                                                                                                        -n 8.8.8.8 \
@@ -907,9 +971,9 @@ resources:
                                                                                                                        -p "dhcp-option DOMAIN-SEARCH $domain" \
                                                                                                                        -p "dhcp-option DOMAIN-SEARCH svc.$domain" \
                                                                                                                        -p "dhcp-option DOMAIN-SEARCH default.svc.$domain"
-                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn -e "EASYRSA_BATCH=1" -e "EASYRSA_REQ_CN=$domain" --rm kylemanna/openvpn ovpn_initpki nopass
-                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn easyrsa build-client-full cloud nopass
-                    ExecStart=/bin/bash -c "/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient cloud > /home/core/cloud.ovpn"
+                    ExecStart=/usr/bin/docker run -v /data/vpn:/etc/openvpn -e "EASYRSA_BATCH=1" -e "EASYRSA_REQ_CN=$domain" --rm kylemanna/openvpn ovpn_initpki nopass
+                    ExecStart=/usr/bin/docker run -v /data/vpn:/etc/openvpn --rm kylemanna/openvpn easyrsa build-client-full cloud nopass
+                    ExecStart=/bin/bash -c "/usr/bin/docker run -v /data/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient cloud > /home/core/cloud.ovpn"
                 - name: openvpn.service
                   command: start
                   content: |
@@ -924,5 +988,15 @@ resources:
                     ExecStartPre=-/usr/bin/docker kill openvpn
                     ExecStartPre=-/usr/bin/docker rm openvpn
                     ExecStartPre=/usr/bin/docker pull kylemanna/openvpn
-                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --name=openvpn -p 1194:1194/udp --cap-add=NET_ADMIN --net=host kylemanna/openvpn
+                    ExecStart=/usr/bin/docker run -v /data/vpn:/etc/openvpn --name=openvpn -p 1194:1194/udp --cap-add=NET_ADMIN --net=host kylemanna/openvpn
                     ExecStop=/usr/bin/docker stop openvpn
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
+
+  floating_ip_link:
+    type: OS::Nova::FloatingIPAssociation
+    properties:
+      floating_ip: { get_resource: floating_ip }
+      server_id: { get_resource: master }

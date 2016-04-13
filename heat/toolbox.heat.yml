@@ -92,9 +92,6 @@ resources:
       network_id: { get_resource: network }
       ip_version: 4
       cidr: 10.0.0.0/16
-      dns_nameservers:
-        - 185.23.94.244
-        - 10.0.1.254
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
 

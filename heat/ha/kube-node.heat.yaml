@@ -1,11 +1,14 @@
 heat_template_version: 2013-05-23
 
 parameters:
-  volume:
-    label: volume
+  master_etcd:
+    label: master_etcd
     type: string
-  master:
-    label: master
+  master_kube:
+    label: master_kube
+    type: string
+  master_nfs:
+    label: master_nfs
     type: string
   nodename:
     label: nodename
@@ -32,22 +35,14 @@ parameters:
     label: Instance Type (Flavor)
     constraints:
       - allowed_values:
-          - s1.cw.small-1
-          - n1.cw.standard-1
-          - n1.cw.standard-2
           - n1.cw.standard-4
-          - n1.cw.standard-8
-          - n1.cw.standard-12
-          - n1.cw.standard-16
+          - n2.cw.standard-1
+          - n2.cw.standard-2
+          - n2.cw.standard-4
+          - n2.cw.standard-8
+          - n2.cw.standard-16
 
 resources:
-  volume_attachement:
-    type: OS::Cinder::VolumeAttachment
-    properties:
-      instance_uuid: { get_resource: node }
-      mountpoint: /dev/vdb
-      volume_id: { get_param: volume }
-
   port:
     type: OS::Neutron::Port
     properties:
@@ -70,7 +65,9 @@ resources:
           params:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $domain: { get_param: domain }
-            $master: { get_param: master }
+            $master_etcd: { get_param: master_etcd }
+            $master_kube: { get_param: master_kube }
+            $master_nfs: { get_param: master_nfs }
             $fqdn: { get_param: nodename }
           template: |
             #cloud-config
@@ -81,7 +78,7 @@ resources:
                 content: |
                   FLANNELD_IFACE=$private_ipv4
                   FLANNELD_ETCD_ENDPOINTS=http://localhost:2379
-              - path: /etc/kubernetes/worker-kubeconfig.yaml
+              - path: /etc/kubernetes/worker-$fqdn-kubeconfig.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
@@ -94,8 +91,8 @@ resources:
                   users:
                   - name: kubelet
                     user:
-                      client-certificate: /etc/kubernetes/ssl/worker.pem
-                      client-key: /etc/kubernetes/ssl/worker-key.pem
+                      client-certificate: /etc/kubernetes/ssl/worker-$fqdn.pem
+                      client-key: /etc/kubernetes/ssl/worker-$fqdn-key.pem
                   contexts:
                   - context:
                       cluster: local
@@ -119,15 +116,15 @@ resources:
                       command:
                       - /hyperkube
                       - proxy
-                      - --master=https://$master
-                      - --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
+                      - --master=https://$master_kube
+                      - --kubeconfig=/etc/kubernetes/worker-$fqdn-kubeconfig.yaml
                       - --proxy-mode=iptables
                       securityContext:
                         privileged: true
                       volumeMounts:
                         - mountPath: /etc/ssl/certs
                           name: "ssl-certs"
-                        - mountPath: /etc/kubernetes/worker-kubeconfig.yaml
+                        - mountPath: /etc/kubernetes/worker-$fqdn-kubeconfig.yaml
                           name: "kubeconfig"
                           readOnly: true
                         - mountPath: /etc/kubernetes/ssl
@@ -139,7 +136,7 @@ resources:
                           path: "/usr/share/ca-certificates"
                       - name: "kubeconfig"
                         hostPath:
-                          path: "/etc/kubernetes/worker-kubeconfig.yaml"
+                          path: "/etc/kubernetes/worker-$fqdn-kubeconfig.yaml"
                       - name: "etc-kube-ssl"
                         hostPath:
                           path: "/data/kubernetes/ssl"
@@ -170,11 +167,13 @@ resources:
 
                   exec /usr/bin/rkt run \
                     --volume etc-kubernetes,kind=host,source=/etc/kubernetes \
+                    --volume etc-kubernetes-ssl,kind=host,source=/data/kubernetes/ssl \
                     --volume etc-ssl-certs,kind=host,source=/usr/share/ca-certificates \
                     --volume var-lib-docker,kind=host,source=/var/lib/docker \
                     --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet \
                     --volume run,kind=host,source=/run \
                     --mount volume=etc-kubernetes,target=/etc/kubernetes \
+                    --mount volume=etc-kubernetes-ssl,target=/etc/kubernetes/ssl \
                     --mount volume=etc-ssl-certs,target=/etc/ssl/certs \
                     --mount volume=var-lib-docker,target=/var/lib/docker \
                     --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
@@ -184,13 +183,13 @@ resources:
                     --stage1-path=/usr/share/rkt/stage1-fly.aci \
                     ${KUBELET_ACI}:${KUBELET_VERSION} --exec=/kubelet -- "$@"
               - path: /etc/environment
-                permissions: 0644
+                permissions: 0666
                 owner: "root:root"
                 content: |
                   COREOS_PRIVATE_IPV4=$private_ipv4
                   COREOS_PUBLIC_IPV4=$private_ipv4
                   ETCD_ADDR=localhost:2379
-                  ETCD_PEER_ADDR=$master:2380
+                  ETCD_PEER_ADDR=$master_etcd:2380
                   TOOLBOX_DOMAIN=$domain
               - path: /opt/kubernetes-init-ssl.sh
                 permissions: 0700
@@ -201,11 +200,11 @@ resources:
                   cd /data/kubernetes/ssl
                   # Worker CA
                   echo "Waiting for Kubernetes to be Started..."
-                  K8S="http://$master:8080"
+                  K8S="https://$master_kube"
                   while true
                   do
                       echo "Trying: $K8S"
-                      if [ -n "$(curl --silent "$K8S/version")" ]; then
+                      if [ -n "$(curl -k --silent "$K8S")" ]; then
                           ACTIVE_K8S=$K8S
                           break
                       fi
@@ -224,40 +223,33 @@ resources:
               etcd2:
                 proxy: on
                 listen-client-urls: http://localhost:2379
-                initial-cluster: etcdserver=http://$master:2380
+                initial-cluster: etcdserver=http://$master_etcd:2380
               units:
                 - name: etcd2.service
                   command: start
-                - name: format-data.service
+                - name: rpc-statd.service
                   command: start
-                  content: |
-                    [Unit]
-                    Description=Formats the volume
-                    After=dev-vdb.device
-                    Requires=dev-vdb.device
-                    [Service]
-                    Type=oneshot
-                    RemainAfterExit=yes
-                    ExecStart=/opt/format-data.sh
+                  enable: true
                 - name: data.mount
                   command: start
                   content: |
                     [Unit]
                     Description=Mount volume to /data
-                    Requires=format-data.service
-                    After=format-data.service
+                    Requires=rpc-statd.service
+                    After=rpc-statd.service
                     [Mount]
-                    What=/dev/vdb
+                    What=$master_nfs:/data
                     Where=/data
+                    TimeoutSec=0
                     DirectoryMode=0777
-                    Type=ext4
+                    Type=nfs
                 - name: generatessl.service
                   command: start
                   content: |
                     [Unit]
-                    Requires=docker.service
-                    After=docker.service
-                    ConditionPathExists=!/data/kubernetes/ssl
+                    Requires=data.mount
+                    After=data.mount
+                    ConditionPathExists=!/data/kubernetes/ssl/worker-$fqdn-key.pem
                     Description=Kubernetes Keys Generator
 
                     [Service]
@@ -279,21 +271,25 @@ resources:
                 - name: kubelet.service
                   command: start
                   content: |
+                    [Unit]
+                    Requires=docker.service generatessl.service
+                    After=docker.service generatessl.service
+
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 
                     Environment=KUBELET_VERSION=v1.2.0_coreos.0
                     ExecStart=/opt/bin/kubelet-wrapper \
-                      --api-servers=https://$master \
+                      --api-servers=https://$master_kube \
                       --register-node=true \
                       --allow-privileged=true \
                       --config=/etc/kubernetes/manifests \
                       --hostname-override=$private_ipv4 \
                       --cluster-dns=10.0.2.2 \
                       --cluster-domain=$domain \
-                      --tls-cert-file=/data/kubernetes/ssl/worker-$fqdn.pem \
-                      --tls-private-key-file=/data/kubernetes/ssl/worker-$fqdn-key.pem \
-                      --kubeconfig=/etc/kubernetes/worker-kubeconfig.yaml
+                      --tls-cert-file=/etc/kubernetes/ssl/worker-$fqdn.pem \
+                      --tls-private-key-file=/etc/kubernetes/ssl/worker-$fqdn-key.pem \
+                      --kubeconfig=/etc/kubernetes/worker-$fqdn-kubeconfig.yaml
                     Restart=always
                     RestartSec=10
                     [Install]

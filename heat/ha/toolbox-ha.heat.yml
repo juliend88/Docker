@@ -37,6 +37,7 @@ parameters:
 
   domain:
     description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
+    default: toolbox
     label: Cloud DNS
     type: string
 
@@ -47,13 +48,12 @@ parameters:
     label: Instance Type (Flavor)
     constraints:
       - allowed_values:
-          - s1.cw.small-1
-          - n1.cw.standard-1
-          - n1.cw.standard-2
           - n1.cw.standard-4
-          - n1.cw.standard-8
-          - n1.cw.standard-12
-          - n1.cw.standard-16
+          - n2.cw.standard-4
+          - n2.cw.standard-8
+          - n2.cw.standard-16
+
+
   volume_size:
     default: 10
     label: Backup Volume Size
@@ -72,6 +72,15 @@ parameters:
       - allowed_values:
           - standard
           - performant
+
+  node_count:
+    default: 1
+    label: Node Count
+    description: Additional node counts
+    type: number
+    constraints:
+      - range: { min: 0, max: 30 }
+
 resources:
   network:
     type: OS::Neutron::Net
@@ -81,10 +90,7 @@ resources:
     properties:
       network_id: { get_resource: network }
       ip_version: 4
-      dns_nameservers:
-        - 185.23.94.244
-        - 185.23.94.245
-      cidr: 10.0.1.0/24
+      cidr: 10.0.0.0/16
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
 
@@ -109,60 +115,93 @@ resources:
         - { direction: ingress }
         - { direction: egress }
 
-  volume:
-    type: OS::Cinder::Volume
-    properties:
-      size: { get_param: volume_size }
-      volume_type: { get_param: volume_type }
-      metadata:
-        fs_type: ext4
-
   masters:
     type: OS::Heat::ResourceGroup
     properties:
       count: 3
       resource_def:
-        type: kube-node.heat.yaml
+        type: https://storage.fr1.cloudwatt.com/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/ha/kube-master.heat.yaml
         properties:
+          nodename: master-%index%
+          nodeip: 10.0.1.25%index%
           domain: { get_param: domain }
+          subnet: { get_resource: subnet }
           security_group: { get_resource: security_group }
           network: { get_resource: network }
-          nodename: master-%index%
           keypair_name: { get_param: keypair_name }
+          flavor_name: { get_param: flavor_name }
+          volume_size: { get_param: volume_size }
+          volume_type: { get_param: volume_type }
           os_username: { get_param: os_username }
           os_password: { get_param: os_password }
           os_tenant: { get_param: os_tenant }
           os_auth: { get_param: os_auth }
-          flavor_name: { get_param: flavor_name }
-          volume: { get_resource: volume }
 
-  masterpool:
+  masterpool_etcd:
     type: OS::Neutron::Pool
     properties:
-      name: masterpool
+      name: masterpool_etcd
       protocol: TCP
       lb_method: ROUND_ROBIN
-      vip: {"protocol_port": 443}
+      subnet_id: { get_resource: subnet }
+      vip:
+        protocol_port: 2380
 
-  masterlb:
+  masterpool_kube:
+    type: OS::Neutron::Pool
+    properties:
+      name: masterpool_kube
+      protocol: TCP
+      lb_method: ROUND_ROBIN
+      subnet_id: { get_resource: subnet }
+      vip:
+        protocol_port: 443
+
+  masterpool_nfs:
+    type: OS::Neutron::Pool
+    properties:
+      name: masterpool_nfs
+      protocol: TCP
+      lb_method: ROUND_ROBIN
+      subnet_id: { get_resource: subnet }
+      vip:
+        protocol_port: 2049
+
+  masterlb_etcd:
     type: OS::Neutron::LoadBalancer
     properties:
-      members: { get_attr: [masters, refs] }
-      pool_id: { get_resource: masterpool }
+      members: { get_attr: [masters, refs, master] }
+      pool_id: { get_resource: masterpool_etcd }
+      protocol_port: 2380
+
+  masterlb_kube:
+    type: OS::Neutron::LoadBalancer
+    properties:
+      members: { get_attr: [masters, refs, master] }
+      pool_id: { get_resource: masterpool_kube }
       protocol_port: 443
+
+  masterlb_nfs:
+    type: OS::Neutron::LoadBalancer
+    properties:
+      members: { get_attr: [masters, refs, master] }
+      pool_id: { get_resource: masterpool_nfs }
+      protocol_port: 2049
 
   nodes:
     type: OS::Heat::ResourceGroup
     properties:
-      count: 3
+      count: { get_param: node_count }
       resource_def:
-        type: kube-node.heat.yaml
+        type: https://storage.fr1.cloudwatt.com/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/ha/kube-node.heat.yaml
         properties:
           domain: { get_param: domain }
-          master: { get_attr: [masterpool, vip, address] }
+          master_etcd: { get_attr: [masterpool_etcd, vip, address] }
+          master_kube: { get_attr: [masterpool_kube, vip, address] }
+          master_nfs: { get_attr: [masterpool_nfs, vip, address] }
           security_group: { get_resource: security_group }
           network: { get_resource: network }
           nodename: node-%index%
           keypair_name: { get_param: keypair_name }
           flavor_name: { get_param: flavor_name }
-          volume: { get_resource: volume }
+

@@ -838,7 +838,7 @@ resources:
                   command: start
                   content: |
                     [Unit]
-                    Description=Mount volume to /gluster
+                    Description=Mount volume to /data
                     Requires=format-data.service
                     After=format-data.service
                     [Mount]
