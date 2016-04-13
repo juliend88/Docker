@@ -92,12 +92,33 @@ If you work with Windows you will need to bring a downloadable customer Winscp [
 
 * You must have your keypair and injected into the **Winscp** client, clicking on **Advanced** and then go into **SSH> Authentication**.
 ![winscpconfen](img/winscpconfen.png)
-
 ![addsshkeyen](img/addsshkeyen.png)
 
-* Once this is done , add the configuration file to your OpenVPN client (ex on windows, double click on `cloud.ovpn` file)
 
-You can now access to the admin interface via l'url **http://manager**.
+* By default the key is a `*.pem`. Winscp needs a `.ppk`. That is why it will offer to convert your key via PuTTYgen tool. Click OK to PuTTYgen starts.
+
+![convertputty](img/converttoputty.png)
+
+* Then click ` Save private key` and click on ` Yes` and place where you want on your post.
+
+![savekey](img/saveprivatekey.png)
+![savekeyppk](img/savekey-ppk.png)
+
+* You have to add `.ppk` key Winscp
+
+![addppk](img/addppk.png)
+
+* You can now log in to the toolbox
+
+![connect](img/connect.png)
+
+* You must copy the `cloud.ovpn` file and open it with the customer Openvpn previously download.
+
+![scpcloudovpn](img/scpcloudovpn.png)
+
+* Once this is done , add the configuration file to your Openvpn client (ex on windows, double click on `cloud.ovpn` file)
+
+You can now access to the admin interface via l'url **http://manager** and begin to reap the benefit.
 
 It's (already) over !
 
