@@ -92,9 +92,6 @@ resources:
       network_id: { get_resource: network }
       ip_version: 4
       cidr: 10.0.0.0/16
-      dns_nameservers:
-        - 185.23.94.244
-        - 10.0.1.254
       allocation_pools:
         - { start: 10.0.1.100, end: 10.0.1.199 }
 
@@ -124,8 +121,9 @@ resources:
     properties:
       count: 1
       resource_def:
-        type: https://raw.githubusercontent.com/juliend88/Docker/master/heat/kube-master.heat.yaml
+        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/kube-master.heat.yaml
         properties:
+          nodename: master-%index%
           domain: { get_param: domain }
           subnet: { get_resource: subnet }
           security_group: { get_resource: security_group }
@@ -134,13 +132,17 @@ resources:
           flavor_name: { get_param: flavor_name }
           volume_size: { get_param: volume_size }
           volume_type: { get_param: volume_type }
+          os_username: { get_param: os_username }
+          os_password: { get_param: os_password }
+          os_tenant: { get_param: os_tenant }
+          os_auth: { get_param: os_auth }
 
   nodes:
     type: OS::Heat::ResourceGroup
     properties:
       count: { get_param: node_count }
       resource_def:
-        type: https://raw.githubusercontent.com/juliend88/Docker/master/heat/kube-node.heat.yaml
+        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/kube-node.heat.yaml
         properties:
           domain: { get_param: domain }
           master: 10.0.1.254

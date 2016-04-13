@@ -1,8 +1,23 @@
 heat_template_version: 2013-05-23
 
 parameters:
+  nodename:
+    label: nodename
+    type: string
   subnet:
     label: subnet
+    type: string
+  os_username:
+    label: os_username
+    type: string
+  os_password:
+    label: os_password
+    type: string
+  os_tenant:
+    label: os_tenant
+    type: string
+  os_auth:
+    label: os_auth
     type: string
   volume_size:
     label: volume_size
@@ -69,9 +84,10 @@ resources:
     type: OS::Nova::Server
     properties:
       key_name: { get_param: keypair_name }
-      image: d9ee7ae5-1787-4dc0-87ab-fc1e8e3d8799
+      image: 5ed151c9-a822-4c17-9a42-d26f024013d5
       flavor: { get_param: flavor_name }
       user_data_format: RAW
+      name: {get_param: nodename}
       networks:
         - port: { get_resource: port }
       user_data:
@@ -822,7 +838,7 @@ resources:
                   command: start
                   content: |
                     [Unit]
-                    Description=Mount volume to /gluster
+                    Description=Mount volume to /data
                     Requires=format-data.service
                     After=format-data.service
                     [Mount]
