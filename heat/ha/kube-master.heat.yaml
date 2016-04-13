@@ -819,8 +819,9 @@ resources:
               etcd2:
                 name: "%H"
                 advertise-client-urls: http://$private_ipv4:2379
-                initial-cluster: "master-0=http://10.0.1.250:2380,master-1=http://10.0.1.251:2380,master-2=http://10.0.1.252:2380"
+                initial-cluster: "master-0.novalocal=http://10.0.1.250:2380,master-1.novalocal=http://10.0.1.251:2380,master-2.novalocal=http://10.0.1.252:2380"
                 initial-cluster-state: new
+                initial-advertise-peer-urls=http://$private_ipv4:2380
                 listen-client-urls: http://$private_ipv4:2379,http://$private_ipv4:4001
                 listen-peer-urls: http://$private_ipv4:2380
               units:
