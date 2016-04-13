@@ -87,7 +87,7 @@ resources:
     type: OS::Nova::Server
     properties:
       key_name: { get_param: keypair_name }
-      image: d9ee7ae5-1787-4dc0-87ab-fc1e8e3d8799
+      image: 5ed151c9-a822-4c17-9a42-d26f024013d5
       flavor: { get_param: flavor_name }
       user_data_format: RAW
       name: {get_param: nodename}
@@ -737,6 +737,29 @@ resources:
                   ETCD_ADDR=$private_ipv4:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
                   TOOLBOX_DOMAIN=$domain
+              - path: /opt/ceph_populate_kv.sh
+                permissions: '0744'
+                owner: root
+                content: |
+                  #!/bin/bash
+
+                  etcdctl get /ceph-populated &> /dev/null
+                  RESULT=$?
+
+                  if [ $RESULT -eq 0 ]; then
+                    echo "Already populated"
+                  else
+                    etcdctl set /ceph-populated "true" &> /dev/null
+                    docker run --rm --net=host \
+                      -v /etc/ceph:/etc/ceph \
+                      -v /var/lib/ceph/:/var/lib/ceph/ \
+                      -e MON_IP=$private_ipv4 \
+                      -e CEPH_PUBLIC_NETWORK=10.0.1.0/24 \
+                      -e KV_TYPE=etcd \
+                      -e KV_IP=$private_ipv4 \
+                      -e KV_PORT=2379 \
+                      ceph/daemon populate_kvstore
+                  fi
               - path: /etc/kubernetes/openstack.conf
                 permissions: 0644
                 owner: "root:root"
@@ -746,11 +769,6 @@ resources:
                   username=$os_username
                   password=$os_password
                   tenant-name=$os_tenant
-              - path: /etc/exports
-                permissions: "0666"
-                owner: "root:root"
-                content: |
-                  /data/ 10.0.1.0/24(rw,async,no_subtree_check,no_root_squash,fsid=0)
               - path: /opt/format-data.sh
                 permissions: 0700
                 owner: "root:root"
@@ -821,8 +839,8 @@ resources:
                 advertise-client-urls: http://$private_ipv4:2379
                 initial-cluster: "master-0.novalocal=http://10.0.1.250:2380,master-1.novalocal=http://10.0.1.251:2380,master-2.novalocal=http://10.0.1.252:2380"
                 initial-cluster-state: new
-                initial-advertise-peer-urls=http://$private_ipv4:2380
-                listen-client-urls: http://$private_ipv4:2379,http://$private_ipv4:4001
+                initial-advertise-peer-urls: http://$private_ipv4:2380
+                listen-client-urls: http://$private_ipv4:2379
                 listen-peer-urls: http://$private_ipv4:2380
               units:
                 - name: etcd2.service
@@ -838,7 +856,7 @@ resources:
                     Type=oneshot
                     RemainAfterExit=yes
                     ExecStart=/opt/format-data.sh
-                - name: gluster.mount
+                - name: ceph.mount
                   command: start
                   content: |
                     [Unit]
@@ -847,7 +865,7 @@ resources:
                     After=format-data.service
                     [Mount]
                     What=/dev/vdb
-                    Where=/gluster
+                    Where=/ceph
                     DirectoryMode=0777
                     Type=ext4
                 - name: flanneld.service
@@ -862,30 +880,52 @@ resources:
                     - name: 40-flannel.conf
                       content: |
                         [Unit]
-                        Requires=gluster.mount flanneld.service
-                        After=gluster.mount flanneld.service
-                - name: rpc-statd.service
-                  command: start
-                  enable: true
-                - name: nfs-mountd.service
-                  command: start
-                  enable: true
-                - name: gluster.service
+                        Requires=ceph.mount flanneld.service
+                        After=ceph.mount flanneld.service
+                - name: prepare-ceph.service
                   command: start
                   content: |
                     [Unit]
-                    Description=Gluster Service
-                    After=docker.service gluster.mount
-                    Requires=docker.service gluster.mount
+                    After=etcd2.service docker.service
+                    Requires=etcd2.service docker.service
+                    [Service]
+                    Type=oneshot
+                    ExecStartPre=/usr/bin/docker pull ceph/daemon
+                    ExecStart=/usr/bin/mkdir -p /etc/ceph
+                    ExecStart=/usr/bin/mkdir -p /var/lib/ceph
+                    ExecStart=/usr/bin/mkdir -p /var/run/ceph
+                    ExecStart=/usr/bin/chown -R 64045:64045 /var/run/ceph
+                    ExecStart=/usr/bin/sh -c "/tmp/ceph_populate_kv.sh"
+                - name: ceph-mon.service
+                  command: start
+                  enable: true
+                  content: |
+                    [Unit]
+                    Description=Ceph MON
+                    After=prepare-ceph.service
+                    Requires=prepare-ceph.service
 
                     [Service]
-                    TimeoutStartSec=0
-                    Environment=/etc/environment
-                    ExecStartPre=-/usr/bin/docker kill gluster
-                    ExecStartPre=-/usr/bin/docker rm gluster
-                    ExecStartPre=/usr/bin/docker pull paulczar/glusterfs
-                    ExecStart=/usr/bin/docker run -v /gluster:/export --name=gluster -e HOST=$private_ipv4 -p 2049:2049 --cap-add=SYS_ADMIN paulczar/glusterfs
-                    ExecStop=/usr/bin/docker stop gluster
+                    Restart=always
+                    RestartSec=20
+                    TimeoutStartSec=5
+                    ExecStartPre=-/usr/bin/docker kill ceph_mon
+                    ExecStartPre=-/usr/bin/docker rm ceph_mon
+                    ExecStartPre=/usr/bin/docker pull ceph/daemon
+                    ExecStart=/usr/bin/sh -c "docker run --name ceph_mon --net=host \
+                      -v /etc/ceph:/etc/ceph \
+                      -v /var/lib/ceph:/var/lib/ceph \
+                      -v /var/run/ceph:/var/run/ceph \
+                      -e MON_IP=$private_ipv4 \
+                      -e CEPH_PUBLIC_NETWORK=10.0.1.0/24 \
+                      -e KV_TYPE=etcd \
+                      -e KV_IP=$private_ipv4 \
+                      -e KV_PORT=2379 \
+                      ceph/daemon mon"
+                    ExecStop=/usr/bin/docker stop ceph_mon
+
+                    [Install]
+                    WantedBy=multi-user.target
                 - name: data.mount
                   command: start
                   content: |
