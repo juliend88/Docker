@@ -4,6 +4,18 @@ parameters:
   subnet:
     label: subnet
     type: string
+  os_username:
+    label: os_username
+    type: string
+  os_password:
+    label: os_password
+    type: string
+  os_tenant:
+    label: os_tenant
+    type: string
+  os_auth:
+    label: os_auth
+    type: string
   volume_size:
     label: volume_size
     type: string

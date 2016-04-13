@@ -134,6 +134,10 @@ resources:
           flavor_name: { get_param: flavor_name }
           volume_size: { get_param: volume_size }
           volume_type: { get_param: volume_type }
+          os_username: { get_param: os_username }
+          os_password: { get_param: os_password }
+          os_tenant: { get_param: os_tenant }
+          os_auth: { get_param: os_auth }
 
   nodes:
     type: OS::Heat::ResourceGroup
