@@ -83,7 +83,7 @@ Attendez **2 minutes** que l'ensemble soit complètement initialisé.
 
 Ne vous reste plus qu'à récupérer le fichier de configuration **OpenVPN** `cloud.ovpn` pour finaliser l'installation et avoir l'accès à la toolbox.
 
-* Télécharger le client [OpenVPN](https://openvpn.net/) en choisissant le client correspondant à l'OS de votre PC (windows, mac, linux).
+* Télécharger le client [OpenVPN](https://openvpn.net/index.php/open-source/downloads.html) en choisissant le client correspondant à l'OS de votre PC (windows, mac, linux).
 * Dans un shell, lancer la commande pour récupérer le fichier `cloud.ovpn` :
 ```bash
 scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
@@ -96,6 +96,29 @@ Si vous travailler avec Windows il faudra vous munir d'un client Winscp téléch
 ![winscpconf](img/winscpconf.png)
 
 ![addsshkey](img/addsshkey.png)
+
+* Par defaut la key est un `.pem`. Winscp a besoin d'un .ppk. C'est pour cette raison qu'il va vous proposer de la convertir via l'outil PuttyGen. Cliquez sur OK pour que PuttyGen se lance.
+
+![convertputty](img/converttoputty.png)
+
+* Cliquez ensuite sur `Save private key` et ensuite cliquer sur `Oui` et placer là où bon vous semble sur votre poste.
+
+![savekey](img/saveprivatekey.png)
+![savekeyppk](img/savekey-ppk.png)
+
+
+* Il vous reste à ajouter votre clé .ppk à Winscp
+
+![addppk](img/addppk.png)
+
+* Vous pouvez à présent vous connecter a la toolbox.
+
+![connect](img/connect.png)
+
+* il faut copier le fichier `cloud.ovpn` et l'ouvrir avec le client Openvpn précédement téléchargé.
+
+![scpcloudovpn](img/scpcloudovpn.png)
+
 
 * Une fois cette opération réalisée, ajouter le fichier de configuration à votre client OpenVPN (par exemple sur Windows, double cliquer sur fichier `cloud.ovpn`)
 

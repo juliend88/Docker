@@ -83,7 +83,7 @@ Wait **2 minutes** that the entire stack is available.
 
 Only remains for you to retrieve the configuration file **Openvpn** `cloud.ovpn` to complete the installation and have access to the toolbox.
 
-* Download the client [OpenVPN](https://openvpn.net/) choosing the client corresponding to the OS of your PC (windows, mac, linux).
+* Download the client [OpenVPN](https://openvpn.net/index.php/open-source/downloads.html) choosing the client corresponding to the OS of your PC (windows, mac, linux).
 * In a shell , run the command to retrieve the file `cloud.ovpn` :
 ```bash
 scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
