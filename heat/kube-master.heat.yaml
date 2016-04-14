@@ -880,7 +880,7 @@ resources:
                     Environment=KUBELET_VERSION=v1.2.0_coreos.0
                     ExecStart=/opt/bin/kubelet-wrapper \
                       --api-servers=http://127.0.0.1:8080 \
-                      --register-node=true \
+                      --register-node=false \
                       --allow-privileged=true \
                       --config=/etc/kubernetes/manifests \
                       --hostname-override=$private_ipv4 \
