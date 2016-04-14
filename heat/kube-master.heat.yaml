@@ -403,7 +403,31 @@ resources:
                           port: 10251
                         initialDelaySeconds: 15
                         timeoutSeconds: 1
-              - path: /etc/kubernetes/descriptors/skydns-rc.yaml
+              - path: /etc/kubernetes/descriptors/1-skydns-service.yaml
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  apiVersion: v1
+                  kind: Service
+                  metadata:
+                    name: kube-dns
+                    namespace: kube-system
+                    labels:
+                      k8s-app: kube-dns
+                      kubernetes.io/cluster-service: "true"
+                      kubernetes.io/name: "KubeDNS"
+                  spec:
+                    selector:
+                      k8s-app: kube-dns
+                    clusterIP: 10.0.2.2
+                    ports:
+                    - name: dns
+                      port: 53
+                      protocol: UDP
+                    - name: dns-tcp
+                      port: 53
+                      protocol: TCP
+              - path: /etc/kubernetes/descriptors/2-skydns-rc.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
@@ -520,31 +544,7 @@ resources:
                         - name: etcd-storage
                           emptyDir: {}
                         dnsPolicy: Default  # Don't use cluster DNS.
-              - path: /etc/kubernetes/descriptors/skydns-service.yaml
-                permissions: 0666
-                owner: "root:root"
-                content: |
-                  apiVersion: v1
-                  kind: Service
-                  metadata:
-                    name: kube-dns
-                    namespace: kube-system
-                    labels:
-                      k8s-app: kube-dns
-                      kubernetes.io/cluster-service: "true"
-                      kubernetes.io/name: "KubeDNS"
-                  spec:
-                    selector:
-                      k8s-app: kube-dns
-                    clusterIP: 10.0.2.2
-                    ports:
-                    - name: dns
-                      port: 53
-                      protocol: UDP
-                    - name: dns-tcp
-                      port: 53
-                      protocol: TCP
-              - path: /etc/kubernetes/descriptors/rabbitmq-service.yaml
+              - path: /etc/kubernetes/descriptors/3-rabbitmq-service.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
@@ -562,7 +562,7 @@ resources:
                         name: management
                     selector:
                       component: rabbitmq
-              - path: /etc/kubernetes/descriptors/rabbitmq-rc.yaml
+              - path: /etc/kubernetes/descriptors/4-rabbitmq-rc.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
@@ -588,7 +588,70 @@ resources:
                             resources:
                               limits:
                                 cpu: 100m
-              - path: /etc/kubernetes/descriptors/toolbox-service.yaml
+              - path: /etc/kubernetes/descriptors/5-rethinkdb-service.yaml
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  apiVersion: v1
+                  kind: Service
+                  metadata:
+                    labels:
+                      db: rethinkdb
+                    name: rethinkdb-driver
+                  spec:
+                    ports:
+                      - port: 28015
+                        targetPort: 28015
+                        name: driver
+                      - port: 80
+                        targetPort: 8080
+                        name: web
+                    selector:
+                      db: rethinkdb
+              - path: /etc/kubernetes/descriptors/6-rethinkdb-rc.yaml
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  apiVersion: v1
+                  kind: ReplicationController
+                  metadata:
+                    labels:
+                      db: rethinkdb
+                    name: rethinkdb-rc
+                  spec:
+                    replicas: 1
+                    selector:
+                      db: rethinkdb
+                      role: replicas
+                    template:
+                      metadata:
+                        labels:
+                          db: rethinkdb
+                          role: replicas
+                      spec:
+                        containers:
+                          - image: cedbossneo/rethinkdb-kubernetes:2.3
+                            name: rethinkdb
+                            env:
+                              - name: POD_NAMESPACE
+                                valueFrom:
+                                  fieldRef:
+                                    fieldPath: metadata.namespace
+                            ports:
+                              - containerPort: 8080
+                                name: admin-port
+                              - containerPort: 28015
+                                name: driver-port
+                              - containerPort: 29015
+                                name: cluster-port
+                            volumeMounts:
+                              - mountPath: /data/rethinkdb_data
+                                name: rethinkdb-storage
+                        volumes:
+                          - name: rethinkdb-storage
+                            hostPath:
+                              path: /data/rethinkdb
+              - path: /etc/kubernetes/descriptors/7-toolbox-service.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
@@ -606,7 +669,7 @@ resources:
                     type: NodePort
                     selector:
                       component: toolbox
-              - path: /etc/kubernetes/descriptors/toolbox-rc.yaml
+              - path: /etc/kubernetes/descriptors/8-toolbox-rc.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
@@ -652,69 +715,6 @@ resources:
                           - name: keys-storage
                             hostPath:
                               path: /data/keys
-              - path: /etc/kubernetes/descriptors/rethinkdb-service.yaml
-                permissions: 0666
-                owner: "root:root"
-                content: |
-                  apiVersion: v1
-                  kind: Service
-                  metadata:
-                    labels:
-                      db: rethinkdb
-                    name: rethinkdb-driver
-                  spec:
-                    ports:
-                      - port: 28015
-                        targetPort: 28015
-                        name: driver
-                      - port: 80
-                        targetPort: 8080
-                        name: web
-                    selector:
-                      db: rethinkdb
-              - path: /etc/kubernetes/descriptors/rethinkdb-rc.yaml
-                permissions: 0666
-                owner: "root:root"
-                content: |
-                  apiVersion: v1
-                  kind: ReplicationController
-                  metadata:
-                    labels:
-                      db: rethinkdb
-                    name: rethinkdb-rc
-                  spec:
-                    replicas: 1
-                    selector:
-                      db: rethinkdb
-                      role: replicas
-                    template:
-                      metadata:
-                        labels:
-                          db: rethinkdb
-                          role: replicas
-                      spec:
-                        containers:
-                          - image: cedbossneo/rethinkdb-kubernetes:2.3
-                            name: rethinkdb
-                            env:
-                              - name: POD_NAMESPACE
-                                valueFrom:
-                                  fieldRef:
-                                    fieldPath: metadata.namespace
-                            ports:
-                              - containerPort: 8080
-                                name: admin-port
-                              - containerPort: 28015
-                                name: driver-port
-                              - containerPort: 29015
-                                name: cluster-port
-                            volumeMounts:
-                              - mountPath: /data/rethinkdb_data
-                                name: rethinkdb-storage
-                        volumes:
-                          - name: rethinkdb-storage
-                            hostPath:
-                              path: /data/rethinkdb
               - path: /etc/environment
                 permissions: 0666
                 owner: "root:root"
@@ -881,6 +881,7 @@ resources:
                     ExecStart=/opt/bin/kubelet-wrapper \
                       --api-servers=http://127.0.0.1:8080 \
                       --register-node=false \
+                      --register-schedulable=false \
                       --allow-privileged=true \
                       --config=/etc/kubernetes/manifests \
                       --hostname-override=$private_ipv4 \
