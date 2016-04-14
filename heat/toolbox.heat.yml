@@ -45,7 +45,7 @@ parameters:
     default: s1.cw.small-1
     description: Flavor to use for the deployed instance
     type: string
-    label: Instance Type (Flavor)
+    label: Master Instance Type (Flavor)
     constraints:
       - allowed_values:
           - s1.cw.small-1
@@ -58,7 +58,7 @@ parameters:
     default: n1.cw.standard-4
     description: Flavor to use for the deployed instance
     type: string
-    label: Instance Type (Flavor)
+    label: Node Instance Type (Flavor)
     constraints:
       - allowed_values:
           - n1.cw.standard-4
