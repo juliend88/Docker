@@ -63,7 +63,7 @@ Par défaut, le wizard propose un déploiement sur une instance de type "standar
 
 Vous devrez indiquer le type [(standard ou performant)](https://www.cloudwatt.com/fr/produits/stockage-bloc/) et la taille du volume bloc qui sera attaché à votre stack via le paramètre `volume_size`.
 
-Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* sans noeud *slave*. Au maximum, la toolbox beta se déploie sur 1 instance *master* et 3 noeuds *slave*.
+Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* avec 1 noeud *slave*. Au maximum, la toolbox beta se déploie sur 1 instance *master* et 3 noeuds *slave*.
 
 Appuyer sur **LANCER**.
 

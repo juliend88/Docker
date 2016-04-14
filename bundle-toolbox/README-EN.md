@@ -64,7 +64,7 @@ By default, the stack deploys on an instance of type "standard-4" (n2.cw.standar
 
 You must indicate the type (standard or high performance ) and the size of the block volume that will be attached to your stack via the `volume_size` parameter.
 
-Finally , you can set a number of nodes to distribute the load. By default, the toolbox will be deployed on 1 instance *master* without *slave* node. At maximum, the toolbox v1 deploy on one instance *master* and 3 *slave* node.
+Finally , you can set a number of nodes to distribute the load. By default, the toolbox will be deployed on 1 instance *master* and 1 *slave* node. At maximum, the toolbox v1 deploy on one instance *master* and 3 *slave* node.
 
 Press **LANCER**.
 
