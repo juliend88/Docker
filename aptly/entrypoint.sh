@@ -10,4 +10,9 @@ then
     fi
          gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys 2A194991
 fi
+
+if `aptly mirror list` == *No mirrors found*; then
+    ./etc/cron.daily/deb-mirror
+fi
+
 bash -c "$*"
