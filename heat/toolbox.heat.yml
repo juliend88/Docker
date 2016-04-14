@@ -41,7 +41,20 @@ parameters:
     label: Cloud DNS
     type: string
 
-  flavor_name:
+  flavor_master:
+    default: s1.cw.small-1
+    description: Flavor to use for the deployed instance
+    type: string
+    label: Instance Type (Flavor)
+    constraints:
+      - allowed_values:
+          - s1.cw.small-1
+          - n1.cw.standard-1
+          - n2.cw.standard-2
+          - n2.cw.standard-4
+
+
+  flavor_node:
     default: n1.cw.standard-4
     description: Flavor to use for the deployed instance
     type: string
@@ -55,12 +68,12 @@ parameters:
 
 
   volume_size:
-    default: 10
+    default: 20
     label: Backup Volume Size
     description: Size of Volume for Toolbox Storage (Gigabytes)
     type: number
     constraints:
-      - range: { min: 10, max: 10000 }
+      - range: { min: 20, max: 10000 }
         description: Volume must be at least 10 gigabytes
 
   volume_type:
@@ -79,7 +92,7 @@ parameters:
     description: Additional node counts
     type: number
     constraints:
-      - range: { min: 0, max: 30 }
+      - range: { min: 1, max: 3 }
 
 resources:
 
@@ -113,8 +126,13 @@ resources:
     type: OS::Neutron::SecurityGroup
     properties:
       rules:
-        - { direction: ingress }
-        - { direction: egress }
+        - { direction: ingress, protocol: TCP, port_range_min: 22, port_range_max: 22 }
+        - { direction: ingress, protocol: TCP, port_range_min: 1194, port_range_max: 1194 }
+        - { direction: ingress, protocol: UDP, port_range_min: 1194, port_range_max: 1194 }
+        - { direction: ingress, protocol: ICMP }
+        - { direction: egress, protocol: ICMP }
+        - { direction: egress, protocol: TCP }
+        - { direction: egress, protocol: UDP }
 
   masters:
     type: OS::Heat::ResourceGroup
@@ -129,7 +147,7 @@ resources:
           security_group: { get_resource: security_group }
           network: { get_resource: network }
           keypair_name: { get_param: keypair_name }
-          flavor_name: { get_param: flavor_name }
+          flavor_name: { get_param: flavor_master }
           volume_size: { get_param: volume_size }
           volume_type: { get_param: volume_type }
           os_username: { get_param: os_username }
@@ -150,5 +168,5 @@ resources:
           network: { get_resource: network }
           nodename: node-%index%
           keypair_name: { get_param: keypair_name }
-          flavor_name: { get_param: flavor_name }
+          flavor_name: { get_param: flavor_node }
 
