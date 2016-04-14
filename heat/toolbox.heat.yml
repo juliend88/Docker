@@ -53,7 +53,6 @@ parameters:
           - n2.cw.standard-2
           - n2.cw.standard-4
 
-
   flavor_node:
     default: n1.cw.standard-4
     description: Flavor to use for the deployed instance
