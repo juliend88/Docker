@@ -53,6 +53,7 @@ parameters:
           - n2.cw.standard-2
           - n2.cw.standard-4
 
+
   flavor_node:
     default: n1.cw.standard-4
     description: Flavor to use for the deployed instance
@@ -64,6 +65,7 @@ parameters:
           - n2.cw.standard-4
           - n2.cw.standard-8
           - n2.cw.standard-16
+
 
   volume_size:
     default: 20
@@ -125,8 +127,8 @@ resources:
     properties:
       rules:
         - { direction: ingress, protocol: TCP, port_range_min: 22, port_range_max: 22 }
-        - { direction: ingress, protocol: TCP, port_range_min: 1194, port_range_max: 1194 }
-        - { direction: ingress, protocol: UDP, port_range_min: 1194, port_range_max: 1194 }
+        - { direction: ingress, protocol: TCP }
+        - { direction: ingress, protocol: UDP }
         - { direction: ingress, protocol: ICMP }
         - { direction: egress, protocol: ICMP }
         - { direction: egress, protocol: TCP }
