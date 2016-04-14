@@ -65,7 +65,6 @@ parameters:
           - n2.cw.standard-8
           - n2.cw.standard-16
 
-
   volume_size:
     default: 20
     label: Backup Volume Size

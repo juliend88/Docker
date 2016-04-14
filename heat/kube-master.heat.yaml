@@ -39,18 +39,10 @@ parameters:
     description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
     label: Cloud DNS
     type: string
-
   flavor_name:
-    default: s1.cw.small-1
+    label: Instance Type (Flavor)
     description: Flavor to use for the deployed instance
     type: string
-    label: Master Instance Type (Flavor)
-    constraints:
-      - allowed_values:
-          - s1.cw.small-1
-          - n1.cw.standard-1
-          - n2.cw.standard-2
-          - n2.cw.standard-4
 
 resources:
   volume:
