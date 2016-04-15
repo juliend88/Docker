@@ -83,8 +83,10 @@ Attendez **2 minutes** que l'ensemble soit complètement initialisé.
 
 Ne vous reste plus qu'à récupérer le fichier de configuration **OpenVPN** `cloud.ovpn` pour finaliser l'installation et avoir l'accès à la toolbox.
 
-* Télécharger le client [OpenVPN](https://openvpn.net/index.php/open-source/downloads.html) en choisissant le client correspondant à l'OS de votre PC (windows, mac, linux).
+* Si vous etes sur Mac ou Linux télécharger le client [OpenVPN](https://openvpn.net/index.php/open-source/downloads.html) en choisissant le client correspondant à l'OS de votre poste.
+* Si vous etes sur Windows, nous vous conseillons d'utiliser Viscosity téléchargeable [ici](https://www.sparklabs.com/downloads/Viscosity%20Installer.exe) et de le lancer "en tant qu'administrateur".
 * Dans un shell, lancer la commande pour récupérer le fichier `cloud.ovpn` :
+
 ```bash
 scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
 ```
@@ -115,7 +117,7 @@ Si vous travailler avec Windows il faudra vous munir d'un client Winscp téléch
 
 ![connect](img/connect.png)
 
-* il faut copier le fichier `cloud.ovpn` et l'ouvrir avec le client Openvpn précédement téléchargé.
+* il faut copier le fichier `cloud.ovpn` et l'ouvrir avec le client Openvpn ou Viscosity précédement téléchargé.
 
 ![scpcloudovpn](img/scpcloudovpn.png)
 
