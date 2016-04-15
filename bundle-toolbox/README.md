@@ -91,7 +91,7 @@ Ne vous reste plus qu'à récupérer le fichier de configuration **OpenVPN** `cl
 scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
 ```
 
-Si vous travailler avec Windows il faudra vous munir d'un client Winscp téléchargeable [ici](https://winscp.net/download/winscp577setup.exe).
+Si vous travaillez avec Windows il faudra vous munir d'un client Winscp téléchargeable [ici](https://winscp.net/download/winscp577setup.exe).
 
 * Il faut vous munir de votre keypair et l'injecter dans le client **Winscp** en cliquant sur **Avancé...** et ensuite aller dans **SSH > Authentification**.
 
@@ -124,7 +124,7 @@ Si vous travailler avec Windows il faudra vous munir d'un client Winscp téléch
 
 * Une fois cette opération réalisée, ajouter le fichier de configuration à votre client OpenVPN (par exemple sur Windows, double cliquer sur fichier `cloud.ovpn`)
 
-Vous pouvez maintenant accéder à l'interface d'administration de la toolbox via l'url **http://manager** et commencer à en tirer tout le bénéfice.
+Vous pouvez maintenant accéder à l'interface d'administration de la toolbox via l'url **http://manager.** et commencer à en tirer tout le bénéfice.
 
 C’est (déjà) FINI !
 
