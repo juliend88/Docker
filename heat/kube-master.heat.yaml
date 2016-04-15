@@ -621,7 +621,7 @@ resources:
                       db: rethinkdb
                     name: rethinkdb-rc
                   spec:
-                    replicas: 2
+                    replicas: 1
                     selector:
                       db: rethinkdb
                       role: replicas
@@ -632,13 +632,8 @@ resources:
                           role: replicas
                       spec:
                         containers:
-                          - image: cedbossneo/rethinkdb-kubernetes:2.3
+                          - image: rethinkdb
                             name: rethinkdb
-                            env:
-                              - name: POD_NAMESPACE
-                                valueFrom:
-                                  fieldRef:
-                                    fieldPath: metadata.namespace
                             ports:
                               - containerPort: 8080
                                 name: admin-port
@@ -710,7 +705,7 @@ resources:
                               - name: OS_PASSWORD
                                 value: $os_password
                               - name: REPLICAS
-                                value: "2"
+                                value: "1"
                             ports:
                               - containerPort: 3000
                             volumeMounts:
