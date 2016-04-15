@@ -574,20 +574,15 @@ resources:
                       component: rabbitmq
                     name: rabbitmq-controller
                   spec:
-                    replicas: 2
+                    replicas: 1
                     template:
                       metadata:
                         labels:
                           component: rabbitmq
                       spec:
                         containers:
-                          - image: cedbossneo/rabbitmq-kubernetes
+                          - image: rabbitmq:management
                             name: rabbitmq
-                            env:
-                              - name: POD_NAMESPACE
-                                valueFrom:
-                                  fieldRef:
-                                    fieldPath: metadata.namespace
                             ports:
                               - containerPort: 5672
                               - containerPort: 15672
