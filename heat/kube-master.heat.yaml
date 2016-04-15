@@ -918,7 +918,7 @@ resources:
                     Type=oneshot
                     TimeoutStartSec=0
                     Environment=/etc/environment
-                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u udp://$public_ipv4:1194 \
+                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u tcp://$public_ipv4:1194 \
                                                                                                                        -n 10.0.2.2 \
                                                                                                                        -n 185.23.94.244 \
                                                                                                                        -n 8.8.8.8 \
