@@ -840,7 +840,7 @@ resources:
                 initial-cluster: "master-0.novalocal=http://10.0.1.250:2380,master-1.novalocal=http://10.0.1.251:2380,master-2.novalocal=http://10.0.1.252:2380"
                 initial-cluster-state: new
                 initial-advertise-peer-urls: http://$private_ipv4:2380
-                listen-client-urls: http://$private_ipv4:2379
+                listen-client-urls: http://$private_ipv4:2379,http://localhost:2379
                 listen-peer-urls: http://$private_ipv4:2380
               units:
                 - name: etcd2.service
@@ -895,7 +895,7 @@ resources:
                     ExecStart=/usr/bin/mkdir -p /var/lib/ceph
                     ExecStart=/usr/bin/mkdir -p /var/run/ceph
                     ExecStart=/usr/bin/chown -R 64045:64045 /var/run/ceph
-                    ExecStart=/usr/bin/sh -c "/tmp/ceph_populate_kv.sh"
+                    ExecStart=/usr/bin/sh -c "/opt/ceph_populate_kv.sh"
                 - name: ceph-mon.service
                   command: start
                   enable: true
@@ -931,14 +931,14 @@ resources:
                   content: |
                     [Unit]
                     Description=Mount volume to /data
-                    Requires=rpc-statd.service gluster.service
-                    After=rpc-statd.service gluster.service
+                    Requires=rpc-statd.service ceph-mon.service
+                    After=rpc-statd.service ceph-mon.service
                     [Mount]
-                    What=$private_ipv4:/data
+                    What=$private_ipv4:/
                     Where=/data
                     TimeoutSec=0
                     DirectoryMode=0777
-                    Type=nfs
+                    Type=ceph
                 - name: generatessl.service
                   command: start
                   content: |
@@ -963,7 +963,7 @@ resources:
                     Environment=KUBELET_VERSION=v1.2.0_coreos.0
                     ExecStart=/opt/bin/kubelet-wrapper \
                       --api-servers=http://127.0.0.1:8080 \
-                      --register-node=true \
+                      --register-node=false \
                       --allow-privileged=true \
                       --config=/etc/kubernetes/manifests \
                       --hostname-override=$private_ipv4 \

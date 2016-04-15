@@ -42,13 +42,13 @@ parameters:
     type: string
 
   flavor_master:
-    default: s1.cw.small-1
+    default: n1.cw.standard-4
     description: Flavor to use for the deployed instance
     type: string
     label: Master Instance Type (Flavor)
     constraints:
       - allowed_values:
-          - s1.cw.small-1
+          - n1.cw.standard-4
           - n1.cw.standard-1
           - n2.cw.standard-2
           - n2.cw.standard-4

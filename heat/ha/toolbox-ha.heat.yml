@@ -115,6 +115,40 @@ resources:
         - { direction: ingress }
         - { direction: egress }
 
+  masterpool_etcd:
+    type: OS::Neutron::Pool
+    properties:
+      name: masterpool_etcd
+      protocol: TCP
+      lb_method: ROUND_ROBIN
+      subnet_id: { get_resource: subnet }
+      vip:
+        protocol_port: 2380
+
+  masterpool_kube:
+    type: OS::Neutron::Pool
+    properties:
+      name: masterpool_kube
+      protocol: TCP
+      lb_method: ROUND_ROBIN
+      subnet_id: { get_resource: subnet }
+      vip:
+        protocol_port: 443
+
+  masterlb_etcd:
+    type: OS::Neutron::LoadBalancer
+    properties:
+      members: { get_attr: [masters, refs, master] }
+      pool_id: { get_resource: masterpool_etcd }
+      protocol_port: 2380
+
+  masterlb_kube:
+    type: OS::Neutron::LoadBalancer
+    properties:
+      members: { get_attr: [masters, refs, master] }
+      pool_id: { get_resource: masterpool_kube }
+      protocol_port: 443
+
   masters:
     type: OS::Heat::ResourceGroup
     properties:
@@ -137,57 +171,6 @@ resources:
           os_tenant: { get_param: os_tenant }
           os_auth: { get_param: os_auth }
 
-  masterpool_etcd:
-    type: OS::Neutron::Pool
-    properties:
-      name: masterpool_etcd
-      protocol: TCP
-      lb_method: ROUND_ROBIN
-      subnet_id: { get_resource: subnet }
-      vip:
-        protocol_port: 2380
-
-  masterpool_kube:
-    type: OS::Neutron::Pool
-    properties:
-      name: masterpool_kube
-      protocol: TCP
-      lb_method: ROUND_ROBIN
-      subnet_id: { get_resource: subnet }
-      vip:
-        protocol_port: 443
-
-  masterpool_nfs:
-    type: OS::Neutron::Pool
-    properties:
-      name: masterpool_nfs
-      protocol: TCP
-      lb_method: ROUND_ROBIN
-      subnet_id: { get_resource: subnet }
-      vip:
-        protocol_port: 2049
-
-  masterlb_etcd:
-    type: OS::Neutron::LoadBalancer
-    properties:
-      members: { get_attr: [masters, refs, master] }
-      pool_id: { get_resource: masterpool_etcd }
-      protocol_port: 2380
-
-  masterlb_kube:
-    type: OS::Neutron::LoadBalancer
-    properties:
-      members: { get_attr: [masters, refs, master] }
-      pool_id: { get_resource: masterpool_kube }
-      protocol_port: 443
-
-  masterlb_nfs:
-    type: OS::Neutron::LoadBalancer
-    properties:
-      members: { get_attr: [masters, refs, master] }
-      pool_id: { get_resource: masterpool_nfs }
-      protocol_port: 2049
-
   nodes:
     type: OS::Heat::ResourceGroup
     properties:
@@ -198,7 +181,6 @@ resources:
           domain: { get_param: domain }
           master_etcd: { get_attr: [masterpool_etcd, vip, address] }
           master_kube: { get_attr: [masterpool_kube, vip, address] }
-          master_nfs: { get_attr: [masterpool_nfs, vip, address] }
           security_group: { get_resource: security_group }
           network: { get_resource: network }
           nodename: node-%index%

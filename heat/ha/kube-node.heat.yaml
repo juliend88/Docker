@@ -7,9 +7,6 @@ parameters:
   master_kube:
     label: master_kube
     type: string
-  master_nfs:
-    label: master_nfs
-    type: string
   nodename:
     label: nodename
     type: string
@@ -67,7 +64,6 @@ resources:
             $domain: { get_param: domain }
             $master_etcd: { get_param: master_etcd }
             $master_kube: { get_param: master_kube }
-            $master_nfs: { get_param: master_nfs }
             $fqdn: { get_param: nodename }
           template: |
             #cloud-config
@@ -238,11 +234,11 @@ resources:
                     Requires=rpc-statd.service
                     After=rpc-statd.service
                     [Mount]
-                    What=$master_nfs:/data
+                    What=10.0.1.250,10.0.1.251,10.0.1.252:/data
                     Where=/data
                     TimeoutSec=0
                     DirectoryMode=0777
-                    Type=nfs
+                    Type=ceph
                 - name: generatessl.service
                   command: start
                   content: |
