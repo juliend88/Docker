@@ -573,7 +573,7 @@ resources:
                       component: rabbitmq
                     name: rabbitmq-controller
                   spec:
-                    replicas: 1
+                    replicas: 2
                     template:
                       metadata:
                         labels:
