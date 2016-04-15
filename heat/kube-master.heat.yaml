@@ -555,6 +555,7 @@ resources:
                       component: rabbitmq
                     name: rabbitmq
                   spec:
+                    sessionAffinity: ClientIP
                     ports:
                       - port: 5672
                         name: main
@@ -604,6 +605,7 @@ resources:
                       db: rethinkdb
                     name: rethinkdb-driver
                   spec:
+                    sessionAffinity: ClientIP
                     ports:
                       - port: 28015
                         targetPort: 28015
@@ -667,6 +669,7 @@ resources:
                       component: toolbox
                     name: manager
                   spec:
+                    sessionAffinity: ClientIP
                     ports:
                       - port: 80
                         targetPort: 3000
