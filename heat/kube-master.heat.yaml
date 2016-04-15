@@ -926,6 +926,9 @@ resources:
                                                                                                                        -N \
                                                                                                                        -p "route 10.0.2.0 255.255.255.0" \
                                                                                                                        -p "route 10.0.3.0 255.255.255.0" \
+                                                                                                                       -p "dhcp-option DOMAIN $domain" \
+                                                                                                                       -p "dhcp-option DOMAIN svc.$domain" \
+                                                                                                                       -p "dhcp-option DOMAIN default.svc.$domain"
                                                                                                                        -p "dhcp-option DOMAIN-SEARCH $domain" \
                                                                                                                        -p "dhcp-option DOMAIN-SEARCH svc.$domain" \
                                                                                                                        -p "dhcp-option DOMAIN-SEARCH default.svc.$domain"
