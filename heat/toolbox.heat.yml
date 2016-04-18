@@ -37,7 +37,7 @@ parameters:
 
   domain:
     description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
-    default: toolbox
+    default: mycloudmanager
     label: Cloud DNS
     type: string
 
