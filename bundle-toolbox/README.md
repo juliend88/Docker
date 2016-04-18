@@ -97,7 +97,7 @@ Voici la démarche à suivre :
 ![vpn](img/vpn.png)
 ![internet](img/internet.png)
 
-Entrée à présent les informations récupérée en sortie de la stack. Dans un premier temps la FloatingIP et ensuite le login et mot de passe fournis.
+Entrée à présent les informations récupérées en sortie de la stack. Dans un premier temps la *FloatingIP* et ensuite le *login* et *mot de passe* fournis.
 
 ![info](img/infoconnexion.png)
 ![login](img/loginmdp.png)
