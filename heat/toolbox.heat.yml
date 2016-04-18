@@ -184,3 +184,13 @@ resources:
           keypair_name: { get_param: keypair_name }
           flavor_name: { get_param: flavor_node }
 
+output:
+  public_ip:
+    description: VPN IP
+    value: { get_attr: [floating_ip, floating_ip_address] }
+  vpn_username:
+    description: VPN Username
+    value: { get_resource: vpn_username }
+  vpn_password:
+    description: VPN Password
+    value: { get_resource: vpn_password }
