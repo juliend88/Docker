@@ -313,10 +313,7 @@ Ce tutoriel a pour but d'accélerer votre démarrage. A ce stade **vous** êtes 
 
 Vous avez un point d'entrée sur votre machine virtuelle en SSH via l'IP flottante exposée et votre clé privée (utilisateur `core` par défaut).
 
-
-**[Manager Toolbox](http://MyCloudManager/)**
-
-
+Vous pouvez accéder à l'interface d'administration de la toolbox via l'url **[MyCloudManager](http://manager.default.svc.mycloudmanager)**
 
 ## Et la suite ?
 
