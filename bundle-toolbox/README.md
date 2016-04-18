@@ -1,8 +1,8 @@
-# Innovation Beta: Toolbox #
+# Innovation Beta: MyCloudManager #
 
 ## Toolbox
 
-Cette première version de la toolbox (version Beta) est une stack différente de tout ce que l'équipe a pu vous partager jusqu'à présent. Celle-ci a pour but de vous apporter un ensemble d'outils afin **d'unifier, d'harmoniser et monitorer votre tenant**. En effet celle-ci renferme un lot d'applications variées qui a pour vocation de vous aider dans la gestion au jour le jour de vos instances:
+Cette première version de MyCloudManager (version Beta) est une stack différente de tout ce que l'équipe a pu vous partager jusqu'à présent. Celle-ci a pour but de vous apporter un ensemble d'outils afin **d'unifier, d'harmoniser et monitorer votre tenant**. En effet celui-ci renferme un lot d'applications variées qui a pour vocation de vous aider dans la gestion au jour le jour de vos instances:
 * Monitoring et Supervision
 * Log management
 * Planificateur de taches
@@ -10,12 +10,12 @@ Cette première version de la toolbox (version Beta) est une stack différente d
 * Mirroir yum et apt
 * Synchronisation de temps
 
-Cette toolbox a entièrement été développée par l'équipe CAT - Cloudwatt Automation Team.
-* Elle repose sur une instance CoreOS
+MyCloudManager a entièrement été développée par l'équipe CAT - Cloudwatt Automation Team.
+* Il repose sur une instance CoreOS
 * L'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes
 * L'interface utilisateur est construite en technologie React
 * De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible
-* Afin de sécuriser au maximum cette toolbox, aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration OpenVPN.
+* Afin de sécuriser au maximum votre MyCloudManager, aucun port n'est exposé sur internet mis à part le port 22 pour la management des instances de la stack ainsi que le port 1723 pour l'accès VPN PPTP.
 
 
 ## Préparations
@@ -26,11 +26,9 @@ Cette toolbox a entièrement été développée par l'équipe CAT - Cloudwatt Au
  * Un shell linux
  * Un [compte Cloudwatt](https://www.cloudwatt.com/cockpit/#/create-contact) avec une [ paire de clés existante](https://console.cloudwatt.com/project/access_and_security/?tab=access_security_tabs__keypairs_tab)
  * Les outils [OpenStack CLI](http://docs.openstack.org/cli-reference/content/install_clients.html)
- * Un client [OpenVPN](https://openvpn.net/)
+
 
 ### Initialiser l'environnement
-
-Ceci vous sera utile pour lancer la connexion VPN sécurisée.
 
 Munissez-vous de vos identifiants Cloudwatt, et cliquez [ICI](https://console.cloudwatt.com/project/access_and_security/api_access/openrc/).
 Si vous n'êtes pas connecté, vous passerez par l'écran d'authentification, puis le téléchargement d'un script démarrera. C'est grâce à celui-ci que vous pourrez initialiser les accès shell aux API Cloudwatt.
@@ -49,21 +47,21 @@ Une fois ceci fait, les outils de ligne de commande d'OpenStack peuvent interagi
 
 ### Le 1-clic
 
-La Toolbox se lance par le **1-clic** de **Cloudwatt** via la page web
-[Applications](https://www.cloudwatt.com/fr/applications/index.html) du site de Cloudwatt. Choisissez l'application Toolbox, appuyez sur **DEPLOYER**.
+MyCloudManager se lance par le **1-clic** de **Cloudwatt** via la page web
+[Applications](https://www.cloudwatt.com/fr/applications/index.html) du site de Cloudwatt. Choisissez l'application MyCloudManager et appuyez sur **DEPLOYER**.
 
 Après avoir entré vos login/password de votre compte, le wizard de lancement apparait :
 
 ![oneclick](img/oneclick.png)
 
-Comme vous avez pu le constater le wizard du 1-Clic vous demande de saisir une nouvelle fois vos identifiants Openstack (cela sera fixé lors d'une prochaine version de la toolbox).
+Comme vous avez pu le constater le wizard du 1-Clic vous demande de saisir une nouvelle fois vos identifiants Openstack (cela sera fixé lors d'une prochaine version de MyCloudManager).
 Vous trouverez [ici](https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) votre **tenant ID**, il est identique a l'**ID du projet**. Il vous sera nécessaire pour compléter le wizard.
 
 Par défaut, le wizard propose un déploiement sur une instance de type "standard-4" (n2.cw.standard-4). Il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
 
 Vous devrez indiquer le type [(standard ou performant)](https://www.cloudwatt.com/fr/produits/stockage-bloc/) et la taille du volume bloc qui sera attaché à votre stack via le paramètre `volume_size`.
 
-Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* avec 1 noeud *slave*. Au maximum, la toolbox beta se déploie sur 1 instance *master* et 3 noeuds *slave*.
+Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* avec 1 noeud *slave*. Au maximum, MyCloudManager Beta se déploie sur 1 instance *master* et 3 noeuds *slave*.
 
 Appuyer sur **LANCER**.
 
@@ -76,73 +74,54 @@ Le **1-clic** s'occupe de lancer les appels nécessaires sur les API Cloudwatt p
 
 La stack se crée automatiquement. Vous pouvez en voir la progression en cliquant sur son nom ce qui vous menera à la console Horizon. Quand tous les modules deviendront « verts », la création sera terminée.
 
-Attendez **2 minutes** que l'ensemble soit complètement initialisé.
+Attendez **5 minutes** que l'ensemble soit complètement initialisé.
 
 
-### Finaliser l'accès OpenVPN
+### Finaliser l'accès VPN
 
-Ne vous reste plus qu'à récupérer le fichier de configuration **OpenVPN** `cloud.ovpn` pour finaliser l'installation et avoir l'accès à la toolbox.
+Afin d'avoir accès à l'ensemble des fonctionnalitées de la toolbox, nous avons mis en place une connexion VPN.
 
-* Si vous etes sur Mac ou Linux télécharger le client [OpenVPN](https://openvpn.net/index.php/open-source/downloads.html) en choisissant le client correspondant à l'OS de votre poste.
-* Si vous etes sur Windows, nous vous conseillons d'utiliser Viscosity téléchargeable [ici](https://www.sparklabs.com/downloads/Viscosity%20Installer.exe) et de le lancer "en tant qu'administrateur".
-* Dans un shell, lancer la commande pour récupérer le fichier `cloud.ovpn` :
+Voici la démarche à suivre :
 
-```bash
-scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
-```
+* Dans un premier temps récupérer les informations de sortie de votre stack,
 
-Si vous travaillez avec Windows il faudra vous munir d'un client Winscp téléchargeable [ici](https://winscp.net/download/winscp577setup.exe).
+![stack](img/sortie-stack.png)
 
-* Il faut vous munir de votre keypair et l'injecter dans le client **Winscp** en cliquant sur **Avancé...** et ensuite aller dans **SSH > Authentification**.
+* il faut maintenant créer une connexion VPN depuis votre poste, rendez dans "le panneau de configuration > Tous les Panneaux de configuration > Centre Réseau et paratage". Cliquez ensuite sur "Configurer une nouvelle connexion ..... "
 
-![winscpconf](img/winscpconf.png)
+![start](img/startvpn.png)
+![vpn](img/vpn.png)
+![internet](img/internet.png)
 
-![addsshkey](img/addsshkey.png)
+Entrée à présent les informations récupérée en sortie de la stack. Dans un premier temps la FloatingIP et ensuite le login et mot de passe fournis.
+![info](img/infoconnexion.png)
+![login](img/loginmdp.png)
 
-* Par defaut la key est un `.pem`. Winscp a besoin d'un .ppk. C'est pour cette raison qu'il va vous proposer de la convertir via l'outil PuttyGen. Cliquez sur OK pour que PuttyGen se lance.
+Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion VPN.
 
-![convertputty](img/converttoputty.png)
+![vpnstart](img/launchvpn.png)
 
-* Cliquez ensuite sur `Save private key` et ensuite cliquer sur `Oui` et placer là où bon vous semble sur votre poste.
+Une fois la connexion initilisée vous pouvez ouvrir votre navigateur et y inscire l'url suivante :
 
-![savekey](img/saveprivatekey.png)
-![savekeyppk](img/savekey-ppk.png)
-
-
-* Il vous reste à ajouter votre clé .ppk à Winscp
-
-![addppk](img/addppk.png)
-
-* Vous pouvez à présent vous connecter a la toolbox.
-
-![connect](img/connect.png)
-
-* il faut copier le fichier `cloud.ovpn` et l'ouvrir avec le client Openvpn ou Viscosity précédement téléchargé.
-
-![scpcloudovpn](img/scpcloudovpn.png)
-
-
-* Une fois cette opération réalisée, ajouter le fichier de configuration à votre client OpenVPN (par exemple sur Windows, double cliquer sur fichier `cloud.ovpn`)
-
-Vous pouvez maintenant accéder à l'interface d'administration de la toolbox via l'url **http://manager.** et commencer à en tirer tout le bénéfice.
+<p style="text-align:center";>http://manager.default.svc.mycloudmanager</p>
 
 C’est (déjà) FINI !
 
 
 ## Enjoy
 
-L'accès à l'interface et aux différents services se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms courts mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **GO** ou via une requête URL (par exemple : http://zabbix/).
+L'accès à l'interface et aux différents services se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **GO** ou via une requête URL (par exemple : http://zabbix.default.svc.mycloudmanager/).
 
-Nous avons attaché un volume bloc à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de la toolbox, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master de la toolbox dans le répertoire `/dev/vdb`.
+Nous avons attaché un volume bloc à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de MyCloudManager, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master de MyCloudManager dans le répertoire `/dev/vdb`.
 
 
 ### Présentation de l'interface
 
-Voici l'accueil de la toolbox: chaque vignette représente une application prête à être lancée. Afin d'être le plus scalable et flexible possible, les applications de cette toolbox sont des conteneurs Docker.
+Voici l'accueil de MyCloudManager: chaque vignette représente une application prête à être lancée. Afin d'être le plus scalable et flexible possible, les applications de MyCloudManager sont des conteneurs Docker.
 
 ![accueil](img/accueil.png)
 
-Grâce au menu présent en haut en gauche de la page, vous pouvez vous déplacer dans les différentes sections de la toolbox. Nous allons vous les détailler par la suite.
+Grâce au menu présent en haut en gauche de la page, vous pouvez vous déplacer dans les différentes sections de MyCloudManager. Nous allons vous les détailler par la suite.
 * Apps : liste des applications
 * Instances : liste des instances visibles de la toolbox
 * Tasks : ensemble des taches en cours ou terminées
@@ -169,11 +148,11 @@ Dans la section **Parameters** vous pouvez ici inscrire l'ensemble des paramètr
 ![paramapp](img/paramapp.png)
 
 
-Afin d'identifier les applications lancées de celles qui ne le sont pas, nous avons mis en place un code couleur. Une application démarrée sera entourée d'un **halo vert** et d'un **halo jaune** pendant l'installation.
+Afin d'identifier les applications lancées de celles qui ne le sont pas, nous avons mis en place un code couleur :une application démarrée sera entourée d'un **halo vert** et d'un **halo jaune** pendant l'installation.
 ![appstart](img/appstart.png)
 
 
-Les **tasks** permettent un suivi des actions effectuées sur la toolbox. Elles sont indiquées en temps relatif.
+Les **tasks** permettent un suivi des actions effectuées sur MyCloudManager. Elles sont indiquées en temps relatif.
 
 ![tasks](img/tasks.png)
 
@@ -183,19 +162,19 @@ Nous avons aussi mis en place une section **audit** afin que vous puissiez voir 
 
 ![audit](img/audit.png)
 
-Enfin, nous avons intégré 2 liens dans le menu de la toolbox : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
+Enfin, nous avons intégré 2 liens dans le menu de MyCloudManager : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
 
 
-### Ajouter des instances à la Toolbox
+### Ajouter des instances à MyCloudManager
 
-Afin d'ajouter des instances à la toolbox, 3 étapes :
+Afin d'ajouter des instances à MyCloudManager, 3 étapes :
 
-  1. Attacher votre instance au routeur de la toolbox
+  1. Attacher votre instance au routeur de MyCloudManager
   2. Lancer le script d'attachement
   3. Lancer les services souhaités
 
 
-#### 1. Attacher son instance au routeur de la toolbox
+#### 1. Attacher son instance au routeur de MyCloudManager
 
  ~~~bash
  $ neutron router-interface-add $Toolbox_ROUTER_ID $Instance_subnet_ID
@@ -207,22 +186,22 @@ Vous retrouverez l'ensemble des informations en inspectant les ressources de la 
 $ heat resource-list $stack_name
 ~~~
 
-Un fois ceci effectué vous êtes maintenant dans la capacité d'ajouter votre instance à la toolbox afin de l'instrumentaliser.
+Un fois ceci effectué vous êtes maintenant dans la capacité d'ajouter votre instance à MyCloudManager afin de l'instrumentaliser.
 
 
 #### 2. Lancer le script d'attachement
 
-Dans la toolbox, aller dans le menu **instance** et cliquer sur le bouton ![bouton](img/plus.png) en bas a droite.
+Dans MyCloudManager, aller dans le menu **instance** et cliquer sur le bouton ![bouton](img/plus.png) en bas à droite.
 
 Nous proposons 2 commandes au choix: un **Curl** et un **Wget**. Copiez la sur l'instance à instrumentaliser dans un shell.
 
 ![addinstance](img/addinstance.png)
 
-Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu **instance** de votre toolbox.
+Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu **instance** de votre MyCloudManager.
 
 ![appdisable](img/appdisable.png)
 
-**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre toolbox, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de la toolbox et - à l'étape 4 - coller la commande **Curl** ou **Wget** dans le champ Script personnalisé. N'oubliez pas d'ajouter le shebang `#!/bin/bash`.
+**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre MyCloudManager, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de la toolbox et - à l'étape 4 - coller la commande **Curl** ou **Wget** dans le champ Script personnalisé. N'oubliez pas d'ajouter le shebang `#!/bin/bash`.
 
 ![attachnetwork](img/attachnetwork.png)
 
@@ -239,26 +218,26 @@ Ceci fait, le logo de l'application passe en couleur, ce qui vous permet, d'un s
 ![appenable](img/appenable.png)
 
 
-## Les Services fournis par les applications
+## Les Services de MyCloudManager fournis par les applications
 
-Dans cette section, nous allons vous présenter les différents services de cette Toolbox.
+Dans cette section, nous allons vous présenter les différents services de MyCloudManager.
 
 ### Monitoring et Supervision
 Nous avons choisi d'utiliser *Zabbix*, l'application la plus en vogue pour le monitoring, supervision et alerting.
-L'application Zabbix est un logiciel libre permettant de **surveiller l'état de divers services réseau, serveurs et autres matériels réseau**; et produisant des graphiques dynamiques de consommation des ressources. Zabbix utilise MySQL, PostgreSQL ou Oracle pour stocker les données. Selon l'importance du nombre de machines et de données à surveiller, le choix du SGBD influe grandement sur les performances. Son interface web est écrite en PHP et fourni une vision temps réel sur les métriques collectées.
+L'application Zabbix est un logiciel libre permettant de **surveiller l'état de divers services réseau, serveurs et autres matériels réseau** mais aussi des **applications et logiciels** portés sur les instances surveillées; et produisant des graphiques dynamiques de consommation des ressources. Zabbix utilise MySQL, PostgreSQL ou Oracle pour stocker les données. Selon l'importance du nombre de machines et de données à surveiller, le choix du SGBD influe grandement sur les performances. Son interface web est écrite en PHP et fourni une vision temps réel sur les métriques collectées.
 
 Pour aller plus loin voici quelques liens utiles:
   * http://www.zabbix.com/
   * https://www.zabbix.com/documentation/3.0/start
 
 ### Log Management
-Nous avons choisi *Graylog* qui est le produit du moment pour la gestion des logs, en voici une petite présentation :
+Nous avons choisi *Graylog* qui est le produit du moment pour la gestion des logs; en voici une petite présentation :
 C'est une plateforme open source de **gestion de logs** capable de manipuler et présenter les données à partir de pratiquement n'importe quelle source. Ce conteneur est celui proposer officiellement par les équipes Graylog.
   * L'interface graphique web de Graylog est un outil puissant qui permet à quiconque de manipuler la totalité de ce que Graylog a à offrir grâce à cette application Web intuitive et attrayante.
   * Le cœur de Graylog est son moteur. Le serveur Graylog interagit avec tous les autres composants à l'aide d'interfaces API REST de sorte que chaque composant du système peut être adapté sans pour autant compromettre l'intégrité du système dans son ensemble.
   * Des résultats de recherche en temps réel quand vous les voulez et comment vous les voulez: Graylog est en mesure de vous fournir ceci grâce à la puissance éprouvée d'ElasticSearch. Les nœuds ElasticSearch donnent à Graylog la vitesse qui en fait un vrai plaisir à utiliser.
 
-Bénéficiant de cette architecture impressionnante ainsi que d'une vaste bibliothèque de plugins, Graylog se place comme une solution solide et polyvalente de gestion des logs.
+Bénéficiant de cette architecture impressionnante ainsi que d'une vaste bibliothèque de plugins, Graylog se place comme une solution solide et polyvalente de **gestion des logs à la fois des instances** mais aussi des **applications et logiciels** portés sur les instances surveillées.
 
 Pour aller plus loin voici quelques liens utiles:
   * https://www.graylog.org/
@@ -272,7 +251,7 @@ Pour aller plus loin voici quelques liens utiles:
 Pour répondre à ce besoin nous avons choisi d'utiliser *Rundeck*.
 L'application Rundeck vous permet de **programmer et d'organiser l'ensemble des taches** que vous voulez déployer régulièrement sur  votre tenant via son interface web.
 
-Dans une prochaine version de la toolbox, nous automatiserons la sauvegarde de vos serveurs comme nous l'avons vu dans le cadre du *bundle* Duplicity.
+Dans une prochaine version de MyCloudManager, nous automatiserons la sauvegarde de vos serveurs comme nous l'avons vu dans le cadre du *bundle* Duplicity.
 
 Pour aller plus loin voici quelques liens utiles:
   * http://rundeck.org/
@@ -280,7 +259,7 @@ Pour aller plus loin voici quelques liens utiles:
   * http://dev.cloudwatt.com/fr/blog/5-minutes-stacks-episode-vingt-trois-duplicity.html
 
 
-### Miroir ClamAV - Antivirus
+### Miroir Antivirus
 Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **virus** distribuées par *ClamAV*. Le paquet récupéré sera exposé à vos instances via Ngnix ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
 
 Pour aller plus loin voici quelques liens utiles:
@@ -299,7 +278,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 ### Miroir YUM
 Nous avons choisi d'utiliser *Nexus*.
-Nexus est une application pouvant exposer n'importe quel type de répertoire via un serveur Ngnix. Ici notre volonté est de vous proposer une application pouvant **exposer un répertoire YUM** à l'ensemble de vos instances.
+Nexus est une application pouvant exposer n'importe quel type de répertoire via un serveur Ngnix. Ici, notre volonté est de vous proposer une application pouvant **exposer un répertoire YUM** à l'ensemble de vos instances.
 
 Pour aller plus loin voici quelques liens utiles:
   * https://books.sonatype.com/nexus-book/reference/index.html
@@ -314,7 +293,7 @@ Pour aller plus loin voici quelques liens utiles:
   * http://www.pool.ntp.org/fr/
 
 
-## Les versions Toolbox **v1** (Beta)
+## Les versions MyCloudManager **v1** (Beta)
 
   - CoreOS Stable 899.13.0
   - Docker 1.10.3
@@ -334,12 +313,12 @@ Ce tutoriel a pour but d'accélerer votre démarrage. A ce stade **vous** êtes 
 
 Vous avez un point d'entrée sur votre machine virtuelle en SSH via l'IP flottante exposée et votre clé privée (utilisateur `core` par défaut).
 
-**[Manager Toolbox](http://manager/)**
+<p style="text-align:center";>**[Manager Toolbox](http://manager.default.svc.mycloudmanager/)**</p>
 
 
 ## Et la suite ?
 
-Cet article permet de vous familiariser avec cette première version de la toolbox. Elle est mise à la disposition de tous les utilisateurs Cloudwatt en **mode Beta** et donc pour le moment gratuitement.
+Cet article permet de vous familiariser avec cette première version de MyCloudManager. Elle est mise à la disposition de tous les utilisateurs Cloudwatt en **mode Beta** et donc pour le moment gratuitement.
 
 L'intention de la CAT (Cloudwatt Automation Team) est de fournir des améliorations sur une base mensuelle. Dans notre roadmap, nous prévoyons entre autre :
 * une version francaise,
