@@ -227,8 +227,6 @@ resources:
                       - --bind-address=0.0.0.0
                       - --insecure-bind-address=0.0.0.0
                       - --etcd-servers=http://$private_ipv4:2379
-                      - --cloud-provider=openstack
-                      - --cloud-config=/openstack.conf
                       - --allow-privileged=true
                       - --service-cluster-ip-range=10.0.2.0/24
                       - --service-node-port-range=1-33000
@@ -248,16 +246,10 @@ resources:
                       - mountPath: /etc/kubernetes/ssl
                         name: ssl-certs-kubernetes
                         readOnly: true
-                      - mountPath: /openstack.conf
-                        name: openstack-config
-                        readOnly: true
                       - mountPath: /etc/ssl/certs
                         name: ssl-certs-host
                         readOnly: true
                     volumes:
-                    - hostPath:
-                        path: /etc/kubernetes/openstack.conf
-                      name: openstack-config
                     - hostPath:
                         path: /data/kubernetes/ssl
                       name: ssl-certs-kubernetes
@@ -360,8 +352,6 @@ resources:
                       command:
                       - /hyperkube
                       - controller-manager
-                      - --cloud-provider=openstack
-                      - --cloud-config=/openstack.conf
                       - --master=http://127.0.0.1:8080
                       - --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
                       - --root-ca-file=/etc/kubernetes/ssl/ca.pem
@@ -376,16 +366,10 @@ resources:
                       - mountPath: /etc/kubernetes/ssl
                         name: ssl-certs-kubernetes
                         readOnly: true
-                      - mountPath: /openstack.conf
-                        name: openstack-config
-                        readOnly: true
                       - mountPath: /etc/ssl/certs
                         name: ssl-certs-host
                         readOnly: true
                     volumes:
-                    - hostPath:
-                        path: /etc/kubernetes/openstack.conf
-                      name: openstack-config
                     - hostPath:
                         path: /data/kubernetes/ssl
                       name: ssl-certs-kubernetes
@@ -709,15 +693,15 @@ resources:
                             name: toolbox
                             env:
                               - name: DOMAIN
-                                value: $domain
+                                value: "$domain"
                               - name: OS_AUTH_URL
-                                value: $os_auth
+                                value: "$os_auth"
                               - name: OS_TENANT_NAME
-                                value: $os_tenant
+                                value: "$os_tenant"
                               - name: OS_USERNAME
-                                value: $os_username
+                                value: "$os_username"
                               - name: OS_PASSWORD
-                                value: $os_password
+                                value: "$os_password"
                               - name: REPLICAS
                                 value: "1"
                             ports:
@@ -738,15 +722,6 @@ resources:
                   ETCD_ADDR=$private_ipv4:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
                   TOOLBOX_DOMAIN=$domain
-              - path: /etc/kubernetes/openstack.conf
-                permissions: 0644
-                owner: "root:root"
-                content: |
-                  [Global]
-                  auth-url=$os_auth
-                  username=$os_username
-                  password=$os_password
-                  tenant-name=$os_tenant
               - path: /etc/exports
                 permissions: "0666"
                 owner: "root:root"

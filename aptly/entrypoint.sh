@@ -11,7 +11,10 @@ then
          gpg --no-default-keyring --keyring trustedkeys.gpg --keyserver keys.gnupg.net --recv-keys 2A194991
 fi
 
-if `aptly mirror list` == *No mirrors found*; then
+MIRROREXIST=$(aptly mirror list)
+if [ "$MIRROREXIST"="No mirrors found*" ]
+then
+    echo "Mirror does not exist"
     ./etc/cron.daily/deb-mirror
 fi
 

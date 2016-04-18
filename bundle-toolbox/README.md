@@ -15,7 +15,11 @@ MyCloudManager a entièrement été développée par l'équipe CAT - Cloudwatt A
 * L'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes
 * L'interface utilisateur est construite en technologie React
 * De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible
+
 * Afin de sécuriser au maximum votre MyCloudManager, aucun port n'est exposé sur internet mis à part le port 22 pour la management des instances de la stack ainsi que le port 1723 pour l'accès VPN PPTP.
+
+* Afin de sécuriser au maximum votre MyCloudManager, aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration OpenVPN.
+
 
 
 ## Préparations
@@ -103,7 +107,11 @@ Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion V
 
 Une fois la connexion initilisée vous pouvez ouvrir votre navigateur et y inscire l'url suivante :
 
+
 <p style="text-align:center";>http://manager.default.svc.mycloudmanager</p>
+
+Vous pouvez maintenant accéder à l'interface d'administration de la toolbox via l'url **http://MyCloudManager** et commencer à en tirer tout le bénéfice.
+
 
 C’est (déjà) FINI !
 
@@ -313,7 +321,9 @@ Ce tutoriel a pour but d'accélerer votre démarrage. A ce stade **vous** êtes 
 
 Vous avez un point d'entrée sur votre machine virtuelle en SSH via l'IP flottante exposée et votre clé privée (utilisateur `core` par défaut).
 
+
 <p style="text-align:center";>**[Manager Toolbox](http://manager.default.svc.mycloudmanager/)**</p>
+
 
 
 ## Et la suite ?
