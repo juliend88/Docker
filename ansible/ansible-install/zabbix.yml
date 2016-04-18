@@ -48,8 +48,8 @@
     - name: set StartAgent to 0
       lineinfile:
         name=/etc/zabbix/zabbix_agentd.conf
-        regexp=".*Server=.*"
-        line="StartAgent=0"
+        regexp=".*StartAgents=.*"
+        line="StartAgents=0"
       notify: restart zabbix
 
     - name: set Source IP
