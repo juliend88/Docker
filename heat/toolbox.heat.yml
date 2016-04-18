@@ -178,6 +178,8 @@ resources:
         properties:
           domain: { get_param: domain }
           master: 10.0.1.254
+          subnet: { get_resource: subnet }
+          nodeip: node-10.0.1.1%index%
           security_group: { get_resource: security_group }
           network: { get_resource: network }
           nodename: node-%index%

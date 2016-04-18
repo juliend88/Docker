@@ -7,6 +7,12 @@ parameters:
   nodename:
     label: nodename
     type: string
+  nodeip:
+    label: nodeip
+    type: string
+  subnet:
+    label: subnet
+    type: string
   network:
     label: network
     type: string
@@ -31,6 +37,9 @@ resources:
     type: OS::Neutron::Port
     properties:
       network: { get_param: network }
+      fixed_ips:
+        - ip_address: { get_param: nodeip }
+          subnet_id: { get_param: subnet }
       security_groups:
         - { get_param: security_group }
 
