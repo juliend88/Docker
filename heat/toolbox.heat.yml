@@ -184,7 +184,7 @@ resources:
           keypair_name: { get_param: keypair_name }
           flavor_name: { get_param: flavor_node }
 
-output:
+outputs:
   public_ip:
     description: VPN IP
     value: { get_attr: [floating_ip, floating_ip_address] }
