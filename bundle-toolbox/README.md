@@ -107,10 +107,7 @@ Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion V
 
 Une fois la connexion initilisée vous pouvez ouvrir votre navigateur et y inscire l'url suivante :
 
-
-<p style="text-align:center";>http://manager.default.svc.mycloudmanager</p>
-
-Vous pouvez maintenant accéder à l'interface d'administration de la toolbox via l'url **http://MyCloudManager** et commencer à en tirer tout le bénéfice.
+Vous pouvez maintenant accéder à l'interface d'administration de la toolbox via l'url **[MyCloudManager](http://manager.default.svc.mycloudmanager)** et commencer à en tirer tout le bénéfice.
 
 
 C’est (déjà) FINI !
@@ -322,7 +319,7 @@ Ce tutoriel a pour but d'accélerer votre démarrage. A ce stade **vous** êtes 
 Vous avez un point d'entrée sur votre machine virtuelle en SSH via l'IP flottante exposée et votre clé privée (utilisateur `core` par défaut).
 
 
-<p style="text-align:center";>**[Manager Toolbox](http://manager.default.svc.mycloudmanager/)**</p>
+**[Manager Toolbox](http://MyCloudManager/)**
 
 
 
