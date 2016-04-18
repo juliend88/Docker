@@ -1,6 +1,18 @@
 heat_template_version: 2013-05-23
 
 parameters:
+  public_ip:
+    label: public_ip
+    type: string
+  floating_ip:
+    label: floating_ip
+    type: string
+  vpn_username:
+    label: vpn_username
+    type: string
+  vpn_password:
+    label: vpn_password
+    type: string
   nodename:
     label: nodename
     type: string
@@ -84,12 +96,14 @@ resources:
         str_replace:
           params:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
-            $public_ipv4: { get_attr: [floating_ip, floating_ip_address] }
+            $public_ipv4: { get_param: public_ip }
             $domain: { get_param: domain }
             $os_username: { get_param: os_username }
             $os_password: { get_param: os_password }
             $os_tenant: { get_param: os_tenant }
             $os_auth: { get_param: os_auth }
+            $vpn_username: { get_param: vpn_username }
+            $vpn_password: { get_param: vpn_password }
           template: |
             #cloud-config
             write_files:
@@ -904,57 +918,31 @@ resources:
                     Type=oneshot
                     ExecStartPre=-/usr/bin/mkdir /data/keys
                     ExecStart=/usr/bin/ssh-keygen -t rsa -f /data/keys/key -N ""
-                - name: openvpn-init.service
+                - name: pptp.service
                   command: start
                   content: |
                     [Unit]
-                    Description=Toolbox VPN Init
+                    Description=PPTP
                     After=docker.service
                     Requires=docker.service
-                    Before=openvpn.service
-                    ConditionPathExists=!/home/core/vpn/openvpn.conf
-
-                    [Service]
-                    Type=oneshot
-                    TimeoutStartSec=0
-                    Environment=/etc/environment
-                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_genconfig -u tcp://$public_ipv4:1194 \
-                                                                                                                       -n 10.0.2.2 \
-                                                                                                                       -n 185.23.94.244 \
-                                                                                                                       -n 8.8.8.8 \
-                                                                                                                       -s 10.8.0.0/24 \
-                                                                                                                       -N \
-                                                                                                                       -p "route 10.0.2.0 255.255.255.0" \
-                                                                                                                       -p "route 10.0.3.0 255.255.255.0" \
-                                                                                                                       -p "dhcp-option DOMAIN-SEARCH $domain" \
-                                                                                                                       -p "dhcp-option DOMAIN-SEARCH svc.$domain" \
-                                                                                                                       -p "dhcp-option DOMAIN-SEARCH default.svc.$domain"
-                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn -e "EASYRSA_BATCH=1" -e "EASYRSA_REQ_CN=$domain" --rm kylemanna/openvpn ovpn_initpki nopass
-                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn easyrsa build-client-full cloud nopass
-                    ExecStart=/bin/bash -c "/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --rm kylemanna/openvpn ovpn_getclient cloud > /home/core/cloud.ovpn"
-                - name: openvpn.service
-                  command: start
-                  content: |
-                    [Unit]
-                    Description=Toolbox VPN
-                    After=docker.service openvpn-init.service
-                    Requires=docker.service openvpn-init.service
-
                     [Service]
                     TimeoutStartSec=0
-                    Environment=/etc/environment
-                    ExecStartPre=-/usr/bin/docker kill openvpn
-                    ExecStartPre=-/usr/bin/docker rm openvpn
-                    ExecStartPre=/usr/bin/docker pull kylemanna/openvpn
-                    ExecStart=/usr/bin/docker run -v /home/core/vpn:/etc/openvpn --name=openvpn -p 1194:1194/udp --cap-add=NET_ADMIN --net=host kylemanna/openvpn
-                    ExecStop=/usr/bin/docker stop openvpn
-  floating_ip:
-    type: OS::Neutron::FloatingIP
-    properties:
-      floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
+                    ExecStartPre=-/usr/bin/docker kill pptp
+                    ExecStartPre=-/usr/bin/docker rm pptp
+                    ExecStartPre=/usr/bin/docker pull cedbossneo/pptp
+                    ExecStart=/bin/bash -c "\
+                      docker run \
+                        --name pptp \
+                        --privileged \
+                        --net=host \
+                        --env "USERNAME=$vpn_username" \
+                        --env "PASSWORD=$vpn_password" \
+                        cedbossneo/pptp \
+                    "
+                    ExecStop=/usr/bin/docker stop pptp
 
   floating_ip_link:
     type: OS::Nova::FloatingIPAssociation
     properties:
-      floating_ip: { get_resource: floating_ip }
+      floating_ip: { get_param: floating_ip }
       server_id: { get_resource: master }

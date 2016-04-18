@@ -128,7 +128,22 @@ resources:
       rules:
         - { direction: ingress }
         - { direction: egress }
-        
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
+
+  vpn_username:
+    type: OS::Heat::RandomString
+    properties:
+      length: 10
+
+  vpn_password:
+    type: OS::Heat::RandomString
+    properties:
+      length: 10
+
   masters:
     type: OS::Heat::ResourceGroup
     properties:
@@ -149,6 +164,10 @@ resources:
           os_password: { get_param: os_password }
           os_tenant: { get_param: os_tenant }
           os_auth: { get_param: os_auth }
+          floating_ip: { get_resource: floating_ip }
+          public_ip: { get_attr: [floating_ip, floating_ip_address] }
+          vpn_username: { get_resource: vpn_username }
+          vpn_password: { get_resource: vpn_password }
 
   nodes:
     type: OS::Heat::ResourceGroup
@@ -165,3 +184,13 @@ resources:
           keypair_name: { get_param: keypair_name }
           flavor_name: { get_param: flavor_node }
 
+output:
+  public_ip:
+    description: VPN IP
+    value: { get_attr: [floating_ip, floating_ip_address] }
+  vpn_username:
+    description: VPN Username
+    value: { get_resource: vpn_username }
+  vpn_password:
+    description: VPN Password
+    value: { get_resource: vpn_password }
