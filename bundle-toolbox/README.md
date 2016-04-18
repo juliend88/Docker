@@ -15,12 +15,7 @@ MyCloudManager a entièrement été développée par l'équipe CAT - Cloudwatt A
 * L'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes
 * L'interface utilisateur est construite en technologie React
 * De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible
-
 * Afin de sécuriser au maximum votre MyCloudManager, aucun port n'est exposé sur internet mis à part le port 22 pour la management des instances de la stack ainsi que le port 1723 pour l'accès VPN PPTP.
-
-* Afin de sécuriser au maximum votre MyCloudManager, aucun port n'est exposé sur internet mis à part le port 22 afin de pouvoir récupérer un fichier de configuration OpenVPN.
-
-
 
 ## Préparations
 
