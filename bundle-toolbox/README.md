@@ -98,6 +98,7 @@ Voici la démarche à suivre :
 ![internet](img/internet.png)
 
 Entrée à présent les informations récupérée en sortie de la stack. Dans un premier temps la FloatingIP et ensuite le login et mot de passe fournis.
+
 ![info](img/infoconnexion.png)
 ![login](img/loginmdp.png)
 
