@@ -105,7 +105,6 @@ Une fois la connexion initilisée vous pouvez ouvrir votre navigateur et y insci
 
 Vous pouvez maintenant accéder à l'interface d'administration de la toolbox via l'url **[MyCloudManager](http://manager.default.svc.mycloudmanager)** et commencer à en tirer tout le bénéfice.
 
-
 C’est (déjà) FINI !
 
 
