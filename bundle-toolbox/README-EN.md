@@ -77,57 +77,45 @@ The **1-click** handles launch the necessary calls on Cloudwatt API :
 
 The stack is created automatically. You can see the progression clicking on its name which will take you to the Horizon console. When all modules become "green", the creation is finished.
 
-Wait **2 minutes** that the entire stack is available.
+Wait **5 minutes** that the entire stack is available.
 
 ### Finish OpenVPN access
 
-Only remains for you to retrieve the configuration file **Openvpn** `cloud.ovpn` to complete the installation and have access to the toolbox.
-
-* If you work with Mac or Linux [OpenVPN](https://openvpn.net/index.php/open-source/downloads.html) choosing the client corresponding to the OS of your computer.
-* If you are on Windows, we recommend using [Viscosity]([ici](https://www.sparklabs.com/downloads/Viscosity%20Installer.exe) and launch "as administrator".
-
-* In a shell , run the command to retrieve the file `cloud.ovpn` :
-```bash
-scp -i ~/.ssh/your_keypair core@FloatingIP:cloud.ovpn .
-```
-If you work with Windows you will need to bring a downloadable customer Winscp [her](https://winscp.net/download/winscp577setup.exe).
-
-* You must have your keypair and injected into the **Winscp** client, clicking on **Advanced** and then go into **SSH> Authentication**.
-![winscpconfen](img/winscpconfen.png)
-![addsshkeyen](img/addsshkeyen.png)
+In order to have access to all functionalities, we have set up a VPN connection.
 
 
-* By default the key is a `*.pem`. Winscp needs a `.ppk`. That is why it will offer to convert your key via PuTTYgen tool. Click OK to PuTTYgen starts.
+Here are the steps to follow :
 
-![convertputty](img/converttoputty.png)
+* First retrieve the output information of your stack,
 
-* Then click ` Save private key` and click on ` Yes` and place where you want on your post.
+![stack](img/sortie-stack.png)
 
-![savekey](img/saveprivatekey.png)
-![savekeyppk](img/savekey-ppk.png)
+* Must now create a VPN connection from your computer , go to "Control Panel > All Control Panel > Network and share center". Click " Set up a connection ....."
 
-* You have to add `.ppk` key Winscp
+![start](img/startvpn.png)
+![vpn](img/vpn.png)
+![internet](img/internet.png)
 
-![addppk](img/addppk.png)
 
-* You can now log in to the toolbox
+* Entry now the retrieved information in the output stack. Initially the *FloatingIP*  and then *login* and *password* provided.
 
-![connect](img/connect.png)
+![info](img/infoconnexion.png)
+![login](img/loginmdp.png)
 
-* You must copy the `cloud.ovpn` file and open it with the customer Openvpn or Viscosity previously download.
 
-![scpcloudovpn](img/scpcloudovpn.png)
+After following this procedure you can now start the VPN connection.
 
-* Once this is done , add the configuration file to your Openvpn client (ex on windows, double click on `cloud.ovpn` file)
+![vpnstart](img/launchvpn.png)
 
-You can now access to the admin interface via l'url **http://manager** and begin to reap the benefit.
+
+You can now access the toolbox of the administration interface via the URL **[MyCloudManager](http://manager.default.svc.mycloudmanager)** and begin to reap the benefit.
 
 It's (already) over !
 
 
 ## Enjoy
 
-Access to the interface and the various applications is via **DNS** names. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the short names in place. You can access different web interfaces for applications by clicking **Go** or via URL request (ex: http://zabbix/).
+Access to the interface and the various applications is via **DNS** names. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the short names in place. You can access different web interfaces for applications by clicking **Go** or via URL request (ex: http://zabbix.default.svc.mycloudmanager/).
 
 Also we attached a volume to your stack in order to save all **data** containers of the toolbox , so you can go back in a new instance. The volume is mounted on the master instance in the directory `/dev/vdb`.
 

@@ -78,7 +78,7 @@ Attendez **5 minutes** que l'ensemble soit complètement initialisé.
 
 ### Finaliser l'accès VPN
 
-Afin d'avoir accès à l'ensemble des fonctionnalitées de la toolbox, nous avons mis en place une connexion VPN.
+Afin d'avoir accès à l'ensemble des fonctionnalitées, nous avons mis en place une connexion VPN.
 
 Voici la démarche à suivre :
 
@@ -86,13 +86,13 @@ Voici la démarche à suivre :
 
 ![stack](img/sortie-stack.png)
 
-* il faut maintenant créer une connexion VPN depuis votre poste, rendez dans "le panneau de configuration > Tous les Panneaux de configuration > Centre Réseau et paratage". Cliquez ensuite sur "Configurer une nouvelle connexion ..... "
+* il faut maintenant créer une connexion VPN depuis votre poste, rendez dans "le panneau de configuration > Tous les Panneaux de configuration > Centre Réseau et partage". Cliquez ensuite sur "Configurer une nouvelle connexion ..... "
 
 ![start](img/startvpn.png)
 ![vpn](img/vpn.png)
 ![internet](img/internet.png)
 
-Entrée à présent les informations récupérées en sortie de la stack. Dans un premier temps la *FloatingIP* et ensuite le *login* et *mot de passe* fournis.
+* Entrée à présent les informations récupérées en sortie de la stack. Dans un premier temps la *FloatingIP* et ensuite le *login* et *mot de passe* fournis.
 
 ![info](img/infoconnexion.png)
 ![login](img/loginmdp.png)
@@ -100,8 +100,6 @@ Entrée à présent les informations récupérées en sortie de la stack. Dans u
 Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion VPN.
 
 ![vpnstart](img/launchvpn.png)
-
-Une fois la connexion initilisée vous pouvez ouvrir votre navigateur et y inscire l'url suivante :
 
 Vous pouvez maintenant accéder à l'interface d'administration de la toolbox via l'url **[MyCloudManager](http://manager.default.svc.mycloudmanager)** et commencer à en tirer tout le bénéfice.
 
