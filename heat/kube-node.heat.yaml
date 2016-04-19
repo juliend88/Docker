@@ -52,10 +52,10 @@ resources:
       user_data_format: RAW
       name:
         str_replace:
-        template: cust%-proj%
-        params:
-        "cust%": { get_param: 'OS::stack_name' }
-        "proj%": {get_param: nodename}
+          template: $stack-$node
+          params:
+            $stack: { get_param: 'OS::stack_name' }
+            $node: { get_param: nodename}
       networks:
         - port: { get_resource: port }
       user_data:

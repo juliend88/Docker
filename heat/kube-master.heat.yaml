@@ -91,10 +91,10 @@ resources:
       user_data_format: RAW
       name:
         str_replace:
-        template: cust%-proj%
-        params:
-        "cust%": { get_param: 'OS::stack_name' }
-        "proj%": {get_param: nodename}
+          template: $stack-$node
+          params:
+            $stack: { get_param: 'OS::stack_name' }
+            $node: { get_param: nodename}
       networks:
         - port: { get_resource: port }
       user_data:
@@ -662,7 +662,7 @@ resources:
                         volumes:
                           - name: rethinkdb-storage
                             nfs:
-                              server: $master
+                              server: $private_ipv4
                               path: /data/rethinkdb
               - path: /etc/kubernetes/descriptors/7-toolbox-service.yaml
                 permissions: 0666
@@ -736,7 +736,7 @@ resources:
                         volumes:
                           - name: keys-storage
                             nfs:
-                              server: $master
+                              server: $private_ipv4
                               path: /data/keys
               - path: /etc/environment
                 permissions: 0666
