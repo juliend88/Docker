@@ -130,7 +130,7 @@ resources:
                           path: "/etc/kubernetes/worker-$fqdn-kubeconfig.yaml"
                       - name: "etc-kube-ssl"
                         hostPath:
-                          path: "/data/kubernetes/ssl"
+                          path: "/etc/kubernetes/ssl"
               - path: /opt/bin/kubelet-wrapper
                 permissions: 0700
                 owner: "root:root"
@@ -158,7 +158,7 @@ resources:
 
                   exec /usr/bin/rkt run \
                     --volume etc-kubernetes,kind=host,source=/etc/kubernetes \
-                    --volume etc-kubernetes-ssl,kind=host,source=/data/kubernetes/ssl \
+                    --volume etc-kubernetes-ssl,kind=host,source=/etc/kubernetes/ssl \
                     --volume etc-ssl-certs,kind=host,source=/usr/share/ca-certificates \
                     --volume var-lib-docker,kind=host,source=/var/lib/docker \
                     --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet \
@@ -187,8 +187,21 @@ resources:
                 owner: "root:root"
                 content: |
                   #!/bin/bash
-                  mkdir -p /data/kubernetes/ssl
-                  cd /data/kubernetes/ssl
+                  mkdir -p /etc/kubernetes/ssl
+                  cd /etc/kubernetes/ssl
+                  # Worker Config
+                  cat <<EOF > worker-openssl.cnf
+                  [req]
+                  req_extensions = v3_req
+                  distinguished_name = req_distinguished_name
+                  [req_distinguished_name]
+                  [ v3_req ]
+                  basicConstraints = CA:FALSE
+                  keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+                  subjectAltName = @alt_names
+                  [alt_names]
+                  IP.1 = \$ENV::WORKER_IP
+                  EOF
                   # Worker CA
                   echo "Waiting for Kubernetes to be Started..."
                   K8S="http://$master:8080"
@@ -204,12 +217,14 @@ resources:
                           break
                       fi
                   done
+                  etcdctl get /ssl/ca > ca.pem
+                  etcdctl get /ssl/key > ca-key.pem
                   openssl genrsa -out worker-$fqdn-key.pem 2048
                   WORKER_IP=$private_ipv4 openssl req -new -key worker-$fqdn-key.pem -out worker-$fqdn.csr -subj "/CN=$fqdn" -config worker-openssl.cnf
                   WORKER_IP=$private_ipv4 openssl x509 -req -in worker-$fqdn.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out worker-$fqdn.pem -days 365 -extensions v3_req -extfile worker-openssl.cnf
                   # Set permissions
-                  chmod 600 /data/kubernetes/ssl/*-key.pem
-                  chown root:root /data/kubernetes/ssl/*-key.pem
+                  chmod 600 /etc/kubernetes/ssl/*-key.pem
+                  chown root:root /etc/kubernetes/ssl/*-key.pem
             coreos:
               etcd2:
                 proxy: on
@@ -221,26 +236,13 @@ resources:
                 - name: rpc-statd.service
                   command: start
                   enable: true
-                - name: data.mount
-                  command: start
-                  content: |
-                    [Unit]
-                    Description=Mount volume to /data
-                    Requires=rpc-statd.service
-                    After=rpc-statd.service
-                    [Mount]
-                    What=$master:/data
-                    Where=/data
-                    TimeoutSec=0
-                    DirectoryMode=0777
-                    Type=nfs
                 - name: generatessl.service
                   command: start
                   content: |
                     [Unit]
-                    Requires=data.mount
-                    After=data.mount
-                    ConditionPathExists=!/data/kubernetes/ssl/worker-$fqdn-key.pem
+                    Requires=etcd2.service
+                    After=etcd2.service
+                    ConditionPathExists=!/etc/kubernetes/ssl/worker-$fqdn-key.pem
                     Description=Kubernetes Keys Generator
 
                     [Service]
@@ -257,8 +259,8 @@ resources:
                     - name: 40-flannel.conf
                       content: |
                         [Unit]
-                        Requires=data.mount flanneld.service
-                        After=data.mount flanneld.service
+                        Requires=generatessl.service flanneld.service
+                        After=generatessl.service flanneld.service
                 - name: kubelet.service
                   command: start
                   content: |

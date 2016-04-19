@@ -98,8 +98,8 @@ resources:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $public_ipv4: { get_param: public_ip }
             $domain: { get_param: domain }
-            $os_username: { get_param: os_username }
-            $os_password: { get_param: os_password }
+            $os_username: { "Fn::Base64": [get_param, "os_username"] }
+            $os_password: { "Fn::Base64": [get_param, "os_password"] }
             $os_tenant: { get_param: os_tenant }
             $os_auth: { get_param: os_auth }
             $vpn_username: { get_param: vpn_username }
@@ -140,7 +140,7 @@ resources:
 
                   exec /usr/bin/rkt run \
                     --volume etc-kubernetes,kind=host,source=/etc/kubernetes \
-                    --volume etc-kubernetes-ssl,kind=host,source=/data/kubernetes/ssl \
+                    --volume etc-kubernetes-ssl,kind=host,source=/etc/kubernetes/ssl \
                     --volume etc-ssl-certs,kind=host,source=/usr/share/ca-certificates \
                     --volume var-lib-docker,kind=host,source=/var/lib/docker \
                     --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet \
@@ -251,7 +251,7 @@ resources:
                         readOnly: true
                     volumes:
                     - hostPath:
-                        path: /data/kubernetes/ssl
+                        path: /etc/kubernetes/ssl
                       name: ssl-certs-kubernetes
                     - hostPath:
                         path: /usr/share/ca-certificates
@@ -371,7 +371,7 @@ resources:
                         readOnly: true
                     volumes:
                     - hostPath:
-                        path: /data/kubernetes/ssl
+                        path: /etc/kubernetes/ssl
                       name: ssl-certs-kubernetes
                     - hostPath:
                         path: /usr/share/ca-certificates
@@ -401,6 +401,18 @@ resources:
                           port: 10251
                         initialDelaySeconds: 15
                         timeoutSeconds: 1
+              - path: /etc/kubernetes/descriptors/secret.yaml
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  apiVersion: v1
+                  kind: Secret
+                  metadata:
+                    name: openstack
+                  type: Opaque
+                  data:
+                    password: $os_username
+                    username: $os_password
               - path: /etc/kubernetes/descriptors/1-skydns-service.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -644,7 +656,8 @@ resources:
                                 name: rethinkdb-storage
                         volumes:
                           - name: rethinkdb-storage
-                            hostPath:
+                            nfs:
+                              server: $master
                               path: /data/rethinkdb
               - path: /etc/kubernetes/descriptors/7-toolbox-service.yaml
                 permissions: 0666
@@ -699,9 +712,15 @@ resources:
                               - name: OS_TENANT_NAME
                                 value: "$os_tenant"
                               - name: OS_USERNAME
-                                value: "$os_username"
+                                valueFrom:
+                                  secretKeyRef:
+                                    name: openstack
+                                    key: username
                               - name: OS_PASSWORD
-                                value: "$os_password"
+                                valueFrom:
+                                  secretKeyRef:
+                                    name: openstack
+                                    key: password
                               - name: REPLICAS
                                 value: "1"
                             ports:
@@ -711,7 +730,8 @@ resources:
                                 name: keys-storage
                         volumes:
                           - name: keys-storage
-                            hostPath:
+                            nfs:
+                              server: $master
                               path: /data/keys
               - path: /etc/environment
                 permissions: 0666
@@ -743,8 +763,8 @@ resources:
                 owner: "root:root"
                 content: |
                   #!/bin/bash
-                  mkdir -p /data/kubernetes/ssl
-                  cd /data/kubernetes/ssl
+                  mkdir -p /etc/kubernetes/ssl
+                  cd /etc/kubernetes/ssl
                   # Config
                   cat <<EOF > openssl.cnf
                   [req]
@@ -763,19 +783,6 @@ resources:
                   IP.1 = 10.0.2.1
                   IP.2 = $private_ipv4
                   EOF
-                  # Worker Config
-                  cat <<EOF > worker-openssl.cnf
-                  [req]
-                  req_extensions = v3_req
-                  distinguished_name = req_distinguished_name
-                  [req_distinguished_name]
-                  [ v3_req ]
-                  basicConstraints = CA:FALSE
-                  keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-                  subjectAltName = @alt_names
-                  [alt_names]
-                  IP.1 = \$ENV::WORKER_IP
-                  EOF
                   # Root CA
                   openssl genrsa -out ca-key.pem 2048
                   openssl req -x509 -new -nodes -key ca-key.pem -days 10000 -out ca.pem -subj "/CN=kube-ca"
@@ -788,8 +795,11 @@ resources:
                   openssl req -new -key admin-key.pem -out admin.csr -subj "/CN=kube-admin"
                   openssl x509 -req -in admin.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out admin.pem -days 365
                   # Set permissions
-                  chmod 600 /data/kubernetes/ssl/*-key.pem
-                  chown root:root /data/kubernetes/ssl/*-key.pem
+                  chmod 600 /etc/kubernetes/ssl/*-key.pem
+                  chown root:root /etc/kubernetes/ssl/*-key.pem
+                  # Export CA to Etcd
+                  curl --silent -X PUT --data-urlencode value@ca.pem "http://localhost:2379/v2/keys/ssl/ca"
+                  curl --silent -X PUT --data-urlencode value@ca-key.pem "http://localhost:2379/v2/keys/ssl/key"
 
             coreos:
               etcd2:
@@ -851,7 +861,7 @@ resources:
                     [Unit]
                     Requires=data.mount
                     After=data.mount
-                    ConditionPathExists=!/data/kubernetes/ssl
+                    ConditionPathExists=!/etc/kubernetes/ssl
                     Description=Kubernetes Keys Generator
 
                     [Service]
