@@ -98,8 +98,8 @@ resources:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $public_ipv4: { get_param: public_ip }
             $domain: { get_param: domain }
-            $os_username: { "Fn::Base64": {get_param: os_username} }
-            $os_password: { "Fn::Base64": {get_param: os_password} }
+            $os_username: { get_param: os_username}
+            $os_password: { get_param: os_password}
             $os_tenant: { get_param: os_tenant }
             $os_auth: { get_param: os_auth }
             $vpn_username: { get_param: vpn_username }
@@ -401,18 +401,6 @@ resources:
                           port: 10251
                         initialDelaySeconds: 15
                         timeoutSeconds: 1
-              - path: /etc/kubernetes/descriptors/0-secret.yaml
-                permissions: 0666
-                owner: "root:root"
-                content: |
-                  apiVersion: v1
-                  kind: Secret
-                  metadata:
-                    name: openstack
-                  type: Opaque
-                  data:
-                    password: "$os_username"
-                    username: "$os_password"
               - path: /etc/kubernetes/descriptors/1-skydns-service.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -763,6 +751,17 @@ resources:
                   #!/bin/bash
                   mkdir -p /etc/kubernetes/ssl
                   cd /etc/kubernetes/ssl
+                  # Secret
+                  cat <<EOF > /etc/kubernetes/descriptors/0-secret.yaml
+                  apiVersion: v1
+                  kind: Secret
+                  metadata:
+                    name: openstack
+                  type: Opaque
+                  data:
+                    password: $(echo -n $os_password | base64)
+                    username: $(echo -n $os_username | base64)
+                  EOF
                   # Config
                   cat <<EOF > openssl.cnf
                   [req]
