@@ -759,8 +759,8 @@ resources:
                     name: openstack
                   type: Opaque
                   data:
-                    password: "$(echo -n $os_username | base64)"
-                    username: "$(echo -n $os_password | base64)"
+                    password: $(echo -n $os_username | base64)
+                    username: $(echo -n $os_password | base64)
                   EOF
                   # Config
                   cat <<EOF > openssl.cnf
