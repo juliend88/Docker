@@ -152,7 +152,11 @@ resources:
       resource_def:
         type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/kube-master.heat.yaml
         properties:
-          nodename: master-%index%
+          nodename:
+            str_replace:
+              template: $stack-%index%
+              params:
+                $stack: { get_param: 'OS::stack_name' }
           domain: { get_param: domain }
           subnet: { get_resource: subnet }
           security_group: { get_resource: security_group }
@@ -183,7 +187,11 @@ resources:
           nodeip: 10.0.1.1%index%
           security_group: { get_resource: security_group }
           network: { get_resource: network }
-          nodename: node-%index%
+          nodename:
+            str_replace:
+              template: $stack-%index%
+              params:
+                $stack: { get_param: 'OS::stack_name' }
           keypair_name: { get_param: keypair_name }
           flavor_name: { get_param: flavor_node }
 
