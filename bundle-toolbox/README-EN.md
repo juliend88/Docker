@@ -10,29 +10,27 @@ This first version of the toolbox (Beta) is a different stack of everything the 
 * Mirror yum and apt
 * Time synchronization
 
-This toolbox has been completely developed by the CAT team ( Cloudwatt Automation Team).
+MyCloudManager has been completely developed by the CAT team ( Cloudwatt Automation Team).
 * The user interface is made ​​with react technology;
 * it base on a CoreOS instance
 * all applications are deployed via Docker containers on a Kubernetes infrastructure.
+* The user interface is built in technology React
 * Also you can install or configure, from the GUI, all the applications on your instances via Ansible playbooks.
-
-To secure maximum toolbox that no port is exposed on the internet except port 22 in order to download a Openvpn configuration file. This method is explained later in the article.
+* To secure maximum your Cloudmanager, no port is exposed on the internet apart from port 22 to the management of the stack of bodies and port 1723 for PPTP VPN access.
 
 
 ## Preparations
 
 ### The prerequisites
 
-These should be routine by now:
  * Internet access
  * A Linux shell
  * A [Cloudwatt account](https://www.cloudwatt.com/cockpit/#/create-contact) with a [valid keypair](https://console.cloudwatt.com/project/access_and_security/?tab=access_security_tabs__keypairs_tab)
- * The tools of the trade: [OpenStack CLI](http://docs.openstack.org/cli-reference/content/install_clients.html)
+ * The tools [OpenStack CLI](http://docs.openstack.org/cli-reference/content/install_clients.html)
  * A [OpenVPN](https://openvpn.net/) client
 
 ### Initialize the environment
 
-This will be useful to start the secure VPN connection.
 
 Have your Cloudwatt credentials in hand and click [HERE](https://console.cloudwatt.com/project/access_and_security/api_access/openrc/).
 If you are not logged in yet, you will go thru the authentication screen then the script download will start. Thanks to it, you will be able to initiate the shell accesses towards the Cloudwatt APIs.
@@ -50,21 +48,22 @@ Once this done, the Openstack command line tools can interact with your Cloudwat
 
 ### The 1-click
 
-This toolbox can be launch with the **1-click** of **Cloudwatt** via the web page [Apps page](https://www.cloudwatt.com/fr/applications/index.html) on the Cloudwatt website, choose the toolbox apps, press **DEPLOYER**.
+MyCloudManager start with the **1-click** of **Cloudwatt** via the web page [Apps page](https://www.cloudwatt.com/fr/applications/index.html) on the Cloudwatt website.
+Choose MyCloudManager apps, press **DEPLOYER**.
 
 After entering your login / password to your account, launch the wizard appears:
 
 ![oneclick](img/oneclick.png)
 
 
-As you may have noticed the 1-Click wizard asked to reenter your password Openstack, this will be fixed in a future version of the toolbox.
-You will find [her]((https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) your **tenant ID**, it's  same as **Projet ID**.
+As you may have noticed the 1-Click wizard asked to reenter your password Openstack (this will be fixed in a future version of MyCloudManager)
+You will find [her]((https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) your **tenant ID**, it's  same as **Projet ID**. It will be necessary to complete the wizard.
 
-By default, the stack deploys on an instance of type "standard-4" (n2.cw.standard-4). A variety of other instance types exist to suit your various needs, allowing you to pay only for the services you need. Instances are charged by the minute and capped at their monthly price (you can find more details on the [Pricing page](https://www.cloudwatt.com/en/pricing.html) on the Cloudwatt website).
+By default, the stack deploys on two instances of type "standard-4" (n2.cw.standard-4). A variety of other instance types exist to suit your various needs, allowing you to pay only for the services you need. Instances are charged by the minute and capped at their monthly price (you can find more details on the [Pricing page](https://www.cloudwatt.com/en/pricing.html) on the Cloudwatt website).
 
-You must indicate the type (standard or high performance ) and the size of the block volume that will be attached to your stack via the `volume_size` parameter.
+You must indicate the type [(standard ou performant)](https://www.cloudwatt.com/fr/produits/stockage-bloc/) and the size of the block volume that will be attached to your stack via the `volume_size` parameter.
 
-Finally , you can set a number of nodes to distribute the load. By default, the toolbox will be deployed on 1 instance *master* and 1 *slave* node. At maximum, the toolbox v1 deploy on one instance *master* and 3 *slave* node.
+Finally , you can set a number of nodes to distribute the load. By default, the toolbox will be deployed on 1 instance *master* and 1 *slave* node. At maximum, MyCloudManager Beta deploy on one instance *master* and 3 *slave* node.
 
 Press **LANCER**.
 
@@ -73,7 +72,7 @@ The **1-click** handles launch the necessary calls on Cloudwatt API :
 * Start an instance based on CoreOS,
 * Create and attach a block volume,
 * Start the **toolbox** container,
-* Launch **SkyDNS** container
+* Start the **SkyDNS** container
 
 The stack is created automatically. You can see the progression clicking on its name which will take you to the Horizon console. When all modules become "green", the creation is finished.
 
@@ -82,7 +81,6 @@ Wait **5 minutes** that the entire stack is available.
 ### Finish OpenVPN access
 
 In order to have access to all functionalities, we have set up a VPN connection.
-
 
 Here are the steps to follow :
 
@@ -115,17 +113,17 @@ It's (already) over !
 
 ## Enjoy
 
-Access to the interface and the various applications is via **DNS** names. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the short names in place. You can access different web interfaces for applications by clicking **Go** or via URL request (ex: http://zabbix.default.svc.mycloudmanager/).
+Access to the interface and the various applications is via **DNS** names. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the names in place. You can access on the different web interfaces applications by clicking **Go** or via URL request (ex: http://zabbix.default.svc.mycloudmanager/).
 
 Also we attached a volume to your stack in order to save all **data** containers of the toolbox , so you can go back in a new instance. The volume is mounted on the master instance in the directory `/dev/vdb`.
 
 #### Interface Overview
 
-Here is the home of the toolbox, each thumbnail representing an application ready to be launched. In order to be as scalable and flexible as possible, all applications of this toolbox are containers Docker.
+Here is the home of the MyCloudManager, each thumbnail representing an application ready to be launched. In order to be as scalable and flexible as possible, all applications of MyCloudManager are containers Docker.
 
 ![accueil](img/accueil.png)
 
-A menu is present in the top left of the page , it can move through the different sections of the toolbox , we'll detail them later .
+A menu is present in the top left of the page, it can move through the different sections of MyCloudManager, we'll detail them later.
 * Apps: Application List
 * Instances: list of visible instances of the toolbox
 * Tasks : all ongoing or completed tasks
@@ -135,29 +133,37 @@ A menu is present in the top left of the page , it can move through the differen
 
 ![menu](img/menu.png)
 
-The **tasks** make the tracking of actions performed on the toolbox . It is reported in relative time.
-
-![tasks](img/tasks.png)
-
-All of these containers can be configured thanks to the **Settings** button ![settings](img/settings.png) on each thumbnail.
+All of the applications in the **Apps** section are configurable through by **Settings** button ![settings](img/settings.png) on each thumbnail.
 
 As you can see, we have separated them into different sections.
 ![params](img/params.png)
 
 In the **Info** section you will find a presentation of the application with some useful links on the application.
-
 ![appresume](img/appresume.png)
 
+In the **Environments** section you can register here all the parameters to be used to configure the variables of the container to its launch environment.
+![paramsenv](img/paramenv.png)
 
- In the **Environments** section you can register here all the parameters to be used to configure the variables of the container to its launch environment.
- ![paramsenv](img/paramenv.png)
-
-  In the **Parameters** section you can register here all the different application configuration settings.
-  ![paramapp](img/paramapp.png)
+In the **Parameters** section you can register here all the different application configuration settings.
+![paramapp](img/paramapp.png)
 
 
-To identify the applications running, we have set up a color code. An application will be started with a **green halo**.
+To identify the applications running on those that are not, we have set up a color code : An application is started will be surrounded by a **green halo** and a **yellow halo** during installation.
 ![appstart](img/appstart.png)
+
+The **tasks** make the tracking of actions performed on MyCloudManager. It is reported in relative time.
+
+![tasks](img/tasks.png)
+
+It is possible for you to cancel pending on error spot in the **tasks** menu by clicking ![horloge](img/horloge.png) which will then show you what logo ![poubelle](img/poubelle.png).
+
+We also implemented a **audit** section so you can see all actions performed on each of your instances and export to Excel (.xlsx ) if you want to make a post-processing or keep this information for safety reasons via the button ![xlsx](img/xlsx.png).
+
+![audit](img/audit.png)
+
+
+Finally , we integrated two links in the MyCloudManager menu : **My Instances** and **My Account**. They are respectively used to access the Horizon Cloudwatt console and manage your account via the Cockpit interface.
+
 
 ### Add instances to my Toolbox
 
@@ -185,10 +191,9 @@ Once this is done you are now in the ability to add your instance to the toolbox
 #### 2. Start the attachment script:
 
 
-Go to the **instance** menu and click the button ![bouton](img/plus.png) at the bottom right.
+On MyCloudManager, go to the **instance** menu and click the button ![bouton](img/plus.png) at the bottom right.
 
-
-We offer two commands to choose: one **Curl** and one **Wget** copy into the instance to exploit in a shell.
+We offer two commands to choose: one **Curl** and one **Wget**. Copy into the instance to exploit in a shell.
 
 ![addinstance](img/addinstance.png)
 
@@ -198,7 +203,7 @@ Once the script is applied to the selected instance it should appear in the menu
 ![appdisable](img/appdisable.png)
 
 
-**Trick** If you want to create an instance via the console horizon Cloudwatt and declare **directly** in your toolbox, you should to select - in step 3 of the instance launch wizard - the toolbox network and - in step 4 - you can paste the **Curl** or **Wget** command in the Custom Script field. Don't forget to add the shebang `#!/bin/bash`.
+**Trick** If you want to create an instance via the console horizon Cloudwatt and declare **directly** in your MyCloudManager, you should to select - in step 3 of the instance launch wizard - the toolbox network and - in step 4 - you can paste the **Curl** or **Wget** command in the Custom Script field. Don't forget to add the shebang `#!/bin/bash`.
 
 ![attachnetwork](img/attachnetwork.png)
 
@@ -215,23 +220,14 @@ Once the application is installed, the application logo switch to color, allowin
 ![appenable](img/appenable.png)
 
 
-It is possible for you to cancel pending on error spot in the **tasks** menu by clicking ![horloge](img/horloge.png) which will then show you this logo ![poubelle](img/poubelle.png).
-
-We also implemented a **audit** section, so you can see all actions performed on each of your instances and export to Excel (.xlsx ). If you want to make a post-processing or keep this information for safety reasons via the button ![xlsx](img/xlsx.png).
-
-![audit](img/audit.png)
+## The MyCloudManager services provided by applications
 
 
-Finally, we integrated two links in the menu of the toolbox : **My instance** and **My Account**. They are respectively used to access to the Horizon Cloudwatt console and access to the Cockpit interface to manage your account.
-
-
-## Services provided by applications
-
-In this section, we will present the different services of this Toolbox.
+In this section, we will present different service MyCloudManager.
 
 ### Monitoring and supervision
-We have chosen to use Zabbix, the most popular application for monitoring, supervision and alerting .
-Zabbix application is free software **to monitor the status of various network services , servers and other network devices**; and producing dynamic graphics resource consumption.
+We have chosen to use *Zabbix*, the most popular application for monitoring, supervision and alerting .
+Zabbix application is free software **to monitor the status of various network services , servers and other network devices** but also **applications and software** worn on the supervised servers; and producing dynamic graphics resource consumption.
 Zabbix uses MySQL, PostgreSQL or Oracle to store data. According to the large number of machines and data to monitor the choice of SGBD greatly affects performance. Its web interface is written in PHP and provided a real-time view on the collected metrics.
 
 To go further, here are some helpful links :
@@ -246,7 +242,7 @@ Graylog is an open source **log management** platform capable of manipulating an
   * At the heart of Graylog is it's own strong software. Graylog Server interacts with all other components using REST APIs so that each component of the system can be scaled without comprimising the integrity of the system as a whole.
   * Real-time search results when you want them and how you want them: Graylog is only able to provide this thanks to the tried and tested power of Elasticsearch. The Elasticsearch nodes behind the scenes give Graylog the speed that makes it a real pleasure to use.
 
-Enjoying this impressive architecture and a large library of plugins, Graylog stands as a strong and versatile solution for log management.
+Enjoying this impressive architecture and a large library of plugins, Graylog stands as a strong and versatile solution for **log management both instances** but also worn **applications and software** on monitored instances.
 
 To go further, here are some helpful links :
 * https://www.graylog.org/
@@ -275,7 +271,7 @@ To go further, here are some helpful links :
 
 
 ### APT mirror
-To meet this need we have chosen to use Aptly.
+To meet this need we have chosen to use *Aptly*.
 This is a **APT package manager**. It allows you to mirror a web APT directory to distribute it to all your machines into which they do not necessarily  access to internet via a Nginx server.
 
 To go further, here are some helpful links :
@@ -284,7 +280,7 @@ To go further, here are some helpful links :
 
 
 ###Mirror YUM
-We have chosen to use Nexus.
+We have chosen to use *Nexus*.
 Nexus is an application that can display any type of directory server via a Ngnix . Here our aim is to offer an application that can **expose a YUM repository** for all of your instances.
 
 To go further, here are some helpful links :
@@ -299,7 +295,7 @@ NTP container is used here so that all of your instances without access to the i
 To go further, here are some helpful links :
   * http://www.pool.ntp.org/fr/
 
-### The Toolbox versions **v1** (Beta)
+### The MyCloudManager versions **v1** (Beta)
 
   - CoreOS Stable 899.13.0
   - Docker 1.10.3
@@ -321,12 +317,12 @@ The goal of this tutorial is to accelerate your start. At this point **you** are
 
 You now have an SSH access point on your virtual machine through the floating-IP and your private keypair (default user name `core`).
 
-**[Manager Toolbox](http://manager/)**
+You can access the administration interface toolbox via the URL **[MyCloudManager](http://manager.default.svc.mycloudmanager)**
 
 
 ## And afterwards?
 
-This article will acquaint you with this first version of the toolbox. It is available to all users Cloudwatt in **Beta mode** and therefore currently free.
+This article will acquaint you with this first version of MyCloudManager. It is available to all users Cloudwatt in **Beta mode** and therefore currently free.
 
 
 The intention of the CAT ( Cloudwatt Automation Team) is to provide improvements on a monthly basis. In our roadmap, we expect among others:
