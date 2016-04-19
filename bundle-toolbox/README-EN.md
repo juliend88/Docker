@@ -1,6 +1,6 @@
 # Innovation Beta: MyCloudManager #
 
-This first version of the toolbox (Beta) is a different stack of everything the team was able to share with you so far.This aims to bring you a set of tools to **unify, harmonize and monitor your tenant**. In fact it contains a lot of different applications that aims to help you manage day by day of your instances:
+This first version of MyCloudManager (Beta) is a different stack of everything the team was able to share with you so far.This aims to bring you a set of tools to **unify, harmonize and monitor your tenant**. In fact it contains a lot of different applications that aims to help you manage day by day of your instances:
 * Monitoring and Supervision
 * Log management
 * Jobs Scheduler
@@ -113,7 +113,7 @@ It's (already) over !
 
 Access to the interface and the various applications is via **DNS** names. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the names in place. You can access on the different web interfaces applications by clicking **Go** or via URL request (ex: http://zabbix.default.svc.mycloudmanager/).
 
-Also we attached a volume to your stack in order to save all **data** containers of the toolbox , so you can go back in a new instance. The volume is mounted on the master instance in the directory `/dev/vdb`.
+Also we attached a volume to your stack in order to save all **data** containers of MyCloudManager , so you can go back in a new instance. The volume is mounted on the master instance in the directory `/dev/vdb`.
 
 #### Interface Overview
 
@@ -123,7 +123,7 @@ Here is the home of the MyCloudManager, each thumbnail representing an applicati
 
 A menu is present in the top left of the page, it can move through the different sections of MyCloudManager, we'll detail them later.
 * Apps: Application List
-* Instances: list of visible instances of the toolbox
+* Instances: list of visible instances of MyCloudManager
 * Tasks : all ongoing or completed tasks
 * Audit: list of actions performed
 * My Instances> Console: access to the console Horizon
@@ -163,11 +163,11 @@ We also implemented a **audit** section so you can see all actions performed on 
 Finally , we integrated two links in the MyCloudManager menu : **My Instances** and **My Account**. They are respectively used to access the Horizon Cloudwatt console and manage your account via the Cockpit interface.
 
 
-### Add instances to my Toolbox
+### Add instances to MyCloudManager
 
-To add instances to the toolbox, 3 steps:
+To add instances to MyCloudManager, 3 steps:
 
-  1. Attach your router instance of the toolbox
+  1. Attach your router instance of MyCloudManager
   1. Run the script attachment
   3. Start the desired services
 
@@ -175,7 +175,7 @@ To add instances to the toolbox, 3 steps:
 #### 1. Attach the instance at the instance of router:
 
 ~~~bash
-$ neutron router-interface-add $Toolbox_ROUTER_ID $Instance_subnet_ID
+$ neutron router-interface-add $MyCloudManager_ROUTER_ID $Instance_subnet_ID
 ~~~
 
 You will find all the information by inspecting the stack of resources via the command next heat :
@@ -184,7 +184,7 @@ You will find all the information by inspecting the stack of resources via the c
 $ heat resource-list $stack_name
 ~~~
 
-Once this is done you are now in the ability to add your instance to the toolbox to instrumentalize .
+Once this is done you are now in the ability to add your instance to MyCloudManager to instrumentalize .
 
 #### 2. Start the attachment script:
 
@@ -196,12 +196,12 @@ We offer two commands to choose: one **Curl** and one **Wget**. Copy into the in
 ![addinstance](img/addinstance.png)
 
 
-Once the script is applied to the selected instance it should appear in the menu **instance** of your toolbox .
+Once the script is applied to the selected instance it should appear in the menu **instance** of your MyCloudManager .
 
 ![appdisable](img/appdisable.png)
 
 
-**Trick** If you want to create an instance via the console horizon Cloudwatt and declare **directly** in your MyCloudManager, you should to select - in step 3 of the instance launch wizard - the toolbox network and - in step 4 - you can paste the **Curl** or **Wget** command in the Custom Script field. Don't forget to add the shebang `#!/bin/bash`.
+**Trick** If you want to create an instance via the console horizon Cloudwatt and declare **directly** in your MyCloudManager, you should to select - in step 3 of the instance launch wizard - MyCloudManager network and - in step 4 - you can paste the **Curl** or **Wget** command in the Custom Script field. Don't forget to add the shebang `#!/bin/bash`.
 
 ![attachnetwork](img/attachnetwork.png)
 
@@ -252,7 +252,7 @@ To go further, here are some helpful links :
 
 ### Job Scheduler
 We have chosen to use Rundeck.
-The Rundeck application will allow you **to schedule and organize all jobs** that you want to deploy consistently on all of your holding via its web interface. In our case we wanted to give you the opportunity to set up a script to back up your servers as we saw in the *bundle* Duplicity (next version of the toolbox).
+The Rundeck application will allow you **to schedule and organize all jobs** that you want to deploy consistently on all of your holding via its web interface. In our case we wanted to give you the opportunity to set up a script to back up your servers as we saw in the *bundle* Duplicity (next version of MyCloudManager).
 
 To go further, here are some helpful links :
 * http://rundeck.org/
@@ -315,7 +315,7 @@ The goal of this tutorial is to accelerate your start. At this point **you** are
 
 You now have an SSH access point on your virtual machine through the floating-IP and your private keypair (default user name `core`).
 
-You can access the administration interface toolbox via the URL **[MyCloudManager](http://manager.default.svc.mycloudmanager)**
+You can access the MyCloudManager administration interface via the URL **[MyCloudManager](http://manager.default.svc.mycloudmanager)**
 
 
 ## And afterwards?

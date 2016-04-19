@@ -119,7 +119,7 @@ Voici l'accueil de MyCloudManager: chaque vignette représente une application p
 
 Grâce au menu présent en haut en gauche de la page, vous pouvez vous déplacer dans les différentes sections de MyCloudManager. Nous allons vous les détailler par la suite.
 * Apps : liste des applications
-* Instances : liste des instances visibles de la toolbox
+* Instances : liste des instances visibles de MyCloudManager
 * Tasks : ensemble des taches en cours ou terminées
 * Audit : liste des actions effectuées
 * My Instances > Console : accès à la console Horizon
@@ -173,7 +173,7 @@ Afin d'ajouter des instances à MyCloudManager, 3 étapes :
 #### 1. Attacher son instance au routeur de MyCloudManager
 
  ~~~bash
- $ neutron router-interface-add $Toolbox_ROUTER_ID $Instance_subnet_ID
+ $ neutron router-interface-add $MyCloudManager_ROUTER_ID $Instance_subnet_ID
  ~~~
 
 Vous retrouverez l'ensemble des informations en inspectant les ressources de la stack via la commande heat suivante :
@@ -197,7 +197,7 @@ Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu 
 
 ![appdisable](img/appdisable.png)
 
-**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre MyCloudManager, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de la toolbox et - à l'étape 4 - coller la commande **Curl** ou **Wget** dans le champ Script personnalisé. N'oubliez pas d'ajouter le shebang `#!/bin/bash`.
+**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre MyCloudManager, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de MyCloudManager et - à l'étape 4 - coller la commande **Curl** ou **Wget** dans le champ Script personnalisé. N'oubliez pas d'ajouter le shebang `#!/bin/bash`.
 
 ![attachnetwork](img/attachnetwork.png)
 
@@ -309,7 +309,7 @@ Ce tutoriel a pour but d'accélerer votre démarrage. A ce stade **vous** êtes 
 
 Vous avez un point d'entrée sur votre machine virtuelle en SSH via l'IP flottante exposée et votre clé privée (utilisateur `core` par défaut).
 
-Vous pouvez accéder à l'interface d'administration de la toolbox via l'url **[MyCloudManager](http://manager.default.svc.mycloudmanager)**
+Vous pouvez accéder à l'interface d'administration de MyCloudManager via l'url **[MyCloudManager](http://manager.default.svc.mycloudmanager)**
 
 ## Et la suite ?
 
