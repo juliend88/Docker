@@ -23,6 +23,7 @@ parameters:
     description: OpenStack Password
     label: OpenStack Password
     type: string
+    hidden: true
 
   os_tenant:
     description: OpenStack Tenant Name
