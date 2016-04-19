@@ -89,7 +89,12 @@ resources:
       image: 5ed151c9-a822-4c17-9a42-d26f024013d5
       flavor: { get_param: flavor_name }
       user_data_format: RAW
-      name: {get_param: nodename}
+      name:
+        str_replace:
+        template: cust%-proj%
+        params:
+        "cust%": { get_param: 'OS::stack_name' }
+        "proj%": {get_param: nodename}
       networks:
         - port: { get_resource: port }
       user_data:
