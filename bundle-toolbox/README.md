@@ -80,17 +80,17 @@ Afin d'avoir accès à l'ensemble des fonctionnalitées, nous avons mis en place
 
 Voici la démarche à suivre :
 
-* Dans un premier temps récupérer les informations de sortie de votre stack,
+* Dans un premier temps, récupérez les informations de sortie de votre stack,
 
 ![stack](img/sortie-stack.png)
 
-* il faut maintenant créer une connexion VPN depuis votre poste, rendez dans "le panneau de configuration > Tous les Panneaux de configuration > Centre Réseau et partage". Cliquez ensuite sur "Configurer une nouvelle connexion ..... "
+* il faut maintenant créer une connexion VPN depuis votre poste, rendez-vous dans "le panneau de configuration > Tous les Panneaux de configuration > Centre Réseau et partage". Cliquez ensuite sur "Configurer une nouvelle connexion ..... "
 
 ![start](img/startvpn.png)
 ![vpn](img/vpn.png)
 ![internet](img/internet.png)
 
-* Entrée à présent les informations récupérées en sortie de la stack. Dans un premier temps la *FloatingIP* et ensuite le *login* et *mot de passe* fournis.
+* Entrez à présent les informations récupérées en sortie de la stack : dans un premier temps la *FloatingIP*, puis le *login* et ensuite le *mot de passe* fournis.
 
 ![info](img/infoconnexion.png)
 ![login](img/loginmdp.png)
