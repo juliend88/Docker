@@ -42,7 +42,7 @@ Please enter your OpenStack Password:
 
 Once this done, the Openstack command line tools can interact with your Cloudwatt user account.
 
-## Install the toolbox
+## Install MyCloudManager
 
 ### The 1-click
 
@@ -61,7 +61,7 @@ By default, the stack deploys on two instances of type "standard-4" (n2.cw.stand
 
 You must indicate the type [(standard ou performant)](https://www.cloudwatt.com/fr/produits/stockage-bloc/) and the size of the block volume that will be attached to your stack via the `volume_size` parameter.
 
-Finally , you can set a number of nodes to distribute the load. By default, the toolbox will be deployed on 1 instance *master* and 1 *slave* node. At maximum, MyCloudManager Beta deploy on one instance *master* and 3 *slave* node.
+Finally , you can set a number of nodes to distribute the load. By default, MyCloudManager will be deployed on 1 instance *master* and 1 *slave* node. At maximum, MyCloudManager Beta deploy on one instance *master* and 3 *slave* node.
 
 Press **LANCER**.
 
@@ -104,7 +104,7 @@ After following this procedure you can now start the VPN connection.
 ![vpnstart](img/launchvpn.png)
 
 
-You can now access the toolbox of the administration interface via the URL **[MyCloudManager](http://manager.default.svc.mycloudmanager)** and begin to reap the benefit.
+You can now access in the MyCloudManager administration interface via the URL **[MyCloudManager](http://manager.default.svc.mycloudmanager)** and begin to reap the benefit.
 
 It's (already) over !
 

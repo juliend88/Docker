@@ -40,7 +40,7 @@ Sourcez le fichier téléchargé dans votre shell et entrez votre mot de passe l
 Une fois ceci fait, les outils de ligne de commande d'OpenStack peuvent interagir avec votre compte Cloudwatt.
 
 
-## Installer la toolbox
+## Installer MyCloudManager
 
 ### Le 1-clic
 
@@ -58,7 +58,7 @@ Par défaut, le wizard propose un déploiement sur deux instances de type "stand
 
 Vous devrez indiquer le type [(standard ou performant)](https://www.cloudwatt.com/fr/produits/stockage-bloc/) et la taille du volume bloc qui sera attaché à votre stack via le paramètre `volume_size`.
 
-Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, la toolbox sera déployée sur 1 instance *master* avec 1 noeud *slave*. Au maximum, MyCloudManager Beta se déploie sur 1 instance *master* et 3 noeuds *slave*.
+Enfin, vous pouvez définir un nombre de noeuds afin de répartir la charge. Par défault, MyCloudManager sera déployé sur 1 instance *master* avec 1 noeud *slave*. Au maximum, MyCloudManager Beta se déploie sur 1 instance *master* et 3 noeuds *slave*.
 
 Appuyer sur **LANCER**.
 
@@ -99,7 +99,7 @@ Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion V
 
 ![vpnstart](img/launchvpn.png)
 
-Vous pouvez maintenant accéder à l'interface d'administration de la toolbox via l'url **[MyCloudManager](http://manager.default.svc.mycloudmanager)** et commencer à en tirer tout le bénéfice.
+Vous pouvez maintenant accéder à l'interface d'administration de MyCloudManager via l'url **[MyCloudManager](http://manager.default.svc.mycloudmanager)** et commencer à en tirer tout le bénéfice.
 
 C’est (déjà) FINI !
 
