@@ -401,7 +401,7 @@ resources:
                           port: 10251
                         initialDelaySeconds: 15
                         timeoutSeconds: 1
-              - path: /etc/kubernetes/descriptors/secret.yaml
+              - path: /etc/kubernetes/descriptors/0-secret.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
@@ -411,8 +411,8 @@ resources:
                     name: openstack
                   type: Opaque
                   data:
-                    password: $os_username
-                    username: $os_password
+                    password: "$os_username"
+                    username: "$os_password"
               - path: /etc/kubernetes/descriptors/1-skydns-service.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -656,8 +656,7 @@ resources:
                                 name: rethinkdb-storage
                         volumes:
                           - name: rethinkdb-storage
-                            nfs:
-                              server: $private_ipv4
+                            hostPath:
                               path: /data/rethinkdb
               - path: /etc/kubernetes/descriptors/7-toolbox-service.yaml
                 permissions: 0666
@@ -730,8 +729,7 @@ resources:
                                 name: keys-storage
                         volumes:
                           - name: keys-storage
-                            nfs:
-                              server: $private_ipv4
+                            hostPath:
                               path: /data/keys
               - path: /etc/environment
                 permissions: 0666
