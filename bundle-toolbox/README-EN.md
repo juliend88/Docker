@@ -191,7 +191,7 @@ Once this is done you are now in the ability to add your instance to MyCloudMana
 
 On MyCloudManager, go to the **instance** menu and click the button ![bouton](img/plus.png) at the bottom right.
 
-We offer two commands to choose: one **Curl** and one **Wget**. Copy into the instance to exploit in a shell.
+We offer two commands to choose: one **Curl** and one **Wget** and a command to run a script to create the instance.
 
 ![addinstance](img/addinstance.png)
 
@@ -201,7 +201,7 @@ Once the script is applied to the selected instance it should appear in the menu
 ![appdisable](img/appdisable.png)
 
 
-**Trick** If you want to create an instance via the console horizon Cloudwatt and declare **directly** in your MyCloudManager, you should to select - in step 3 of the instance launch wizard - MyCloudManager network and - in step 4 - you can paste the **Curl** or **Wget** command in the Custom Script field. Don't forget to add the shebang `#!/bin/bash`.
+**Trick** If you want to create an instance via the console horizon Cloudwatt and declare **directly** in your MyCloudManager, you should to select - in step 3 of the instance launch wizard - MyCloudManager network and - in step 4 - you can paste the command under the setence "If you want to register the instance automatically during the creation process, put this in the startup script within the horizon console :" command in the Custom Script field.
 
 ![attachnetwork](img/attachnetwork.png)
 

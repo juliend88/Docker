@@ -189,7 +189,7 @@ Un fois ceci effectué vous êtes maintenant dans la capacité d'ajouter votre i
 
 Dans MyCloudManager, aller dans le menu **instance** et cliquer sur le bouton ![bouton](img/plus.png) en bas à droite.
 
-Nous proposons 2 commandes au choix: un **Curl** et un **Wget**. Copiez la sur l'instance à instrumentaliser dans un shell.
+Nous proposons 2 commandes au choix: un **Curl** et un **Wget** ainsi qu'une commande permettant de lancer un script à la création de l'instance.
 
 ![addinstance](img/addinstance.png)
 
@@ -197,7 +197,7 @@ Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu 
 
 ![appdisable](img/appdisable.png)
 
-**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre MyCloudManager, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de MyCloudManager et - à l'étape 4 - coller la commande **Curl** ou **Wget** dans le champ Script personnalisé. N'oubliez pas d'ajouter le shebang `#!/bin/bash`.
+**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre MyCloudManager, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de MyCloudManager et - à l'étape 4 - coller la commande sous la phrase "If you want to register the instance automatically during the creation process, put this in the startup script within the horizon console :" dans le champ Script personnalisé.
 
 ![attachnetwork](img/attachnetwork.png)
 
