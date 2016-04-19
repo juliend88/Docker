@@ -98,8 +98,8 @@ resources:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $public_ipv4: { get_param: public_ip }
             $domain: { get_param: domain }
-            $os_username: { "Fn::Base64": [get_param, "os_username"] }
-            $os_password: { "Fn::Base64": [get_param, "os_password"] }
+            $os_username: { "Fn::Base64": {get_param: os_username} }
+            $os_password: { "Fn::Base64": {get_param: os_password} }
             $os_tenant: { get_param: os_tenant }
             $os_auth: { get_param: os_auth }
             $vpn_username: { get_param: vpn_username }
