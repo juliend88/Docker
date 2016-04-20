@@ -73,6 +73,7 @@ La stack se crée automatiquement. Vous pouvez en voir la progression en cliquan
 
 Attendez **5 minutes** que l'ensemble soit complètement initialisé.
 
+![startopo](img/stacktopo.png)
 
 ### Finaliser l'accès VPN
 
@@ -99,7 +100,7 @@ Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion V
 
 ![vpnstart](img/launchvpn.png)
 
-Vous pouvez maintenant accéder à l'interface d'administration de MyCloudManager via l'url **[MyCloudManager](http://manager.default.svc.mycloudmanager)** et commencer à en tirer tout le bénéfice.
+Vous pouvez maintenant accéder à l'interface d'administration de MyCloudManager via l'url **http://manager.default.svc.mycloudmanager** et commencer à en tirer tout le bénéfice.
 
 C’est (déjà) FINI !
 

@@ -76,6 +76,8 @@ The stack is created automatically. You can see the progression clicking on its 
 
 Wait **5 minutes** that the entire stack is available.
 
+![startopo](img/stacktopo.png)
+
 ### Finish OpenVPN access
 
 In order to have access to all functionalities, we have set up a VPN connection.
@@ -104,7 +106,7 @@ After following this procedure you can now start the VPN connection.
 ![vpnstart](img/launchvpn.png)
 
 
-You can now access in the MyCloudManager administration interface via the URL **[MyCloudManager](http://manager.default.svc.mycloudmanager)** and begin to reap the benefit.
+You can now access in the MyCloudManager administration interface via the URL **http://manager.default.svc.mycloudmanager** and begin to reap the benefit.
 
 It's (already) over !
 
