@@ -63,6 +63,7 @@ parameters:
     constraints:
       - allowed_values:
           - n1.cw.standard-4
+          - n2.cw.standard-2
           - n2.cw.standard-4
           - n2.cw.standard-8
           - n2.cw.standard-16
