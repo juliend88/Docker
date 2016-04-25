@@ -247,7 +247,7 @@ resources:
                     ExecStartPre=/usr/bin/docker pull cloudwattfr/syncthing
                     ExecStartPre=-/usr/bin/mkdir /data
                     ExecStartPre=-/usr/bin/chmod -Rf 777 /data
-                    ExecStart=/usr/bin/docker run --name syncthing --restart always --user 500:500  -v /data:/data --net=host cloudwattfr/syncthing
+                    ExecStart=/usr/bin/docker run --name syncthing --restart always -v /data:/data --net=host cloudwattfr/syncthing
                     ExecStop=/usr/bin/docker stop syncthing
                 - name: generatessl.service
                   command: start
