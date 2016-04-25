@@ -157,7 +157,7 @@ resources:
     properties:
       count: 1
       resource_def:
-        type: https://raw.githubusercontent.com/juliend88/Docker/master/heat%20fr2/kube-master.heat.yaml
+        type: http://storage.fr2.cloudwatt.net:8080/v1/AUTH_7da34701e2fe488683d8a8382ee6f454/kube-master.heat.yaml
         properties:
           nodename:
             str_replace:
@@ -186,7 +186,7 @@ resources:
     properties:
       count: { get_param: node_count }
       resource_def:
-        type: https://raw.githubusercontent.com/juliend88/Docker/master/heat%20fr2/kube-node.heat.yaml
+        type: http://storage.fr2.cloudwatt.net:8080/v1/AUTH_7da34701e2fe488683d8a8382ee6f454/toolbox/kube-node.heat.yaml
         properties:
           domain: { get_param: domain }
           master: 10.0.1.254
