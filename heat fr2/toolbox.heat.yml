@@ -193,6 +193,8 @@ resources:
           subnet: { get_resource: subnet }
           nodeip: 10.0.1.1%index%
           security_group: { get_resource: security_group }
+          volume_size: { get_param: volume_size }
+          volume_type: { get_param: volume_type }
           network: { get_resource: network }
           nodename:
             str_replace:

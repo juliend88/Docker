@@ -31,8 +31,29 @@ parameters:
     label: Instance Type (Flavor)
     description: Flavor to use for the deployed instance
     type: string
+  volume_size:
+    label: volume_size
+    type: string
+  volume_type:
+    label: volume_type
+    type: string
 
 resources:
+  volume:
+    type: OS::Cinder::Volume
+    properties:
+      size: { get_param: volume_size }
+      volume_type: { get_param: volume_type }
+      metadata:
+        fs_type: ext4
+
+  volume_attachement:
+    type: OS::Cinder::VolumeAttachment
+    properties:
+      instance_uuid: { get_resource: node }
+      mountpoint: /dev/vdb
+      volume_id: { get_resource: volume }
+
   port:
     type: OS::Neutron::Port
     properties:
@@ -69,6 +90,17 @@ resources:
                 content: |
                   FLANNELD_IFACE=$private_ipv4
                   FLANNELD_ETCD_ENDPOINTS=http://localhost:2379
+              - path: /opt/format-data.sh
+                permissions: 0700
+                owner: "root:root"
+                content: |
+                  #!/bin/bash
+                  if [ "$(blkid /dev/vdb | grep ext4 | wc -l)" == "1" ]; then
+                    echo 'Volume ready'
+                  else
+                    /usr/sbin/wipefs -f /dev/vdb
+                    /usr/sbin/mkfs.ext4 -F /dev/vdb
+                  fi
               - path: /etc/kubernetes/worker-$fqdn-kubeconfig.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -233,22 +265,6 @@ resources:
               units:
                 - name: etcd2.service
                   command: start
-                - name: syncthing.service
-                  command: start
-                  content: |
-                    [Unit]
-                    Description=Syncthing
-                    After=docker.service
-                    Requires=docker.service
-                    [Service]
-                    TimeoutStartSec=0
-                    ExecStartPre=-/usr/bin/docker kill syncthing
-                    ExecStartPre=-/usr/bin/docker rm syncthing
-                    ExecStartPre=/usr/bin/docker pull cloudwattfr/syncthing
-                    ExecStartPre=-/usr/bin/mkdir /data
-                    ExecStartPre=-/usr/bin/chmod -Rf 777 /data
-                    ExecStart=/usr/bin/docker run --name syncthing --restart always -v /data:/data --net=host cloudwattfr/syncthing
-                    ExecStop=/usr/bin/docker stop syncthing
                 - name: generatessl.service
                   command: start
                   content: |
@@ -267,13 +283,51 @@ resources:
                       content: |
                         [Service]
                         ExecStartPre=/usr/bin/ln -sf /etc/flannel/options.env /run/flannel/options.env
+                - name: format-data.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Formats the volume
+                    After=dev-vdb.device
+                    Requires=dev-vdb.device
+                    [Service]
+                    Type=oneshot
+                    RemainAfterExit=yes
+                    ExecStart=/opt/format-data.sh
+                - name: data.mount
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Mount volume to /data
+                    Requires=format-data.service
+                    After=format-data.service
+                    [Mount]
+                    What=/dev/vdb
+                    Where=/data
+                    DirectoryMode=0777
+                    Type=ext4
                 - name: docker.service
                   drop-ins:
                     - name: 40-flannel.conf
                       content: |
                         [Unit]
-                        Requires=flanneld.service
-                        After=flanneld.service
+                        Requires=data.mount flanneld.service
+                        After=data.mount flanneld.service
+                - name: syncthing.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Syncthing
+                    After=docker.service
+                    Requires=docker.service
+                    [Service]
+                    TimeoutStartSec=0
+                    ExecStartPre=-/usr/bin/docker kill syncthing
+                    ExecStartPre=-/usr/bin/docker rm syncthing
+                    ExecStartPre=/usr/bin/docker pull cloudwattfr/syncthing
+                    ExecStartPre=-/usr/bin/chmod -Rf 777 /data
+                    ExecStart=/usr/bin/docker run --name syncthing --restart always -v /data:/data --net=host cloudwattfr/syncthing
+                    ExecStop=/usr/bin/docker stop syncthing
                 - name: kubelet.service
                   command: start
                   content: |
