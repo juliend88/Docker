@@ -233,22 +233,22 @@ resources:
               units:
                 - name: etcd2.service
                   command: start
-                - name: rpc-statd.service
-                  command: start
-                  enable: true
-                - name: data.mount
+                - name: syncthing.service
                   command: start
                   content: |
                     [Unit]
-                    Description=Mount volume to /data
-                    Requires=rpc-statd.service
-                    After=rpc-statd.service
-                    [Mount]
-                    What=$master:/data
-                    Where=/data
-                    TimeoutSec=0
-                    DirectoryMode=0777
-                    Type=nfs
+                    Description=Syncthing
+                    After=docker.service
+                    Requires=docker.service
+                    [Service]
+                    TimeoutStartSec=0
+                    ExecStartPre=-/usr/bin/docker kill syncthing
+                    ExecStartPre=-/usr/bin/docker rm syncthing
+                    ExecStartPre=/usr/bin/docker pull cloudwattfr/syncthing
+                    ExecStartPre=-/usr/bin/mkdir /data
+                    ExecStartPre=-/usr/bin/chmod -Rf 777 /data
+                    ExecStart=/usr/bin/docker run --name syncthing --restart always --user 500:500  -v /data:/data --net=host cloudwattfr/syncthing
+                    ExecStop=/usr/bin/docker stop syncthing
                 - name: generatessl.service
                   command: start
                   content: |
@@ -272,14 +272,14 @@ resources:
                     - name: 40-flannel.conf
                       content: |
                         [Unit]
-                        Requires=data.mount flanneld.service
-                        After=data.mount flanneld.service
+                        Requires=flanneld.service
+                        After=flanneld.service
                 - name: kubelet.service
                   command: start
                   content: |
                     [Unit]
-                    Requires=docker.service generatessl.service data.mount
-                    After=docker.service generatessl.service data.mount
+                    Requires=docker.service generatessl.service
+                    After=docker.service generatessl.service
 
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
