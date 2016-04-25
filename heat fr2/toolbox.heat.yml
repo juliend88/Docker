@@ -157,7 +157,7 @@ resources:
     properties:
       count: 1
       resource_def:
-        type: http://storage.fr2.cloudwatt.net:8080/v1/AUTH_7da34701e2fe488683d8a8382ee6f454/kube-master.heat.yaml
+        type: http://storage.fr2.cloudwatt.net:8080/v1/AUTH_7da34701e2fe488683d8a8382ee6f454/toolbox/kube-master.heat.yaml
         properties:
           nodename:
             str_replace:
