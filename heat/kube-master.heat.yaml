@@ -86,7 +86,7 @@ resources:
     type: OS::Nova::Server
     properties:
       key_name: { get_param: keypair_name }
-      image: 5ed151c9-a822-4c17-9a42-d26f024013d5
+      image: CoreOS Stable 899.13
       flavor: { get_param: flavor_name }
       user_data_format: RAW
       name: { get_param: nodename}
