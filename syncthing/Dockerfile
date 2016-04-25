@@ -16,8 +16,6 @@ ADD templates/* /etc/confd/templates/
 ADD config.xml.initial /home/user/.config/syncthing/config.xml
 RUN chmod -Rf 777 /home/user
 
-USER user
-
 ENV HOME /home/user
 
 CMD ["/entrypoint.sh"]
