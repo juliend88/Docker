@@ -57,10 +57,10 @@ function publish-switch-all-repository {
 
         if [ "$PUBLISHED" = "" ]; then
             echo "publish $MIRROR..."
-            sudo aptly publish snapshot -distribution="$DIST" $MIRROR-merged $REPO_NAME
+            aptly publish snapshot -distribution="$DIST" $MIRROR-merged $REPO_NAME
         else
             echo "publish switch $MIRROR..."
-            sudo aptly publish switch $DIST $REPO_NAME $MIRROR-merged
+            aptly publish switch $DIST $REPO_NAME $MIRROR-merged
         fi
     done
 }
