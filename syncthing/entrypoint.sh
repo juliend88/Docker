@@ -1,18 +1,18 @@
 #!/bin/bash
-chown -Rf $(id -u):$(id -g) /home/user
-chmod -Rf $(id -u):$(id -g) /home/user
 export HOME=/home/user
 
 syncthing &
 
-while true
+until [ -n "$(curl -H 'X-API-Key: 8EqKansuOM1TQPt3O3aJs-tDlMdlTpLF' --silent "http://localhost:8384/rest/system/status")" ]
 do
   echo "Trying: http://localhost:8384"
-  if [ -n "$(curl --silent "http://localhost:8384/rest/system/status")" ]; then
-      break
-  else
-      sleep 1
-  fi
+  sleep 1
+done
+
+until [ -n "$(curl --silent "http://localhost:2379/v2/keys")" ]
+do
+  echo "Trying: http://localhost:2379"
+  sleep 1
 done
 
 ID=$(curl -H "X-API-Key: 8EqKansuOM1TQPt3O3aJs-tDlMdlTpLF" http://localhost:8384/rest/system/status | jq -r .myID)
