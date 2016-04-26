@@ -856,11 +856,13 @@ resources:
                     Requires=docker.service
                     [Service]
                     TimeoutStartSec=0
+                    Restart=always
+                    RestartSec=10
                     ExecStartPre=-/usr/bin/docker kill syncthing
                     ExecStartPre=-/usr/bin/docker rm syncthing
                     ExecStartPre=/usr/bin/docker pull cloudwattfr/syncthing
                     ExecStartPre=-/usr/bin/chmod -Rf 777 /data
-                    ExecStart=/usr/bin/docker run --name syncthing --env 'GUI_USERNAME=$vpn_username' --env 'GUI_PASSWORD=$vpn_password' --restart always -v /data:/data --net=host cloudwattfr/syncthing
+                    ExecStart=/usr/bin/docker run --name syncthing --env 'GUI_USERNAME=$vpn_username' --env 'GUI_PASSWORD=$vpn_password' -v /data:/data --net=host cloudwattfr/syncthing
                     ExecStop=/usr/bin/docker stop syncthing
                 - name: generatessl.service
                   command: start
@@ -919,6 +921,8 @@ resources:
                     Requires=docker.service
                     [Service]
                     TimeoutStartSec=0
+                    Restart=always
+                    RestartSec=10
                     ExecStartPre=-/usr/bin/docker kill pptp
                     ExecStartPre=-/usr/bin/docker rm pptp
                     ExecStartPre=/usr/bin/docker pull cedbossneo/pptp
