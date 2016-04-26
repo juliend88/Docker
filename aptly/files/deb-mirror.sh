@@ -10,7 +10,6 @@ function register-mirror {
 
     for DIST in ${DISTS[@]}; do
         aptly -architectures=$ARCHS mirror create ubuntu-$DIST $UBUNTU_URI $DIST main
-
     done
 }
 
