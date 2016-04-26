@@ -14,6 +14,7 @@ ADD conf/* /etc/confd/conf.d/
 ADD templates/* /etc/confd/templates/
 ADD files/deb-mirror.sh /etc/cron.daily/deb-mirror
 ADD nginx.conf /etc/nginx/sites-available/default
+ADD index.html /data/public/index.html
 
 ENTRYPOINT ["/entrypoint.sh"]
 
