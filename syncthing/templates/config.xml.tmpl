@@ -26,12 +26,10 @@
         <address>dynamic</address>
     </device>
 {{end}}
-    <gui enabled="true" tls="false">
+    <gui enabled="true" tls="false" username="{{ getenv "GUI_USERNAME" }}" password="{{ getenv "GUI_PASSWORD" }}">
         <address>0.0.0.0:8384</address>
         <apikey>8EqKansuOM1TQPt3O3aJs-tDlMdlTpLF</apikey>
         <theme>default</theme>
-        <username>{{ getenv "GUI_USERNAME" }}</username>
-        <password>{{ getenv "GUI_PASSWORD" }}</password>
     </gui>
     <options>
         <listenAddress>tcp://0.0.0.0:22000</listenAddress>
