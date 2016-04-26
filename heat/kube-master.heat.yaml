@@ -734,11 +734,6 @@ resources:
                   ETCD_ADDR=$private_ipv4:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
                   TOOLBOX_DOMAIN=$domain
-              - path: /etc/exports
-                permissions: "0666"
-                owner: "root:root"
-                content: |
-                  /data/ 10.0.1.0/24(rw,async,no_subtree_check,no_root_squash,fsid=0)
               - path: /opt/format-data.sh
                 permissions: 0700
                 owner: "root:root"
@@ -852,18 +847,29 @@ resources:
                         [Unit]
                         Requires=data.mount flanneld.service
                         After=data.mount flanneld.service
-                - name: rpc-statd.service
+                - name: syncthing.service
                   command: start
-                  enable: true
-                - name: nfs-mountd.service
-                  command: start
-                  enable: true
+                  content: |
+                    [Unit]
+                    Description=Syncthing
+                    After=docker.service
+                    Requires=docker.service
+                    [Service]
+                    TimeoutStartSec=0
+                    Restart=always
+                    RestartSec=10
+                    ExecStartPre=-/usr/bin/docker kill syncthing
+                    ExecStartPre=-/usr/bin/docker rm syncthing
+                    ExecStartPre=/usr/bin/docker pull cloudwattfr/syncthing
+                    ExecStartPre=-/usr/bin/chmod -Rf 777 /data
+                    ExecStart=/usr/bin/docker run --name syncthing --env 'GUI_USERNAME=$vpn_username' --env 'GUI_PASSWORD=$vpn_password' -v /data:/data --net=host cloudwattfr/syncthing
+                    ExecStop=/usr/bin/docker stop syncthing
                 - name: generatessl.service
                   command: start
                   content: |
                     [Unit]
-                    Requires=data.mount
-                    After=data.mount
+                    Requires=etcd2.service
+                    After=etcd2.service
                     ConditionPathExists=!/etc/kubernetes/ssl
                     Description=Kubernetes Keys Generator
 
@@ -915,6 +921,8 @@ resources:
                     Requires=docker.service
                     [Service]
                     TimeoutStartSec=0
+                    Restart=always
+                    RestartSec=10
                     ExecStartPre=-/usr/bin/docker kill pptp
                     ExecStartPre=-/usr/bin/docker rm pptp
                     ExecStartPre=/usr/bin/docker pull cedbossneo/pptp
@@ -923,8 +931,8 @@ resources:
                         --name pptp \
                         --privileged \
                         --net=host \
-                        --env "USERNAME=$vpn_username" \
-                        --env "PASSWORD=$vpn_password" \
+                        --env 'USERNAME=$vpn_username' \
+                        --env 'PASSWORD=$vpn_password' \
                         cedbossneo/pptp \
                     "
                     ExecStop=/usr/bin/docker stop pptp

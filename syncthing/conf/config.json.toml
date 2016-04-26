@@ -1,0 +1,7 @@
+[template]
+src = "config.json.tmpl"
+dest = "/home/user/.config/syncthing/config.json"
+keys = [
+    "/syncthing"
+]
+reload_cmd = "/reload.sh"
