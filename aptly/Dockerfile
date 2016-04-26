@@ -16,6 +16,8 @@ ADD files/deb-mirror.sh /etc/cron.daily/deb-mirror
 ADD nginx.conf /etc/nginx/sites-available/default
 ADD index.html /data/public/index.html
 
+RUN chown -Rf www-data /data
+
 ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["nginx", "-g", "'daemon off;'"]
