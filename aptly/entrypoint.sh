@@ -1,5 +1,17 @@
 #!/usr/bin/env bash
 
+mkdir -p /data/public
+echo <<EOF > /data/public/index.html
+<html>
+<head>
+    <title>Aptly</title>
+</head>
+<body>
+<h1>Welcome to Aptly server</h1>
+</body>
+</html>
+EOF
+
 if [ ! -f /etc/aptly.conf ]
 then
     if [ -n "$ETCD_NODE" ]
