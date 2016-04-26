@@ -15,7 +15,7 @@ MIRROREXIST=$(aptly mirror list)
 if [ "$MIRROREXIST"="No mirrors found*" ]
 then
     echo "Mirror does not exist"
-    ./etc/cron.daily/deb-mirror
+    ./etc/cron.daily/deb-mirror &
 fi
 
 bash -c "$*"
