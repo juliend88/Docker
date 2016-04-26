@@ -16,7 +16,7 @@ function register-mirror {
 
 function update-mirror-and-create-snapshot {
     DATE=`date +%Y%m%d%H`
-    aptly mirror list -raw | xargs -I{} aptly task run mirror update {}, snapshot create {}-$DATE from mirror {}
+    aptly mirror list -raw | xargs -I{} aptly task run mirror update -force=true {}, snapshot create {}-$DATE from mirror {}
 }
 
 function merge-check-newer-repository {
