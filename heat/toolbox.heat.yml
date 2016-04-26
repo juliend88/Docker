@@ -195,6 +195,8 @@ resources:
           volume_size: { get_param: volume_size }
           volume_type: { get_param: volume_type }
           network: { get_resource: network }
+          vpn_username: { get_resource: vpn_username }
+          vpn_password: { get_resource: vpn_password }
           nodename:
             str_replace:
               template: $stack-node-%index%

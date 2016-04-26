@@ -50,8 +50,8 @@
   "gui": {
     "enabled": true,
     "address": "0.0.0.0:8384",
-    "user": "",
-    "password": "",
+    "user": "{{ getenv "GUI_USERNAME"}}",
+    "password": "{{ getenv "GUI_PASSWORD"}}",
     "useTLS": false,
     "apiKey": "8EqKansuOM1TQPt3O3aJs-tDlMdlTpLF",
     "insecureAdminAccess": false,
