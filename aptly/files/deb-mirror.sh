@@ -6,14 +6,11 @@ declare -a DISTS=("precise" "trusty")
 ARCHS="amd64"
 
 function register-mirror {
-    UBUNTU_URI='http://jp.archive.ubuntu.com/ubuntu/'
-    ROS_URI='http://packages.ros.org/ros/ubuntu'
-    ROS_SHADOW_URI='http://packages.ros.org/ros-shadow-fixed/ubuntu'
+    UBUNTU_URI='http://fr.archive.ubuntu.com/ubuntu/'
 
     for DIST in ${DISTS[@]}; do
         aptly -architectures=$ARCHS mirror create ubuntu-$DIST $UBUNTU_URI $DIST main
-        aptly -architectures=$ARCHS mirror create ros-$DIST $ROS_URI $DIST main
-        aptly -architectures=$ARCHS mirror create ros-shadow-fixed-$DIST $ROS_SHADOW_URI $DIST main
+
     done
 }
 
