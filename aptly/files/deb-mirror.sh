@@ -8,6 +8,7 @@ ARCHS="amd64"
 function register-mirror {
     UBUNTU_URI='http://fr.archive.ubuntu.com/ubuntu/'
 
+
     for DIST in ${DISTS[@]}; do
         aptly -architectures=$ARCHS mirror create ubuntu-$DIST $UBUNTU_URI $DIST main
 
