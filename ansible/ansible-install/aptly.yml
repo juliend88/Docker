@@ -26,13 +26,18 @@
   - name: config repo
     lineinfile:
       dest=/etc/apt/sources.list
-      line="deb http://{{ service }}/ {{ ansible_distribution_release }} main"
-    when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
+      line="deb http://{{ service }}/ubuntu {{ ansible_distribution_release }} main"
+    when: (ansible_distribution == "Ubuntu")
+
+  - name: config repo
+    lineinfile:
+      dest=/etc/apt/sources.list
+      line="deb http://{{ service }}/debian {{ ansible_distribution_release }} main"
+    when: (ansible_distribution == "Debian")
 
   - name: add repository
     yum:
       name=http://{{ service }}/ {{ ansible_distribution_release }} main
       state=present
     when: ansible_distribution == "CentOS"
-
 

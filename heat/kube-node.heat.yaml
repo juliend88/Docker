@@ -10,12 +10,6 @@ parameters:
   nodeip:
     label: nodeip
     type: string
-  vpn_username:
-    label: vpn_username
-    type: string
-  vpn_password:
-    label: vpn_password
-    type: string
   subnet:
     label: subnet
     type: string
@@ -336,7 +330,7 @@ resources:
                     ExecStartPre=-/usr/bin/docker rm syncthing
                     ExecStartPre=/usr/bin/docker pull cloudwattfr/syncthing
                     ExecStartPre=-/usr/bin/chmod -Rf 777 /data
-                    ExecStart=/usr/bin/docker run --name syncthing --env 'GUI_USERNAME=$vpn_username' --env 'GUI_PASSWORD=$vpn_password' -v /data:/data --net=host cloudwattfr/syncthing
+                    ExecStart=/usr/bin/docker run --name syncthing -v /data:/data --net=host cloudwattfr/syncthing
                     ExecStop=/usr/bin/docker stop syncthing
                 - name: kubelet.service
                   command: start

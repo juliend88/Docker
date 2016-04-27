@@ -1,0 +1,7 @@
+[template]
+src = "config.xml.tmpl"
+dest = "/home/user/.config/syncthing/config.xml"
+keys = [
+    "/syncthing"
+]
+reload_cmd = "/reload.sh"

@@ -11,13 +11,12 @@ function register-mirror {
 
     for DIST in ${DISTS[@]}; do
         aptly -architectures=$ARCHS mirror create ubuntu-$DIST $UBUNTU_URI $DIST main
-
     done
 }
 
 function update-mirror-and-create-snapshot {
     DATE=`date +%Y%m%d%H`
-    aptly mirror list -raw | xargs -I{} aptly task run mirror update {}, snapshot create {}-$DATE from mirror {}
+    aptly mirror list -raw | xargs -I{} aptly task run mirror update -force=true {}, snapshot create {}-$DATE from mirror {}
 }
 
 function merge-check-newer-repository {
@@ -58,10 +57,10 @@ function publish-switch-all-repository {
 
         if [ "$PUBLISHED" = "" ]; then
             echo "publish $MIRROR..."
-            sudo aptly publish snapshot -distribution="$DIST" $MIRROR-merged $REPO_NAME
+            aptly publish snapshot -distribution="$DIST" $MIRROR-merged $REPO_NAME
         else
             echo "publish switch $MIRROR..."
-            sudo aptly publish switch $DIST $REPO_NAME $MIRROR-merged
+            aptly publish switch $DIST $REPO_NAME $MIRROR-merged
         fi
     done
 }

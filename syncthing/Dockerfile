@@ -13,7 +13,6 @@ RUN chmod +x /usr/bin/confd /entrypoint.sh /reload.sh
 ADD conf/* /etc/confd/conf.d/
 ADD templates/* /etc/confd/templates/
 
-ADD config.xml.initial /home/user/.config/syncthing/config.xml
 RUN chmod -Rf 777 /home/user
 
 ENV HOME /home/user

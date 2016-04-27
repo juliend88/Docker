@@ -1,5 +1,12 @@
+{"version":12,"folders":[{"id":"data","path":"data/","devices":[{"deviceID":"BP47JVH-EF5KIXS-D3EDPMC-ODLD7QM-H2C2U2R-MG2OKC4-HY4WHKI-6P3FBAS"}],"readOnly":false,"rescanIntervalS":10,"ignorePerms":false,"autoNormalize":true,"minDiskFreePct":1,"versioning":{"type":"","params":{}},"copiers":0,"pullers":0,"hashers":0,"order":"random","ignoreDelete":false,"scanProgressIntervalS":0,"pullerSleepS":0,"pullerPauseS":0,"maxConflicts":10,"disableSparseFiles":false,"invalid":"","$$hashKey":"07E"}],"devices":[{"deviceID":"BP47JVH-EF5KIXS-D3EDPMC-ODLD7QM-H2C2U2R-MG2OKC4-HY4WHKI-6P3FBAS","name":"toolbox-node-0.novalocal","addresses":["dynamic"],"compression":"metadata","certName":"","introducer":false,"$$hashKey":"07O"}],"gui":{"enabled":true,"address":"0.0.0.0:8384","user":"","password":"","useTLS":false,"apiKey":"8EqKansuOM1TQPt3O3aJs-tDlMdlTpLF","insecureAdminAccess":false,"theme":"default"},"options":{"listenAddress":["tcp://0.0.0.0:22000"],"globalAnnounceServers":["default"],"globalAnnounceEnabled":true,"localAnnounceEnabled":true,"localAnnouncePort":21027,"localAnnounceMCAddr":"[ff12::8384]:21027","relayServers":["dynamic+https://relays.syncthing.net/endpoint"],"maxSendKbps":0,"maxRecvKbps":0,"reconnectionIntervalS":60,"relaysEnabled":true,"relayReconnectIntervalM":10,"startBrowser":true,"upnpEnabled":true,"upnpLeaseMinutes":60,"upnpRenewalMinutes":30,"upnpTimeoutSeconds":10,"urAccepted":0,"urUniqueId":"","urURL":"https://data.syncthing.net/newdata","urPostInsecurely":false,"urInitialDelayS":1800,"restartOnWakeup":true,"autoUpgradeIntervalH":12,"keepTemporariesH":24,"cacheIgnoredFiles":true,"progressUpdateIntervalS":5,"symlinksEnabled":true,"limitBandwidthInLan":false,"minHomeDiskFreePct":1,"releasesURL":"https://api.github.com/repos/syncthing/syncthing/releases?per_page=30","alwaysLocalNets":[],"_listenAddressStr":"tcp://0.0.0.0:22000","_globalAnnounceServersStr":"default","_relayServersStr":"dynamic+https://relays.syncthing.net/endpoint","urEnabled":false,"deviceName":"toolbox-node-0.novalocal","autoUpgradeEnabled":true},"ignoredDevices":[]}
+
+
 <configuration version="12">
     <folder id="data" path="data/" ro="false" rescanIntervalS="10" ignorePerms="false" autoNormalize="true">
+{{range gets "/syncthing/*"}}
+{{ $id := split .Key "/" }}
+        <device id="{{.Value}}"></device>
+{{end}}
         <minDiskFreePct>1</minDiskFreePct>
         <versioning></versioning>
         <copiers>0</copiers>
@@ -13,6 +20,12 @@
         <maxConflicts>10</maxConflicts>
         <disableSparseFiles>false</disableSparseFiles>
     </folder>
+{{range gets "/syncthing/*"}}
+{{ $id := split .Key "/" }}
+    <device id="{{ .Value }}" name="{{index $id 2}}" compression="metadata" introducer="false">
+        <address>dynamic</address>
+    </device>
+{{end}}
     <gui enabled="true" tls="false">
         <address>0.0.0.0:8384</address>
         <apikey>8EqKansuOM1TQPt3O3aJs-tDlMdlTpLF</apikey>
@@ -36,7 +49,7 @@
         <upnpLeaseMinutes>60</upnpLeaseMinutes>
         <upnpRenewalMinutes>30</upnpRenewalMinutes>
         <upnpTimeoutSeconds>10</upnpTimeoutSeconds>
-        <urAccepted>0</urAccepted>
+        <urAccepted>-1</urAccepted>
         <urUniqueID></urUniqueID>
         <urURL>https://data.syncthing.net/newdata</urURL>
         <urPostInsecurely>false</urPostInsecurely>
