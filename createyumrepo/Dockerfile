@@ -6,6 +6,6 @@ yum install nginx -y
 
 ADD entrypoint.sh /entrypoint.sh
 ADD files/nginx.conf /etc/nginx/sites-available/default
-
+ADD files/updateyumly.sh /etc/cron.hourly/updateyumly.sh
 
 CMD ["/entrypoint.sh"]
