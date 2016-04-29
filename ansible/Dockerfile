@@ -1,6 +1,6 @@
-FROM williamyeh/ansible:ubuntu14.04
+FROM williamyeh/ansible:master-ubuntu14.04
 
-RUN apt-get update && apt-get install -y python-pip && pip install zabbix-api paramiko
+RUN apt-get update && apt-get install -y python-pip libffi-dev python-dev libssl-dev && pip install zabbix-api paramiko
 
 ENV ANSIBLE_HOST_KEY_CHECKING False
 
