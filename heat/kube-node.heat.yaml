@@ -81,8 +81,6 @@ resources:
             $domain: { get_param: domain }
             $master: { get_param: master }
             $fqdn: { get_param: nodename }
-            $vpn_username: { get_param: vpn_username }
-            $vpn_password: { get_param: vpn_password }
           template: |
             #cloud-config
             write_files:
