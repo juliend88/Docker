@@ -5,7 +5,9 @@ env
 if [ ! -f /data/public/RPM-GPG-KEY-CentOS-7 ]
 then
     echo "create repository"
-    reposync --gpgcheck -l --repoid=epel --download_path=/data/public/
+    reposync --gpgcheck -l --repoid=updates --download_path=/data/public/ --download-metadata --downloadcomps -g comps.xml
+
+
 
 fi
 
