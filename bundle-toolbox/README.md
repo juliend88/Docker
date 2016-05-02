@@ -109,8 +109,7 @@ C’est (déjà) FINI !
 
 L'accès à l'interface et aux différents services se fait via des noms **DNS**. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **GO** ou via une requête URL (par exemple : http://zabbix.default.svc.mycloudmanager/).
 
-Nous avons attaché un volume bloc à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de MyCloudManager, ce qui vous permettra de pouvoir le remonter sur une nouvelle instance. Le volume est monté sur l'instance master de MyCloudManager dans le répertoire `/dev/vdb`.
-
+Nous avons attaché un volume bloc à votre stack afin de pouvoir sauvegarder l'ensemble des **data** des conteneurs de MyCloudManager. Le volume est monté sur l'instance master et l'ensemble de noeuds de votre MyCloudManager dans le répertoire `/dev/vdb`. Cela permet à notre stack d'être beaucoup plus robuste. Les données étant synchronisées sur l'ensemble des noeuds, cela permet aux applications d'avoir accès a leur données peut importe le noeud sur lequel celle-ci sont crées.
 
 ### Présentation de l'interface
 
@@ -264,22 +263,13 @@ Pour aller plus loin voici quelques liens utiles:
   * https://github.com/vrtadmin/clamav-faq/blob/master/mirrors/MirrorHowto.md
 
 
-### Miroir APT
-Pour répondre à ce besoin nous avons choisi d'utiliser *Aptly*.
-C'est un **gestionnaire de paquet APT**. Il permet de faire un miroir d'un répertoire APT exposé sur internet afin de pouvoir le distribuer à l'ensemble des machines de votre tenant qui, elles, n'ont pas forcement accès à internet via un serveur Nginx.
+### Gestionnaire de répertoire applicatif
+Nous avons choisi d'utiliser *Artifactory*.
+Artifactory est une application pouvant exposer n'importe quel type de répertoire via un serveur Ngnix. Ici, notre volonté est de vous proposer une application pouvant **exposer un répertoire** à l'ensemble de vos instances.
 
 Pour aller plus loin voici quelques liens utiles:
-  * https://www.aptly.info/
-  * http://korben.info/aptly-loutil-ultime-pour-gerer-vos-depots-debian.html/
-
-
-### Miroir YUM
-Nous avons choisi d'utiliser *Nexus*.
-Nexus est une application pouvant exposer n'importe quel type de répertoire via un serveur Ngnix. Ici, notre volonté est de vous proposer une application pouvant **exposer un répertoire YUM** à l'ensemble de vos instances.
-
-Pour aller plus loin voici quelques liens utiles:
-  * https://books.sonatype.com/nexus-book/reference/index.html
-  * https://books.sonatype.com/nexus-book/reference/yum-configuration.html
+  * https://www.jfrog.com/open-source/
+  * https://www.jfrog.com/confluence/display/RTF/Welcome+to+Artifactory
 
 
 ### Synchronisation de temps
@@ -297,7 +287,7 @@ Pour aller plus loin voici quelques liens utiles:
   - Zabbix 3.0
   - Rundeck 2.6.2
   - Graylog 1.3.4
-  - Nexus 3.0
+  - Artifactory 4.7.5
   - Nginx 1.9.12
   - Aptly  0.9.6
   - SkyDNS 2.5.3a
@@ -322,7 +312,8 @@ L'intention de la CAT (Cloudwatt Automation Team) est de fournir des améliorati
 * l'ajout de la fonction backup,
 * une version HA,
 * un menu additionnel pour contacter les équipes support Cloudwatt,
-* la possibilité de la lancer sur notre deuxième région
+* la possibilité de la lancer sur notre deuxième région,
+* un gestionnaire de répository YUM et APT,
 * bien d'autres choses
 
 Des suggestions d'améliorations ? Des services que vous souhaiteriez voir ? N'hésitez pas à nous contacter [apps@cloudwatt.com](mailto:apps@cloudwatt.com)

@@ -115,7 +115,10 @@ It's (already) over !
 
 Access to the interface and the various applications is via **DNS** names. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the names in place. You can access on the different web interfaces applications by clicking **Go** or via URL request (ex: http://zabbix.default.svc.mycloudmanager/).
 
-Also we attached a volume to your stack in order to save all **data** containers of MyCloudManager , so you can go back in a new instance. The volume is mounted on the master instance in the directory `/dev/vdb`.
+We have attached a block volume to your stack in order to save all **data** MyCloudManager.
+The volume is mounted on the master instance and all nodes in your MyCloudManager in the `/dev/vdb`.
+This allows our stack to be much more robust. The data being synchronized on all nodes, it allows applications to have access to their data regardless of the node where the latter are created.
+
 
 #### Interface Overview
 
@@ -279,13 +282,13 @@ To go further, here are some helpful links :
 * http://korben.info/aptly-loutil-ultime-pour-gerer-vos-depots-debian.html/
 
 
-###Mirror YUM
-We have chosen to use *Nexus*.
-Nexus is an application that can display any type of directory server via a Ngnix . Here our aim is to offer an application that can **expose a YUM repository** for all of your instances.
+### Software repository
+We have chosen to use *Artifactory*.
+Artifactory is an application that can display any type of directory server via a Ngnix . Here our aim is to offer an application that can **expose a repository** for all of your instances.
 
 To go further, here are some helpful links :
-* https://books.sonatype.com/nexus-book/reference/index.html
-* https://books.sonatype.com/nexus-book/reference/yum-configuration.html
+* https://www.jfrog.com/open-source/
+* https://www.jfrog.com/confluence/display/RTF/Welcome+to+Artifactory
 
 
 ### Time Synchronisation
@@ -302,7 +305,7 @@ To go further, here are some helpful links :
   - Zabbix 3.0
   - Rundeck 2.6.2
   - Graylog 1.3.4
-  - Nexus 3.0
+  - Artifactory 4.7.5
   - Nginx 1.9.12
   - Aptly  0.9.6
   - SkyDNS 2.5.3a
