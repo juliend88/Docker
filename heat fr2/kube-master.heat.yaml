@@ -174,7 +174,7 @@ resources:
                           break
                       fi
                   done
-                  RES=$(curl --silent -X PUT -d "value={\"Network\":\"10.1.0.0/16\",\"Backend\":{\"Type\":\"vxlan\"}}" "$ACTIVE_ETCD/v2/keys/coreos.com/network/config?prevExist=false")
+                  RES=$(curl --silent -X PUT -d "value={\"Network\":\"10.1.0.0/16\",\"Backend\":{\"Type\":\"udp\"}}" "$ACTIVE_ETCD/v2/keys/coreos.com/network/config?prevExist=false")
                   if [ -z "$(echo $RES | grep '"action":"create"')" ] && [ -z "$(echo $RES | grep 'Key already exists')" ]; then
                       echo "Unexpected error configuring flannel pod network: $RES"
                   fi
