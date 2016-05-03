@@ -719,12 +719,12 @@ resources:
                             ports:
                               - containerPort: 3000
                             volumeMounts:
-                              - mountPath: /data/keys
-                                name: keys-storage
+                              - mountPath: /data
+                                name: data-storage
                         volumes:
-                          - name: keys-storage
+                          - name: data-storage
                             hostPath:
-                              path: /data/keys
+                              path: /data
               - path: /etc/environment
                 permissions: 0666
                 owner: "root:root"

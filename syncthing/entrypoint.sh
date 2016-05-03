@@ -8,6 +8,8 @@ do
   sleep 1
 done
 
+curl -X PUT http://localhost:2379/v2/keys/syncthing?dir=true&prevExist=false -d ""
+
 confd -backend etcd -node http://localhost:2379 -onetime
 
 syncthing &
