@@ -20,6 +20,10 @@
       package: name=ntp
                state=present
 
+    - name: install pip
+      package: name=python-pip
+               state=present
+
     - name: install httplib2
       pip: name=httplib2
            state=present

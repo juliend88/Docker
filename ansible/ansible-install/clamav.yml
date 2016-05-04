@@ -21,7 +21,14 @@
       yum:
         name=http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
         state=present
-      when: ansible_distribution == "CentOS"
+      when:  ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "6"
+
+    - name: Add repository
+      yum:
+        name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+        state=present
+      when:  ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "7"
+
 
     - name: install packages Ubuntu
       package: name={{ item }} state=present
@@ -43,7 +50,19 @@
         - clamav-devel
         - clamav-lib
         - clamav-server-systemd
-      when:  ansible_distribution == "CentOS"
+      when:  ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "7"
+
+    - name: install packages Centos
+      package: name={{ item }} state=present
+      with_items:
+        - clamav-server
+        - clamav-data
+        - clamav-update
+        - clamav-filesystem
+        - clamav
+        - clamav-devel
+        - clamav-lib
+      when:  ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "6"
 
     - name: change config freshclam Ubuntu/Debian
       template:
@@ -67,13 +86,13 @@
       copy:
         src=clamav-file-centos/clam-freshclam.service
         dest=/usr/lib/systemd/system/clam-freshclam.service
-      when: ansible_distribution == "CentOS"
+      when: ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "7"
 
     - name: enable service clamav
       shell:
         sudo systemctl enable clam-freshclam.service; \
         sudo systemctl start clam-freshclam.service
-      when: ansible_distribution == "CentOS"
+      when: ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "7"
 
     - name: restart clamav
       service:
