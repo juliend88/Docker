@@ -66,6 +66,10 @@
         line="Hostname={{ ansible_hostname }}"
       notify: restart zabbix
 
+    - name: set selinux permissions
+      selinux: policy=zabbix_agent_t state=permissive
+      when: ansible_distribution == "CentOS"
+
     - name: register zabbix agent
       local_action:
           module: zabbix_host
