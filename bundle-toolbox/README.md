@@ -197,7 +197,7 @@ Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu 
 
 ![appdisable](img/appdisable.png)
 
-**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre MyCloudManager, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de MyCloudManager et - à l'étape 4 - coller la commande sous la phrase "If you want to register the instance automatically during the creation process, put this in the startup script within the horizon console :" dans le champ Script personnalisé.
+**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre MyCloudManager, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de MyCloudManager ainsi que le security group de MyCloudManager et - à l'étape 4 - coller la commande sous la phrase "If you want to register the instance automatically during the creation process, put this in the startup script within the horizon console :" dans le champ Script personnalisé.
 
 ![attachnetwork](img/attachnetwork.png)
 
