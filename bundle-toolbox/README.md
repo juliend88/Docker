@@ -4,7 +4,7 @@ Cette première version de MyCloudManager (version Beta) est une stack différen
 * Monitoring et Supervision
 * Log management
 * Planificateur de taches
-* Miroir ClamAV - Antivirus
+* Miroir Antivirus
 * Mirroir yum et apt
 * Synchronisation de temps
 
@@ -85,7 +85,7 @@ Voici la démarche à suivre :
 
 ![stack](img/sortie-stack.png)
 
-* il faut maintenant créer une connexion VPN depuis votre poste, rendez-vous dans "le panneau de configuration > Tous les Panneaux de configuration > Centre Réseau et partage". Cliquez ensuite sur "Configurer une nouvelle connexion ..... "
+* Il faut maintenant créer une connexion VPN depuis votre poste, rendez-vous dans "le panneau de configuration > Tous les Panneaux de configuration > Centre Réseau et partage". Cliquez ensuite sur "Configurer une nouvelle connexion ..... "
 
 ![start](img/startvpn.png)
 ![vpn](img/vpn.png)
@@ -220,7 +220,7 @@ Dans cette section, nous allons vous présenter les différents services de MyCl
 
 ### Monitoring et Supervision
 Nous avons choisi d'utiliser *Zabbix*, l'application la plus en vogue pour le monitoring, supervision et alerting.
-L'application Zabbix est un logiciel libre permettant de **surveiller l'état de divers services réseau, serveurs et autres matériels réseau** mais aussi des **applications et logiciels** portés sur les instances surveillées; et produisant des graphiques dynamiques de consommation des ressources. Zabbix utilise MySQL, PostgreSQL ou Oracle pour stocker les données. Selon l'importance du nombre de machines et de données à surveiller, le choix du SGBD influe grandement sur les performances. Son interface web est écrite en PHP et fourni une vision temps réel sur les métriques collectées.
+L'application Zabbix est un logiciel libre permettant de **surveiller l'état de divers services réseau, serveurs et autres matériels réseau** mais aussi des **applications et logiciels** portés sur les instances surveillées; et produisant des graphiques dynamiques de consommation des ressources. Zabbix utilise MySQL, PostgreSQL ou Oracle pour stocker les données. Selon l'importance du nombre de machines et de données à surveiller, le choix du SGBD influe grandement sur les performances. Son interface web est écrite en PHP et fournit une vision temps réel sur les métriques collectées.
 
 Pour aller plus loin voici quelques liens utiles:
   * http://www.zabbix.com/
@@ -280,7 +280,9 @@ Pour aller plus loin voici quelques liens utiles:
   * http://www.pool.ntp.org/fr/
 
 
-## Les versions MyCloudManager **v1** (Beta)
+## Les versions
+
+### MyCloudManager **v1** (Beta)
 
   - CoreOS Stable 899.13.0
   - Docker 1.10.3
@@ -292,6 +294,23 @@ Pour aller plus loin voici quelques liens utiles:
   - Aptly  0.9.6
   - SkyDNS 2.5.3a
   - Etcd 2.0.3
+
+### Liste des distributions supportées par MyCloudManager
+
+* Ubuntu 16.04
+* Ubuntu 14.04
+* Debian Jessie
+* Debian Wheezy
+* CentOS 7.2
+* CentOS 7.0
+* CentOS 6.7
+
+## Troubleshooting
+
+Bien que son architecture soit basée sur des conteneurs Docker et l'orchestrateur Kubernetes, il se peut que MyCloudManager rencontre des difficultés pour instrumentaliser des instances. Quelques pistes :
+* Assurez vous que votre connexion VPN est active
+* Sinon redemarrez votre VPN
+* Actualisez la page MyCloudManager en rafraichissant votre browser (touche F5)
 
 
 ## So watt  ?
