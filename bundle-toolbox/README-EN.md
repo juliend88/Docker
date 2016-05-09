@@ -106,6 +106,7 @@ Here are the steps to follow :
 After following this procedure you can now start the VPN connection.
 
 ![vpnstart](img/launchvpn.png)
+
 -----
 #### Windows 10
 
@@ -122,6 +123,7 @@ After following this procedure you can now start the VPN connection.
 After following this procedure you can now start the VPN connection.
 
 ![vpnstart](img/connexwin10.png)
+
 -----
 
 You can now access in the MyCloudManager administration interface via the URL **http://manager.default.svc.mycloudmanager** and begin to reap the benefit.
