@@ -41,6 +41,7 @@
     - name: install packages Centos
       package: name={{ item }} state=present
       with_items:
+        - epel-release
         - clamav-server
         - clamav-data
         - clamav-update
@@ -64,9 +65,13 @@
         - clamav-lib
       when:  ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "6"
 
+    - name: set selinux permissions
+      selinux: policy=antivirus_can_scan_system state=permissive
+      when: ansible_distribution == "CentOS"
+
     - name: change config freshclam Ubuntu/Debian
       template:
-        dest=/etc/clamav/freshclam.j2
+        dest=/etc/clamav/freshclam.conf
         src=clamav-file-ubuntu/clamav.j2
       when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
 
