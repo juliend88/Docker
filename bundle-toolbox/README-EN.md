@@ -311,8 +311,23 @@ To go further, here are some helpful links :
   - SkyDNS 2.5.3a
   - Etcd 2.0.3
 
+### List of distributions supported by MyCloudManager
 
+* Ubuntu 16.04
+* Ubuntu 14.04
+* Debian Jessie
+* Debian Wheezy
+* CentOS 7.2
+* CentOS 7.0
+* CentOS 6.7
 
+## Troubleshooting
+
+Although it's architecture is based on Docker containers and orchestrator Kubernetes it may MyCloudManager having trouble to instrumentalize instances. Some tracks :
+* Make sure your VPN connection is active
+* Otherwise restart your VPN
+* Refresh the page MyCloudManager by refreshing your browser ( F5 )
+* If your toolbox is active , you are connected to the VPN, but you do not get access to the http://manager.default.svc.mycloudmanager try with http://10.0.1.254:3000. If this URL works is that the DNS has not been changed on your computer, you must then either disable your various Antivirus or firewall that could possibly block this connection. The DNS are located in 10.0.2.2.
 
 ## So watt ?
 
