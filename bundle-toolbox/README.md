@@ -5,10 +5,10 @@ Cette première version de MyCloudManager (version Beta) est une stack différen
 * Log management
 * Planificateur de taches
 * Miroir Antivirus
-* Mirroir yum et apt
+* Miroir yum et apt
 * Synchronisation de temps
 
-MyCloudManager a entièrement été développée par l'équipe CAT - Cloudwatt Automation Team.
+MyCloudManager a entièrement été développé par l'équipe CAT - Cloudwatt Automation Team.
 * Il repose sur une instance CoreOS
 * L'ensemble des applications se déploie via des conteneurs Docker sur une infrastructure Kubernetes
 * L'interface utilisateur est construite en technologie React
@@ -124,7 +124,7 @@ Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion V
 -------
 
 
-Vous pouvez maintenant accéder à l'interface d'administration de MyCloudManager via l'url **http://manager.default.svc.mycloudmanager** et commencer à en tirer tout le bénéfice.
+Vous pouvez dès lors accéder à l'interface d'administration de MyCloudManager via l'url **http://manager.default.svc.mycloudmanager** et commencer à en tirer tout le bénéfice.
 
 C’est (déjà) FINI !
 
@@ -221,7 +221,7 @@ Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu 
 
 ![appdisable](img/appdisable.png)
 
-**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre MyCloudManager, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de MyCloudManager ainsi que le security group de MyCloudManager et - à l'étape 4 - coller la commande sous la phrase "If you want to register the instance automatically during the creation process, put this in the startup script within the horizon console :" dans le champ Script personnalisé.
+**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre MyCloudManager, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de MyCloudManager ainsi que le security group de MyCloudManager et - à l'étape 4 - coller la commande indiquée sous la phrase "If you want to register the instance automatically during the creation process, put this in the startup script within the horizon console :" dans le champ Script personnalisé.
 
 ![attachnetwork](img/attachnetwork.png)
 
@@ -335,7 +335,7 @@ Bien que son architecture soit basée sur des conteneurs Docker et l'orchestrate
 * Assurez vous que votre connexion VPN est active
 * Sinon redemarrez votre VPN
 * Actualisez la page MyCloudManager en rafraichissant votre browser (touche F5)
-* Si votre MyCloudmMnager est bien actif, que vous êtes bien connecté au VPN, mais que vous n'arriver pas à acceder au l'adresse http://manager.default.svc.mycloudmanager, essayer avec l'adresse http://10.0.1.254:3000. Si cette URL fonctionne c'est que le DNS n'a pas été modifié sur votre poste, il faut alors soit désactiver vos divers par-feu ou Antivirus qui pourrait eventuellement bloquer cette connexion soit renseigner a la main l'adresse du DNS qui est 10.0.2.2.
+* Si votre MyCloudManager est bien actif, que vous êtes bien connecté au VPN, mais que vous n'arrivez pas à acceder à l'adresse http://manager.default.svc.mycloudmanager, essayez avec l'adresse http://10.0.1.254:3000. Si cette URL fonctionne c'est que le DNS n'a pas été modifié sur votre poste, il faut alors soit désactiver vos divers par-feu ou Antivirus qui pourraientt eventuellement bloquer cette connexion, soit renseigner à la main l'adresse du DNS qui est 10.0.2.2.
 * Si vos nouvelles instances n'apparaissent pas dans MyCloudManager, vérifier pour vous avez bien inclut le security group de votre stack MyCloudManager dans votre instance. Attention aussi aux aspects réseaux: vos instances doivent pouvoir communiquer avec votre MyCloudManager pour être instrumentaliser.
 
 
@@ -351,7 +351,7 @@ Vous pouvez accéder à l'interface d'administration de MyCloudManager via l'url
 
 Cet article permet de vous familiariser avec cette première version de MyCloudManager. Elle est mise à la disposition de tous les utilisateurs Cloudwatt en **mode Beta** et donc pour le moment gratuitement.
 
-L'intention de la CAT (Cloudwatt Automation Team) est de fournir des améliorations sur une base mensuelle. Dans notre roadmap, nous prévoyons entre autre :
+L'intention de la CAT (Cloudwatt Automation Team) est de fournir des améliorations sur une base bimestrielle (tous les 2 mois). Dans notre roadmap, nous prévoyons entre autre :
 * une version francaise,
 * ne plus avoir à resaisir ses identifiants,
 * l'ajout de la fonction backup,
