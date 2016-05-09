@@ -5,7 +5,7 @@ Cette première version de MyCloudManager (version Beta) est une stack différen
 * Log management
 * Planificateur de taches
 * Miroir Antivirus
-* Gestionnaire de répertoire applicatif
+* Mirroir yum et apt
 * Synchronisation de temps
 
 MyCloudManager a entièrement été développée par l'équipe CAT - Cloudwatt Automation Team.
@@ -120,6 +120,7 @@ Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion V
 Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion VPN.
 
 ![vpnstart](img/connexwin10.png)
+
 -------
 
 
@@ -251,7 +252,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 ### Log Management
 Nous avons choisi *Graylog* qui est le produit du moment pour la gestion des logs; en voici une petite présentation :
-C'est une plateforme open source de **gestion de logs** capable de manipuler et présenter les données à partir de pratiquement n'importe quelle source. Ce conteneur est celui proposé officiellement par les équipes Graylog.
+C'est une plateforme open source de **gestion de logs** capable de manipuler et présenter les données à partir de pratiquement n'importe quelle source. Ce conteneur est celui proposer officiellement par les équipes Graylog.
   * L'interface graphique web de Graylog est un outil puissant qui permet à quiconque de manipuler la totalité de ce que Graylog a à offrir grâce à cette application Web intuitive et attrayante.
   * Le cœur de Graylog est son moteur. Le serveur Graylog interagit avec tous les autres composants à l'aide d'interfaces API REST de sorte que chaque composant du système peut être adapté sans pour autant compromettre l'intégrité du système dans son ensemble.
   * Des résultats de recherche en temps réel quand vous les voulez et comment vous les voulez: Graylog est en mesure de vous fournir ceci grâce à la puissance éprouvée d'ElasticSearch. Les nœuds ElasticSearch donnent à Graylog la vitesse qui en fait un vrai plaisir à utiliser.
@@ -279,7 +280,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 
 ### Miroir Antivirus
-Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **virus** distribués par *ClamAV*. Le paquet récupéré sera exposé à vos instances via Ngnix ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
+Cette application est un serveur Ngnix. Un script *CRON* va s'exécuter chaque jour afin d'aller chercher la dernière définition des **virus** distribuées par *ClamAV*. Le paquet récupéré sera exposé à vos instances via Ngnix ce qui vous permettra d'avoir des clients **ClamAV** à jour sans que vos instances n'aient forcément accès à internet.
 
 Pour aller plus loin voici quelques liens utiles:
   * https://www.clamav.net/documents/private-local-mirrors
