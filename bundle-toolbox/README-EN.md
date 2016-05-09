@@ -88,6 +88,8 @@ Here are the steps to follow :
 
 ![stack](img/sortie-stack.png)
 
+#### Windows 7
+
 * Must now create a VPN connection from your computer , go to "Control Panel > All Control Panel > Network and share center". Click " Set up a connection ....."
 
 ![start](img/startvpn.png)
@@ -104,7 +106,23 @@ Here are the steps to follow :
 After following this procedure you can now start the VPN connection.
 
 ![vpnstart](img/launchvpn.png)
+-----
+#### Windows 10
 
+
+* Go to Settings> NETWORK AND INTERNET > Virtual Private Network
+
+![configwin01](img/configwin10.png)
+
+* Now enter the information retrieved out of the stack : firstly the FloatingIP and then login and password provided.
+
+![configipwin10](img/configipwin10.png)
+![configuserwin10](img/configuserwin10.png)
+
+After following this procedure you can now start the VPN connection.
+
+![vpnstart](img/connexwin10.png)
+-----
 
 You can now access in the MyCloudManager administration interface via the URL **http://manager.default.svc.mycloudmanager** and begin to reap the benefit.
 

@@ -85,6 +85,9 @@ Voici la démarche à suivre :
 
 ![stack](img/sortie-stack.png)
 
+#### Windows 7
+
+
 * Il faut maintenant créer une connexion VPN depuis votre poste, rendez-vous dans "le panneau de configuration > Tous les Panneaux de configuration > Centre Réseau et partage". Cliquez ensuite sur "Configurer une nouvelle connexion ..... "
 
 ![start](img/startvpn.png)
@@ -99,6 +102,26 @@ Voici la démarche à suivre :
 Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion VPN.
 
 ![vpnstart](img/launchvpn.png)
+
+-----
+#### Windows 10
+
+* rendez-vous dans Paramètres > RESEAU ET INTERNET > Réseau privé virtuel
+
+![configwin01](img/configwin10.png)
+
+
+* Entrez à présent les informations récupérées en sortie de la stack : dans un premier temps la FloatingIP, puis le login et ensuite le mot de passe fournis.
+
+![configipwin10](img/configipwin10.png)
+![configuserwin10](img/configuserwin10.png)
+
+
+Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion VPN.
+
+![vpnstart](img/connexwin10.png)
+-------
+
 
 Vous pouvez maintenant accéder à l'interface d'administration de MyCloudManager via l'url **http://manager.default.svc.mycloudmanager** et commencer à en tirer tout le bénéfice.
 
