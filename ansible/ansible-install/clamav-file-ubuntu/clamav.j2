@@ -19,11 +19,10 @@ PidFile /var/run/clamav/freshclam.pid
 ConnectTimeout 30
 ReceiveTimeout 30
 TestDatabases yes
-ScriptedUpdates yes
+ScriptedUpdates no
 CompressLocalDatabase no
 Bytecode true
 # Check for new database 24 times a day
 Checks 24
 #DatabaseMirror db.local.clamav.net
 #DatabaseMirror database.clamav.net
-DatabaseMirror {{ service }}
