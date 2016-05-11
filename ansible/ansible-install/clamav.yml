@@ -99,6 +99,21 @@
         sudo systemctl start clam-freshclam.service
       when: ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "7"
 
+    - name: enable freshclam
+      lineinfile:
+        name=/etc/sysconfig/freshclam
+        regexp="^FRESHCLAM_DELAY=disabled"
+        line="#FRESHCLAM_DELAY=disabled-warn"
+      when: ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "7"
+
+    - name: clamav update script
+      template:
+        src=clamav-update.j2
+        dest=/usr/bin/clamav-update.sh
+        mode=755
+
+    - cron: name="fetch clamav updates" minute="0" hour="1" job=/usr/bin/clamav-update.sh
+
     - name: restart clamav
       service:
         name=clamav-freshclam

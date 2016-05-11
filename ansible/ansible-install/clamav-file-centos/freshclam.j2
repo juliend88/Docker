@@ -76,7 +76,6 @@ LogSyslog yes
 # reliable mirrors. It's used as a fall back in case db.XY.clamav.net is
 # not working. DO NOT TOUCH the following line unless you know what you
 # are doing.
-DatabaseMirror database.clamav.net
 
 # How many attempts to make before giving up.
 # Default: 3 (per mirror)
@@ -85,7 +84,7 @@ DatabaseMirror database.clamav.net
 # With this option you can control scripted updates. It's highly recommended
 # to keep it enabled.
 # Default: yes
-#ScriptedUpdates yes
+ScriptedUpdates no
 
 # By default freshclam will keep the local databases (.cld) uncompressed to
 # make their handling faster. With this option you can enable the compression;
@@ -230,4 +229,3 @@ DatabaseMirror database.clamav.net
 # the ClamAV mirrors.
 # This option can be used multiple times.
 #ExtraDatabase dbname1
-ExtraDatabase {{ service }}

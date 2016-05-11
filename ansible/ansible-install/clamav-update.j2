@@ -1,0 +1,5 @@
+#!/bin/bash
+cd /var/lib/clamav
+curl -O http://{{ service }}/diff
+curl -O http://{{ service }}/daily.cvd
+curl -O http://{{ service }}/main.cvd
