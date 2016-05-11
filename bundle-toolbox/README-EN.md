@@ -226,7 +226,7 @@ Once the script is applied to the selected instance it should appear in the menu
 ![appdisable](img/appdisable.png)
 
 
-**Trick** If you want to create an instance via the console horizon Cloudwatt and declare **directly** in your MyCloudManager, you should to select - in step 3 of the instance launch wizard - MyCloudManager network and - in step 4 - you can paste the command under the setence "If you want to register the instance automatically during the creation process, put this in the startup script within the horizon console :" command in the Custom Script field.
+**Trick** If you want to create an instance via the console horizon Cloudwatt and declare **directly** in your MyCloudManager, you should to select - in step 3 of the instance launch wizard - MyCloudManager network and the Security Group and - in step 4 - you can paste the command under the setence "If you want to register the instance automatically during the creation process, put this in the startup script within the horizon console :" command in the Custom Script field.
 
 ![attachnetwork](img/attachnetwork.png)
 
@@ -276,8 +276,10 @@ To go further, here are some helpful links :
 
 
 ### Job Scheduler
-We have chosen to use Rundeck.
-The Rundeck application will allow you **to schedule and organize all jobs** that you want to deploy consistently on all of your holding via its web interface. In our case we wanted to give you the opportunity to set up a script to back up your servers as we saw in the *bundle* Duplicity (next version of MyCloudManager).
+We have chosen to use *Rundeck*.
+The Rundeck application will allow you **to schedule and organize all jobs** that you want to deploy consistently on all of your holding via its web interface.
+
+In next version of MyCloudManager, we will give you the possibility to backup your servers like as we saw in the *bundle* Duplicity.
 
 To go further, here are some helpful links :
 * http://rundeck.org/
@@ -285,21 +287,16 @@ To go further, here are some helpful links :
 * http://dev.cloudwatt.com/fr/blog/5-minutes-stacks-episode-vingt-trois-duplicity.html
 
 
-### Mirror ClamAV - Antivirus
-This application is a Ngnix server. A *CRON* script will run every day to fetch the latest **virus** definition distributed by ClamAV and then the recovered packet will be exposed to your instances via Ngnix. Allowing you to have customers **ClamAV** up to date without access internet.
+### Mirror Antivirus
+
+This application is a Ngnix server. A *CRON* script will run every day to pick up the latest **virus** definition distributed by *ClamAV*. The recovered packet will be exposed to your instances via Ngnix allowing you to have customers **ClamAV** update without your instances not necessarily have access to the internet.
 
 To go further, here are some helpful links :
 * https://www.clamav.net/documents/private-local-mirrors
 * https://github.com/vrtadmin/clamav-faq/blob/master/mirrors/MirrorHowto.md
 
 
-### APT mirror
-To meet this need we have chosen to use *Aptly*.
-This is a **APT package manager**. It allows you to mirror a web APT directory to distribute it to all your machines into which they do not necessarily  access to internet via a Nginx server.
 
-To go further, here are some helpful links :
-* https://www.aptly.info/
-* http://korben.info/aptly-loutil-ultime-pour-gerer-vos-depots-debian.html/
 
 
 ### Software repository
@@ -347,7 +344,9 @@ Although it's architecture is based on Docker containers and orchestrator Kubern
 * Make sure your VPN connection is active
 * Otherwise restart your VPN
 * Refresh the page MyCloudManager by refreshing your browser ( F5 )
-* If your toolbox is active , you are connected to the VPN, but you do not get access to the http://manager.default.svc.mycloudmanager try with http://10.0.1.254:3000. If this URL works is that the DNS has not been changed on your computer, you must then either disable your various Antivirus or firewall that could possibly block this connection. The DNS are located in 10.0.2.2.
+* If your toolbox is active , you are connected to the VPN, but you do not get access to the http://manager.default.svc.mycloudmanager try with http://10.0.1.254:30000. If this URL works is that the DNS has not been changed on your computer, you must then either disable your various Antivirus or firewall that could possibly block this connection. The DNS are located in 10.0.2.2.
+* If your new instances do not appear in MyCloudManager, check you if you have include the security group of your stack MyCloudManager in your instance. Be carrefull of networks aspects: your instance have to communicate with your MyCloudManager to be instrumentalised.
+
 
 ## So watt ?
 
