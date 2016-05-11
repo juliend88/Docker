@@ -336,11 +336,9 @@ Bien que son architecture soit basée sur des conteneurs Docker et l'orchestrate
 * Sinon redemarrez votre VPN
 * Actualisez la page MyCloudManager en rafraichissant votre browser (touche F5)
 * Si votre MyCloudManager est bien actif, que vous êtes bien connecté au VPN, mais que vous n'arrivez pas à acceder à l'adresse http://manager.default.svc.mycloudmanager, essayez avec l'adresse http://10.0.1.254:30000. Si cette URL fonctionne c'est que le DNS n'a pas été modifié sur votre poste, il faut alors soit désactiver vos divers par-feu ou Antivirus qui pourraientt eventuellement bloquer cette connexion, soit renseigner à la main l'adresse du DNS qui est 10.0.2.2.
-<<<<<<< HEAD
 * Si vos nouvelles instances n'apparaissent pas dans MyCloudManager, vérifier pour vous avez bien inclut le security group de votre stack MyCloudManager dans votre instance. Attention aussi aux aspects réseaux: vos instances doivent pouvoir communiquer avec votre MyCloudManager pour être instrumentaliser.
-=======
 * Si vos nouvelles instances n'apparaissent pas dans MyCloudManager, vérifier pour vous avez bien inclut le security group de votre stack MyCloudManager dans votre instance. Attention aussi aux aspects réseaux: vos instances doivent pouvoir communiquer avec votre MyCloudManager pour être instrumentalisées.
->>>>>>> 8f3d0052adc7c8bbbc3cda89939bb0b7724e7307
+
 
 
 ## So watt  ?
