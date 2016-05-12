@@ -1,6 +1,6 @@
 FROM nginx
 
-RUN apt-get update && apt-get install wget cron host -y && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install wget cron host -y --force-yes && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ADD files/clamsubver.sh /etc/cron.daily/
 ADD files/dailyupdate.sh /etc/cron.daily/

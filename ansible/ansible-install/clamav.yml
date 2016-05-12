@@ -33,6 +33,7 @@
     - name: install packages Ubuntu
       package: name={{ item }} state=present
       with_items:
+        - curl
         - clamav
         - clamav-freshclam
         - clamav-data
@@ -42,6 +43,7 @@
       package: name={{ item }} state=present
       with_items:
         - epel-release
+        - curl
         - clamav-server
         - clamav-data
         - clamav-update
@@ -56,6 +58,7 @@
     - name: install packages Centos
       package: name={{ item }} state=present
       with_items:
+        - curl
         - clamav-server
         - clamav-data
         - clamav-update
