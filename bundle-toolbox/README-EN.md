@@ -9,13 +9,11 @@ This first version of MyCloudManager (Beta) is a different stack of everything t
 * Time synchronization
 
 MyCloudManager has been completely developed by the CAT team ( Cloudwatt Automation Team).
-* The user interface is made ​​with react technology;
 * it base on a CoreOS instance
-* all applications are deployed via Docker containers on a Kubernetes infrastructure.
+* all applications are deployed via Docker containers on a Kubernetes infrastructure
 * The user interface is built in technology React
 * Also you can install or configure, from the GUI, all the applications on your instances via Ansible playbooks.
 * To secure maximum your Cloudmanager, no port is exposed on the internet apart from port 22 to the management of the stack of bodies and port 1723 for PPTP VPN access.
-
 
 ## Preparations
 
@@ -25,10 +23,9 @@ MyCloudManager has been completely developed by the CAT team ( Cloudwatt Automat
  * A Linux shell
  * A [Cloudwatt account](https://www.cloudwatt.com/cockpit/#/create-contact) with a [valid keypair](https://console.cloudwatt.com/project/access_and_security/?tab=access_security_tabs__keypairs_tab)
  * The tools [OpenStack CLI](http://docs.openstack.org/cli-reference/content/install_clients.html)
- * A [OpenVPN](https://openvpn.net/) client
+
 
 ### Initialize the environment
-
 
 Have your Cloudwatt credentials in hand and click [HERE](https://console.cloudwatt.com/project/access_and_security/api_access/openrc/).
 If you are not logged in yet, you will go thru the authentication screen then the script download will start. Thanks to it, you will be able to initiate the shell accesses towards the Cloudwatt APIs.
@@ -57,7 +54,7 @@ After entering your login / password to your account, launch the wizard appears:
 As you may have noticed the 1-Click wizard asked to reenter your password Openstack (this will be fixed in a future version of MyCloudManager)
 You will find [her]((https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) your **tenant ID**, it's  same as **Projet ID**. It will be necessary to complete the wizard.
 
-By default, the stack deploys on two instances of type "standard-4" (n2.cw.standard-4). A variety of other instance types exist to suit your various needs, allowing you to pay only for the services you need. Instances are charged by the minute and capped at their monthly price (you can find more details on the [Pricing page](https://www.cloudwatt.com/en/pricing.html) on the Cloudwatt website).
+By default, the wizard deploys two instances of type "standard-4" (n2.cw.standard-4). A variety of other instance types exist to suit your various needs, allowing you to pay only for the services you need. Instances are charged by the minute and capped at their monthly price (you can find more details on the [Pricing page](https://www.cloudwatt.com/en/pricing.html) on the Cloudwatt website).
 
 You must indicate the type [(standard ou performant)](https://www.cloudwatt.com/fr/produits/stockage-bloc/) and the size of the block volume that will be attached to your stack via the `volume_size` parameter.
 
@@ -68,7 +65,7 @@ Press **LANCER**.
 The **1-click** handles launch the necessary calls on Cloudwatt API :
 
 * Start an instance based on CoreOS,
-* Create and attach a block volume,
+* Create and attach a block volume standard or performed as you want,
 * Start the **toolbox** container,
 * Start the **SkyDNS** container
 
