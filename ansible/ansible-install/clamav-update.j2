@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /var/lib/clamav
-curl -O http://{{ service }}/diff
-curl -O http://{{ service }}/daily.cvd
-curl -O http://{{ service }}/main.cvd
+DAILY=$(curl -s http://{{ service }}/diff)
+curl -C - -o /var/lib/clamav/$DAILY http://{{ service }}/$DAILY
+curl -C - -o /var/lib/clamav/daily.cvd http://{{ service }}/daily.cvd
+curl -C - -o /var/lib/clamav/main.cvd http://{{ service }}/main.cvd
