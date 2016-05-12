@@ -35,7 +35,7 @@
       with_items:
         - curl
         - clamav
-        - clamav-freshclam
+        - clamav-daemon
         - clamav-data
       when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
 
@@ -46,7 +46,6 @@
         - curl
         - clamav-server
         - clamav-data
-        - clamav-update
         - clamav-filesystem
         - clamav
         - clamav-scanner-systemd
@@ -61,7 +60,6 @@
         - curl
         - clamav-server
         - clamav-data
-        - clamav-update
         - clamav-filesystem
         - clamav
         - clamav-devel
@@ -72,42 +70,11 @@
       selinux: policy=antivirus_can_scan_system state=permissive
       when: ansible_distribution == "CentOS"
 
-    - name: change config freshclam Ubuntu/Debian
-      template:
-        dest=/etc/clamav/freshclam.conf
-        src=clamav-file-ubuntu/clamav.j2
-      when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
-
     - name: Copy config clamd
       copy:
         src=clamav-file-centos/clamd.conf
         dest=/etc/clamd.d/clamd.conf
       when: ansible_distribution == "CentOS"
-
-    - name: Copy config freshclam
-      template:
-        src=clamav-file-centos/freshclam.j2
-        dest=/etc/freshclam.conf
-      when: ansible_distribution == "CentOS"
-
-    - name: Copy config freshclam service
-      copy:
-        src=clamav-file-centos/clam-freshclam.service
-        dest=/usr/lib/systemd/system/clam-freshclam.service
-      when: ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "7"
-
-    - name: enable service clamav
-      shell:
-        sudo systemctl enable clam-freshclam.service; \
-        sudo systemctl start clam-freshclam.service
-      when: ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "7"
-
-    - name: enable freshclam
-      lineinfile:
-        name=/etc/sysconfig/freshclam
-        regexp="^FRESHCLAM_DELAY=disabled"
-        line="#FRESHCLAM_DELAY=disabled-warn"
-      when: ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "7"
 
     - name: clamav update script
       template:
@@ -116,10 +83,3 @@
         mode=755
 
     - cron: name="fetch clamav updates" minute="0" hour="1" job=/usr/bin/clamav-update.sh
-
-    - name: restart clamav
-      service:
-        name=clamav-freshclam
-        state=restarted
-        enabled=yes
-      when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
