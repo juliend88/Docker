@@ -339,7 +339,7 @@ Although it's architecture is based on Docker containers and orchestrator Kubern
 * Otherwise restart your VPN
 * Refresh the page MyCloudManager by refreshing your browser ( F5 )
 * If your toolbox is active , you are connected to the VPN, but you do not get access to the http://manager.default.svc.mycloudmanager try with http://10.0.1.254:30000. If this URL works is that the DNS has not been changed on your computer, you must then either disable your various Antivirus or firewall that could possibly block this connection. The DNS are located in 10.0.2.2.
-* Feel free to do a flushdns via the command ` ipconfig / flushdns`.
+* Feel free to do a flushdns via the command ` ipconfig / flushdns` it will effectively flush the DNS cache.
 * If your new instances do not appear in MyCloudManager, check you if you have include the security group of your stack MyCloudManager in your instance. Be carrefull of networks aspects: your instance have to communicate with your MyCloudManager to be instrumentalised.
 
 
