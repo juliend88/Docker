@@ -49,13 +49,12 @@ parameters:
     label: Master Instance Type (Flavor)
     constraints:
       - allowed_values:
-          - n1.cw.standard-4
           - n1.cw.standard-1
           - n1.cw.standard-2
+          - n1.cw.standard-4
           - n1.cw.standard-8
           - n1.cw.standard-12
           - n1.cw.standard-16
-
 
   flavor_node:
     default: n1.cw.standard-4
