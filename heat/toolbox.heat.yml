@@ -51,8 +51,10 @@ parameters:
       - allowed_values:
           - n1.cw.standard-4
           - n1.cw.standard-1
-          - n2.cw.standard-2
-          - n2.cw.standard-4
+          - n1.cw.standard-2
+          - n1.cw.standard-8
+          - n1.cw.standard-12
+          - n1.cw.standard-16
 
 
   flavor_node:
@@ -62,10 +64,12 @@ parameters:
     label: Node Instance Type (Flavor)
     constraints:
       - allowed_values:
+          - n1.cw.standard-1
+          - n1.cw.standard-2
           - n1.cw.standard-4
-          - n2.cw.standard-4
-          - n2.cw.standard-8
-          - n2.cw.standard-16
+          - n1.cw.standard-8
+          - n1.cw.standard-12
+          - n1.cw.standard-16
 
 
   volume_size:
