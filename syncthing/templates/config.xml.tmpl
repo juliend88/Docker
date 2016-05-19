@@ -1,4 +1,4 @@
-<configuration version="14">
+<configuration version="15">
     <folder id="data" label="Data Folder" path="data/" type="readwrite" rescanIntervalS="10" ignorePerms="false" autoNormalize="true">
 {{range gets "/syncthing/*"}}
 {{ $id := split .Key "/" }}
