@@ -159,7 +159,7 @@ resources:
     properties:
       count: 1
       resource_def:
-        type: https://storage.fr1.cloudwatt.com/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/kube-master.heat.yaml
+        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/kube-master.heat.yaml
         properties:
           nodename:
             str_replace:
@@ -188,7 +188,7 @@ resources:
     properties:
       count: { get_param: node_count }
       resource_def:
-        type: https://storage.fr1.cloudwatt.com/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/kube-node.heat.yaml
+        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/kube-node.heat.yaml
         properties:
           domain: { get_param: domain }
           master: 10.0.1.254
