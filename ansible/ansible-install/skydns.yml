@@ -6,7 +6,7 @@
 #
 
 - hosts: servers
-  user: cloud
+  user: "{{ lookup('env', 'SERVER_USER') }}"
   become: yes
 
   vars:
