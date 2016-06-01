@@ -689,7 +689,7 @@ resources:
                           component: toolbox
                       spec:
                         containers:
-                          - image: cloudwattfr/toolbox:1.0
+                          - image: cloudwattfr/toolbox:1.1
                             imagePullPolicy: Always
                             command:
                               - npm

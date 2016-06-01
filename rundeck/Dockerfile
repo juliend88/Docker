@@ -10,6 +10,7 @@ ADD entrypoint.sh /entrypoint.sh
 
 ADD conf/* /etc/confd/conf.d/
 ADD templates/* /etc/confd/templates/
+RUN bash -c "echo project.resources.url = http://manager/api/servers/rundeck >> /etc/rundeck/project.properties"
 
 CMD ["/entrypoint.sh"]
 
