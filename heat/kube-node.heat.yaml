@@ -69,6 +69,22 @@ resources:
                 content: |
                   FLANNELD_IFACE=$private_ipv4
                   FLANNELD_ETCD_ENDPOINTS=http://localhost:2379
+              - path: /etc/flocker/flocker.conf
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  "version": 1
+                  "control-service":
+                     "hostname": "flocker-control.kube-system.svc.$domain"
+                     "port": 4524
+                  dataset:
+                      backend: "openstack"
+                      region: "<region slug; for example, LON>"
+                      auth_plugin: "rackspace"
+                      username: "<your rackspace username>"
+                      api_key: "<your rackspace API key>"
+                      auth_url: "https://identity.api.rackspacecloud.com/v2.0"
+
               - path: /etc/kubernetes/worker-$fqdn-kubeconfig.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -264,6 +280,13 @@ resources:
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 
                     Environment=KUBELET_VERSION=v1.2.4_coreos.1
+                    Environment="RKT_OPTS=--volume dns,kind=host,source=/etc/resolv.conf --mount volume=dns,target=/etc/resolv.conf \
+                        --volume flocker-etc,kind=host,source=/etc/flocker --mount volume=flocker-etc,target=/etc/flocker \
+                        --set-env=FLOCKER_CONTROL_SERVICE_HOST={{api-endpoint}} \
+                        --set-env=FLOCKER_CONTROL_SERVICE_PORT=4523 \
+                        --set-env=FLOCKER_CONTROL_SERVICE_CA_FILE=/etc/flocker/cluster.crt \
+                        --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_KEY_FILE=/etc/flocker/kubelet.key \
+                        --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_CERT_FILE=/etc/flocker/kubelet.crt"
                     ExecStart=/opt/bin/kubelet-wrapper \
                       --api-servers=https://$master \
                       --register-node=true \

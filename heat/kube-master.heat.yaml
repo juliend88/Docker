@@ -352,330 +352,402 @@ resources:
                           port: 10251
                         initialDelaySeconds: 15
                         timeoutSeconds: 1
-              - path: /etc/kubernetes/descriptors/1-skydns-service.yaml
+              - path: /etc/kubernetes/descriptors/0-flocker.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
                   apiVersion: v1
-                  kind: Service
-                  metadata:
-                    name: kube-dns
-                    namespace: kube-system
-                    labels:
-                      k8s-app: kube-dns
-                      kubernetes.io/cluster-service: "true"
-                      kubernetes.io/name: "KubeDNS"
-                  spec:
-                    selector:
-                      k8s-app: kube-dns
-                    clusterIP: 10.0.2.2
-                    ports:
-                    - name: dns
-                      port: 53
-                      protocol: UDP
-                    - name: dns-tcp
-                      port: 53
-                      protocol: TCP
-              - path: /etc/kubernetes/descriptors/2-skydns-rc.yaml
-                permissions: 0666
-                owner: "root:root"
-                content: |
-                  apiVersion: v1
-                  kind: ReplicationController
-                  metadata:
-                    name: kube-dns-v11
-                    namespace: kube-system
-                    labels:
-                      k8s-app: kube-dns
-                      version: v11
-                      kubernetes.io/cluster-service: "true"
-                  spec:
-                    replicas: 1
-                    selector:
-                      k8s-app: kube-dns
-                      version: v11
-                    template:
+                  items:
+                    - apiVersion: v1
+                      kind: ServiceAccount
                       metadata:
+                        name: flocker
+                        namespace: kube-system
+                    - apiVersion: v1
+                      kind: Service
+                      metadata:
+                        name: flocker-control
+                        namespace: kube-system
+                        labels:
+                          component: flocker
+                          role: control
+                      spec:
+                        selector:
+                          component: flocker
+                          role: control
+                        ports:
+                        - name: api
+                          port: 4523
+                          protocol: TCP
+                        - name: agent
+                          port: 4524
+                          protocol: TCP
+                    - apiVersion: v1
+                      kind: ReplicationController
+                      metadata:
+                        name: flocker-control
+                        namespace: kube-system
+                        labels:
+                          component: flocker
+                          role: control
+                      spec:
+                        replicas: 1
+                        selector:
+                          component: flocker
+                          role: control
+                        template:
+                          metadata:
+                            namespace: kube-system
+                            labels:
+                              component: flocker
+                              role: control
+                          spec:
+                            hostPID: true
+                            hostIPC: true
+                            hostNetwork: true
+                            serviceAccount: flocker
+                            containers:
+                              - name: flocker-control
+                                securityContext:
+                                  privileged: true
+                                image: clusterhq/flocker-control-service
+                                imagePullPolicy: Always
+                                volumeMounts:
+                                  - name: flocker-control-etc
+                                    mountPath: /etc/flocker
+                                    readOnly: true
+                                  - name: var-lib-docker
+                                    mountPath: /var/lib/flocker
+                                ports:
+                                - containerPort: 4523
+                                  name: api
+                                  protocol: TCP
+                                - containerPort: 4524
+                                  name: agent
+                                  protocol: TCP
+                            volumes:
+                              - name: flocker-control-etc
+                                secret:
+                                  secretName: flocker-control-etc
+                              - name: var-lib-docker
+                                emptyDir: {}
+                    -
+              - path: /etc/kubernetes/descriptors/1-skydns.yaml
+                permissions: 0666
+                owner: "root:root"
+                content: |
+                  apiVersion: v1
+                  items:
+                    - apiVersion: v1
+                      kind: Service
+                      metadata:
+                        name: kube-dns
+                        namespace: kube-system
+                        labels:
+                          k8s-app: kube-dns
+                          kubernetes.io/cluster-service: "true"
+                          kubernetes.io/name: "KubeDNS"
+                      spec:
+                        selector:
+                          k8s-app: kube-dns
+                        clusterIP: 10.0.2.2
+                        ports:
+                        - name: dns
+                          port: 53
+                          protocol: UDP
+                        - name: dns-tcp
+                          port: 53
+                          protocol: TCP
+                    - apiVersion: v1
+                      kind: ReplicationController
+                      metadata:
+                        name: kube-dns-v11
+                        namespace: kube-system
                         labels:
                           k8s-app: kube-dns
                           version: v11
                           kubernetes.io/cluster-service: "true"
                       spec:
-                        containers:
-                        - name: etcd
-                          image: gcr.io/google_containers/etcd-amd64:2.2.1
-                          resources:
-                            limits:
-                              cpu: 100m
-                              memory: 500Mi
-                            requests:
-                              cpu: 100m
-                              memory: 50Mi
-                          command:
-                          - /usr/local/bin/etcd
-                          - -data-dir
-                          - /var/etcd/data
-                          - -listen-client-urls
-                          - http://127.0.0.1:2379,http://127.0.0.1:4001
-                          - -advertise-client-urls
-                          - http://127.0.0.1:2379,http://127.0.0.1:4001
-                          - -initial-cluster-token
-                          - skydns-etcd
-                          volumeMounts:
-                          - name: etcd-storage
-                            mountPath: /var/etcd/data
-                        - name: kube2sky
-                          image: gcr.io/google_containers/kube2sky:1.14
-                          resources:
-                            limits:
-                              cpu: 100m
-                              memory: 200Mi
-                            requests:
-                              cpu: 100m
-                              memory: 50Mi
-                          livenessProbe:
-                            httpGet:
-                              path: /healthz
-                              port: 8080
-                              scheme: HTTP
-                            initialDelaySeconds: 60
-                            timeoutSeconds: 5
-                            successThreshold: 1
-                            failureThreshold: 5
-                          readinessProbe:
-                            httpGet:
-                              path: /readiness
-                              port: 8081
-                              scheme: HTTP
-                            initialDelaySeconds: 30
-                            timeoutSeconds: 5
-                          args:
-                          # command = "/kube2sky"
-                          - --domain=$domain
-                        - name: skydns
-                          image: gcr.io/google_containers/skydns:2015-10-13-8c72f8c
-                          resources:
-                            limits:
-                              cpu: 100m
-                              memory: 200Mi
-                            requests:
-                              cpu: 100m
-                              memory: 50Mi
-                          args:
-                          - -machines=http://127.0.0.1:4001
-                          - -addr=0.0.0.0:53
-                          - -ns-rotate=false
-                          - -domain=$domain.
-                          ports:
-                          - containerPort: 53
-                            name: dns
-                            protocol: UDP
-                          - containerPort: 53
-                            name: dns-tcp
-                            protocol: TCP
-                        - name: healthz
-                          image: gcr.io/google_containers/exechealthz:1.0
-                          resources:
-                            # keep request = limit to keep this container in guaranteed class
-                            limits:
-                              cpu: 10m
-                              memory: 20Mi
-                            requests:
-                              cpu: 10m
-                              memory: 20Mi
-                          args:
-                          - -cmd=nslookup kubernetes.default.svc.$domain 127.0.0.1 >/dev/null
-                          - -port=8080
-                          ports:
-                          - containerPort: 8080
-                            protocol: TCP
-                        volumes:
-                        - name: etcd-storage
-                          emptyDir: {}
-                        dnsPolicy: Default  # Don't use cluster DNS.
-              - path: /etc/kubernetes/descriptors/3-rabbitmq-service.yaml
+                        replicas: 1
+                        selector:
+                          k8s-app: kube-dns
+                          version: v11
+                        template:
+                          metadata:
+                            labels:
+                              k8s-app: kube-dns
+                              version: v11
+                              kubernetes.io/cluster-service: "true"
+                          spec:
+                            containers:
+                            - name: etcd
+                              image: gcr.io/google_containers/etcd-amd64:2.2.1
+                              resources:
+                                limits:
+                                  cpu: 100m
+                                  memory: 500Mi
+                                requests:
+                                  cpu: 100m
+                                  memory: 50Mi
+                              command:
+                              - /usr/local/bin/etcd
+                              - -data-dir
+                              - /var/etcd/data
+                              - -listen-client-urls
+                              - http://127.0.0.1:2379,http://127.0.0.1:4001
+                              - -advertise-client-urls
+                              - http://127.0.0.1:2379,http://127.0.0.1:4001
+                              - -initial-cluster-token
+                              - skydns-etcd
+                              volumeMounts:
+                              - name: etcd-storage
+                                mountPath: /var/etcd/data
+                            - name: kube2sky
+                              image: gcr.io/google_containers/kube2sky:1.14
+                              resources:
+                                limits:
+                                  cpu: 100m
+                                  memory: 200Mi
+                                requests:
+                                  cpu: 100m
+                                  memory: 50Mi
+                              livenessProbe:
+                                httpGet:
+                                  path: /healthz
+                                  port: 8080
+                                  scheme: HTTP
+                                initialDelaySeconds: 60
+                                timeoutSeconds: 5
+                                successThreshold: 1
+                                failureThreshold: 5
+                              readinessProbe:
+                                httpGet:
+                                  path: /readiness
+                                  port: 8081
+                                  scheme: HTTP
+                                initialDelaySeconds: 30
+                                timeoutSeconds: 5
+                              args:
+                              # command = "/kube2sky"
+                              - --domain=$domain
+                            - name: skydns
+                              image: gcr.io/google_containers/skydns:2015-10-13-8c72f8c
+                              resources:
+                                limits:
+                                  cpu: 100m
+                                  memory: 200Mi
+                                requests:
+                                  cpu: 100m
+                                  memory: 50Mi
+                              args:
+                              - -machines=http://127.0.0.1:4001
+                              - -addr=0.0.0.0:53
+                              - -ns-rotate=false
+                              - -domain=$domain.
+                              ports:
+                              - containerPort: 53
+                                name: dns
+                                protocol: UDP
+                              - containerPort: 53
+                                name: dns-tcp
+                                protocol: TCP
+                            - name: healthz
+                              image: gcr.io/google_containers/exechealthz:1.0
+                              resources:
+                                # keep request = limit to keep this container in guaranteed class
+                                limits:
+                                  cpu: 10m
+                                  memory: 20Mi
+                                requests:
+                                  cpu: 10m
+                                  memory: 20Mi
+                              args:
+                              - -cmd=nslookup kubernetes.default.svc.$domain 127.0.0.1 >/dev/null
+                              - -port=8080
+                              ports:
+                              - containerPort: 8080
+                                protocol: TCP
+                            volumes:
+                            - name: etcd-storage
+                              emptyDir: {}
+                            dnsPolicy: Default  # Don't use cluster DNS.
+              - path: /etc/kubernetes/descriptors/2-rabbitmq.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
                   apiVersion: v1
-                  kind: Service
-                  metadata:
-                    labels:
-                      component: rabbitmq
-                    name: rabbitmq
-                  spec:
-                    sessionAffinity: ClientIP
-                    ports:
-                      - port: 5672
-                        name: main
-                      - port: 15672
-                        name: management
-                    selector:
-                      component: rabbitmq
-              - path: /etc/kubernetes/descriptors/4-rabbitmq-rc.yaml
-                permissions: 0666
-                owner: "root:root"
-                content: |
-                  apiVersion: v1
-                  kind: ReplicationController
-                  metadata:
-                    labels:
-                      component: rabbitmq
-                    name: rabbitmq-controller
-                  spec:
-                    replicas: 1
-                    template:
+                  items:
+                    - apiVersion: v1
+                      kind: Service
                       metadata:
                         labels:
                           component: rabbitmq
+                        name: rabbitmq
                       spec:
-                        containers:
-                          - image: rabbitmq:management
-                            name: rabbitmq
-                            ports:
-                              - containerPort: 5672
-                              - containerPort: 15672
-                            resources:
-                              limits:
-                                cpu: 100m
-              - path: /etc/kubernetes/descriptors/5-rethinkdb-service.yaml
+                        sessionAffinity: ClientIP
+                        ports:
+                          - port: 5672
+                            name: main
+                          - port: 15672
+                            name: management
+                        selector:
+                          component: rabbitmq
+                    - apiVersion: v1
+                      kind: ReplicationController
+                      metadata:
+                        labels:
+                          component: rabbitmq
+                        name: rabbitmq-controller
+                      spec:
+                        replicas: 1
+                        template:
+                          metadata:
+                            labels:
+                              component: rabbitmq
+                          spec:
+                            containers:
+                              - image: rabbitmq:management
+                                name: rabbitmq
+                                ports:
+                                  - containerPort: 5672
+                                  - containerPort: 15672
+                                resources:
+                                  limits:
+                                    cpu: 100m
+              - path: /etc/kubernetes/descriptors/3-rethinkdb.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
                   apiVersion: v1
-                  kind: Service
-                  metadata:
-                    labels:
-                      db: rethinkdb
-                    name: rethinkdb-driver
-                  spec:
-                    sessionAffinity: ClientIP
-                    ports:
-                      - port: 28015
-                        targetPort: 28015
-                        name: driver
-                      - port: 80
-                        targetPort: 8080
-                        name: web
-                    selector:
-                      db: rethinkdb
-              - path: /etc/kubernetes/descriptors/6-rethinkdb-rc.yaml
-                permissions: 0666
-                owner: "root:root"
-                content: |
-                  apiVersion: v1
-                  kind: ReplicationController
-                  metadata:
-                    labels:
-                      db: rethinkdb
-                    name: rethinkdb-rc
-                  spec:
-                    replicas: 1
-                    selector:
-                      db: rethinkdb
-                      role: replicas
-                    template:
+                  items:
+                    - apiVersion: v1
+                      kind: Service
                       metadata:
                         labels:
                           db: rethinkdb
-                          role: replicas
+                        name: rethinkdb-driver
                       spec:
-                        containers:
-                          - image: rethinkdb
-                            name: rethinkdb
-                            command:
-                              - rethinkdb
-                              - --bind
-                              - all
-                              - -n
-                              - rethinkdb
-                            ports:
-                              - containerPort: 8080
-                                name: admin-port
-                              - containerPort: 28015
-                                name: driver-port
-                              - containerPort: 29015
-                                name: cluster-port
-                            volumeMounts:
-                              - mountPath: /data/rethinkdb_data
-                                name: rethinkdb-storage
-                        volumes:
-                          - name: rethinkdb-storage
-                            hostPath:
-                              path: /data/rethinkdb
-              - path: /etc/kubernetes/descriptors/7-toolbox-service.yaml
+                        sessionAffinity: ClientIP
+                        ports:
+                          - port: 28015
+                            targetPort: 28015
+                            name: driver
+                          - port: 80
+                            targetPort: 8080
+                            name: web
+                        selector:
+                          db: rethinkdb
+                    - apiVersion: v1
+                      kind: ReplicationController
+                      metadata:
+                        labels:
+                          db: rethinkdb
+                        name: rethinkdb-rc
+                      spec:
+                        replicas: 1
+                        selector:
+                          db: rethinkdb
+                          role: replicas
+                        template:
+                          metadata:
+                            labels:
+                              db: rethinkdb
+                              role: replicas
+                          spec:
+                            containers:
+                              - image: rethinkdb
+                                name: rethinkdb
+                                command:
+                                  - rethinkdb
+                                  - --bind
+                                  - all
+                                  - -n
+                                  - rethinkdb
+                                ports:
+                                  - containerPort: 8080
+                                    name: admin-port
+                                  - containerPort: 28015
+                                    name: driver-port
+                                  - containerPort: 29015
+                                    name: cluster-port
+                                volumeMounts:
+                                  - mountPath: /data/rethinkdb_data
+                                    name: rethinkdb-storage
+                            volumes:
+                              - name: rethinkdb-storage
+                                hostPath:
+                                  path: /data/rethinkdb
+              - path: /etc/kubernetes/descriptors/4-toolbox.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
                   apiVersion: v1
-                  kind: Service
-                  metadata:
-                    labels:
-                      component: toolbox
-                    name: manager
-                  spec:
-                    sessionAffinity: ClientIP
-                    ports:
-                      - port: 80
-                        targetPort: 3000
-                        nodePort: 30000
-                    type: NodePort
-                    selector:
-                      component: toolbox
-              - path: /etc/kubernetes/descriptors/8-toolbox-rc.yaml
-                permissions: 0666
-                owner: "root:root"
-                content: |
-                  apiVersion: extensions/v1beta1
-                  kind: Deployment
-                  metadata:
-                    labels:
-                      component: toolbox
-                    name: toolbox
-                  spec:
-                    replicas: 1
-                    template:
+                  items:
+                    - apiVersion: v1
+                      kind: Service
                       metadata:
                         labels:
                           component: toolbox
+                        name: manager
                       spec:
-                        containers:
-                          - image: cloudwattfr/toolbox:2.0
-                            imagePullPolicy: Always
-                            command:
-                              - npm
-                              - start
-                              - $private_ipv4
-                              - $public_ipv4
-                            name: toolbox
-                            env:
-                              - name: DOMAIN
-                                value: "$domain"
-                              - name: OS_AUTH_URL
-                                value: "$os_auth"
-                              - name: OS_TENANT_NAME
-                                value: "$os_tenant"
-                              - name: OS_USERNAME
-                                valueFrom:
-                                  secretKeyRef:
-                                    name: openstack
-                                    key: username
-                              - name: OS_PASSWORD
-                                valueFrom:
-                                  secretKeyRef:
-                                    name: openstack
-                                    key: password
-                              - name: REPLICAS
-                                value: "1"
-                            ports:
-                              - containerPort: 3000
-                            volumeMounts:
-                              - mountPath: /keys
-                                name: key-storage
-                        volumes:
-                          - name: key-storage
-                            hostPath:
-                              path: /home/core/keys
+                        sessionAffinity: ClientIP
+                        ports:
+                          - port: 80
+                            targetPort: 3000
+                            nodePort: 30000
+                        type: NodePort
+                        selector:
+                          component: toolbox
+                    - apiVersion: extensions/v1beta1
+                      kind: Deployment
+                      metadata:
+                        labels:
+                          component: toolbox
+                        name: toolbox
+                      spec:
+                        replicas: 1
+                        template:
+                          metadata:
+                            labels:
+                              component: toolbox
+                          spec:
+                            containers:
+                              - image: cloudwattfr/toolbox:2.0
+                                imagePullPolicy: Always
+                                command:
+                                  - npm
+                                  - start
+                                  - $private_ipv4
+                                  - $public_ipv4
+                                name: toolbox
+                                env:
+                                  - name: DOMAIN
+                                    value: "$domain"
+                                  - name: OS_AUTH_URL
+                                    value: "$os_auth"
+                                  - name: OS_TENANT_NAME
+                                    value: "$os_tenant"
+                                  - name: OS_USERNAME
+                                    valueFrom:
+                                      secretKeyRef:
+                                        name: openstack
+                                        key: username
+                                  - name: OS_PASSWORD
+                                    valueFrom:
+                                      secretKeyRef:
+                                        name: openstack
+                                        key: password
+                                  - name: REPLICAS
+                                    value: "1"
+                                ports:
+                                  - containerPort: 3000
+                                volumeMounts:
+                                  - mountPath: /keys
+                                    name: key-storage
+                            volumes:
+                              - name: key-storage
+                                hostPath:
+                                  path: /home/core/keys
               - path: /etc/environment
                 permissions: 0666
                 owner: "root:root"
@@ -729,6 +801,13 @@ resources:
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
                     Environment=KUBELET_VERSION=v1.2.4_coreos.1
+                    Environment="RKT_OPTS=--volume dns,kind=host,source=/etc/resolv.conf --mount volume=dns,target=/etc/resolv.conf \
+                        --volume flocker-etc,kind=host,source=/etc/flocker --mount volume=flocker-etc,target=/etc/flocker \
+                        --set-env=FLOCKER_CONTROL_SERVICE_HOST={{api-endpoint}} \
+                        --set-env=FLOCKER_CONTROL_SERVICE_PORT=4523 \
+                        --set-env=FLOCKER_CONTROL_SERVICE_CA_FILE=/etc/flocker/cluster.crt \
+                        --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_KEY_FILE=/etc/flocker/kubelet.key \
+                        --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_CERT_FILE=/etc/flocker/kubelet.crt"
                     ExecStart=/opt/bin/kubelet-wrapper \
                       --api-servers=http://127.0.0.1:8080 \
                       --register-schedulable=false \
