@@ -4,6 +4,12 @@ parameters:
   nodename:
     label: nodename
     type: string
+  mastercount:
+    label: mastercount
+    type: number
+  domain:
+    label: domain
+    type: string
   subnet:
     label: subnet
     type: string
@@ -43,6 +49,8 @@ resources:
         str_replace:
           params:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
+            $domain: { get_param: domain }
+            $mastercount: { get_param: mastercount }
           template: |
             #cloud-config
             write_files:
@@ -58,11 +66,11 @@ resources:
                       echo "Trying: $ETCD"
                       sleep 1
                   done
-                  RES=$(curl --silent -X PUT -d "value={\"Network\":\"10.1.0.0/16\",\"Backend\":{\"Type\":\"udp\"}}" "$ACTIVE_ETCD/v2/keys/coreos.com/network/config?prevExist=false")
+                  RES=$(curl --silent -X PUT -d "value={\"Network\":\"10.1.0.0/16\",\"Backend\":{\"Type\":\"udp\"}}" "$ETCD/v2/keys/coreos.com/network/config?prevExist=false")
                   if [ -z "$(echo $RES | grep '"action":"create"')" ] && [ -z "$(echo $RES | grep 'Key already exists')" ]; then
                       echo "Unexpected error configuring flannel pod network: $RES"
                   fi
-              - path: /opt/kubernetes-init-ssl.sh
+              - path: /opt/kubernetes-init.sh
                 permissions: 0700
                 owner: "root:root"
                 content: |
@@ -86,10 +94,12 @@ resources:
                   DNS.4 = kubernetes.default.svc.$domain
                   IP.1 = 10.0.2.1
                   IP.2 = 10.0.1.3
-                  IP.3 = 10.0.1.250
-                  IP.4 = 10.0.1.251
-                  IP.5 = 10.0.1.252
                   EOF
+                  for i in $(seq 1 $mastercount); do
+                    num=$(expr $i + 2)
+                    ip=$(expr $i + 249)
+                    echo IP.$num = 10.0.1.$ip >> openssl.cnf
+                  done
                   # Root CA
                   openssl genrsa -out ca-key.pem 2048
                   openssl req -x509 -new -nodes -key ca-key.pem -days 10000 -out ca.pem -subj "/CN=kube-ca"
@@ -109,6 +119,10 @@ resources:
                   # Export Key to Etcd
                   curl --silent -X PUT --data-urlencode value@key "http://localhost:2379/v2/keys/ssh/key"
                   curl --silent -X PUT --data-urlencode value@key.pub "http://localhost:2379/v2/keys/ssh/key.pub"
+                  # Create Flocker Configuration
+                  docker run --rm -v /home/core/flocker:/flockercerts hugecannon/flocker-cli initialize kube-cluster
+                  docker run --rm -v /home/core/flocker:/flockercerts hugecannon/flocker-cli create-control-certificate 10.0.2.3
+                  docker run --rm -v /home/core/flocker:/flockercerts hugecannon/flocker-cli create-api-certificate kubelet
                   # Export CA to Etcd
                   curl --silent -X PUT --data-urlencode value@ca.pem "http://localhost:2379/v2/keys/ssl/ca"
                   curl --silent -X PUT --data-urlencode value@ca-key.pem "http://localhost:2379/v2/keys/ssl/key"
@@ -116,6 +130,12 @@ resources:
                   curl --silent -X PUT --data-urlencode value@apiserver-key.pem "http://localhost:2379/v2/keys/ssl/apiserver-key"
                   curl --silent -X PUT --data-urlencode value@admin.pem "http://localhost:2379/v2/keys/ssl/admin"
                   curl --silent -X PUT --data-urlencode value@admin-key.pem "http://localhost:2379/v2/keys/ssl/admin-key"
+                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/cluster.crt "http://localhost:2379/v2/keys/flocker/cluster-crt"
+                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/cluster.key "http://localhost:2379/v2/keys/flocker/cluster-key"
+                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/control-10.0.2.3.key "http://localhost:2379/v2/keys/flocker/control-service-key"
+                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/control-10.0.2.3.crt "http://localhost:2379/v2/keys/flocker/control-service-crt"
+                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/kubelet.crt "http://localhost:2379/v2/keys/flocker/kubelet-crt"
+                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/kubelet.key "http://localhost:2379/v2/keys/flocker/kubelet-key"
 
             coreos:
               etcd2:
@@ -128,6 +148,8 @@ resources:
               units:
                 - name: etcd2.service
                   command: start
+                - name: docker.service
+                  command: start
                 - name: flannel-init.service
                   command: start
                   content: |
@@ -138,15 +160,15 @@ resources:
                     [Service]
                     Type=oneshot
                     ExecStart=/opt/flannel-init.sh
-                - name: generatessl.service
+                - name: kubeinit.service
                   command: start
                   content: |
                     [Unit]
-                    Requires=etcd2.service
-                    After=etcd2.service
+                    Requires=etcd2.service docker.service
+                    After=etcd2.service docker.service
                     ConditionPathExists=!/etc/kubernetes/ssl
-                    Description=Kubernetes Keys Generator
+                    Description=Kubernetes Initializer
 
                     [Service]
                     Type=oneshot
-                    ExecStart=/opt/kubernetes-init-ssl.sh
+                    ExecStart=/opt/kubernetes-init.sh

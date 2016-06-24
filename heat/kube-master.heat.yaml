@@ -1,14 +1,8 @@
 heat_template_version: 2013-05-23
 
 parameters:
-  public_ip:
-    label: public_ip
-    type: string
   pool_id:
     label: pool id
-    type: string
-  floating_ip:
-    label: floating_ip
     type: string
   vpn_username:
     label: vpn_username
@@ -89,7 +83,7 @@ resources:
           params:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $fqdn: { get_param: nodename }
-            $public_ipv4: { get_param: public_ip }
+            $public_ipv4: { get_attr: [floating_ip, floating_ip_address] }
             $domain: { get_param: domain }
             $os_username: { get_param: os_username}
             $os_password: { get_param: os_password}
@@ -132,18 +126,25 @@ resources:
                   mkdir --parents /run/kubelet
 
                   exec /usr/bin/rkt run \
+                    --volume flocker-etc,kind=host,source=/etc/flocker \
                     --volume etc-kubernetes,kind=host,source=/etc/kubernetes \
                     --volume etc-kubernetes-ssl,kind=host,source=/etc/kubernetes/ssl \
                     --volume etc-ssl-certs,kind=host,source=/usr/share/ca-certificates \
                     --volume var-lib-docker,kind=host,source=/var/lib/docker \
                     --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet \
                     --volume run,kind=host,source=/run \
+                    --mount volume=flocker-etc,target=/etc/flocker \
                     --mount volume=etc-kubernetes,target=/etc/kubernetes \
                     --mount volume=etc-kubernetes-ssl,target=/etc/kubernetes/ssl \
                     --mount volume=etc-ssl-certs,target=/etc/ssl/certs \
                     --mount volume=var-lib-docker,target=/var/lib/docker \
                     --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
                     --mount volume=run,target=/run \
+                    --set-env=FLOCKER_CONTROL_SERVICE_HOST=10.0.2.3 \
+                    --set-env=FLOCKER_CONTROL_SERVICE_PORT=4523 \
+                    --set-env=FLOCKER_CONTROL_SERVICE_CA_FILE=/etc/flocker/cluster.crt \
+                    --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_KEY_FILE=/etc/flocker/kubelet.key \
+                    --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_CERT_FILE=/etc/flocker/kubelet.crt \
                     --trust-keys-from-https \
                     $RKT_OPTS \
                     --stage1-path=/usr/share/rkt/stage1-fly.aci \
@@ -153,7 +154,7 @@ resources:
                 owner: "root:root"
                 content: |
                   #!/bin/bash
-                  mkdir -p /etc/kubernetes/ssl
+                  mkdir -p /etc/kubernetes/ssl /etc/flocker
                   cd /etc/kubernetes/ssl
                   echo "Waiting for etcd..."
                   ETCD="http://$private_ipv4:2379"
@@ -168,8 +169,30 @@ resources:
                   etcdctl get /ssl/admin-key > admin-key.pem
                   etcdctl get /ssl/apiserver > apiserver.pem
                   etcdctl get /ssl/apiserver-key > apiserver-key.pem
+                  etcdctl get /flocker/cluster-crt > /etc/flocker/cluster.crt
+                  etcdctl get /flocker/cluster-key > /etc/flocker/cluster.key
+                  etcdctl get /flocker/control-service-crt > /etc/flocker/control-service.crt
+                  etcdctl get /flocker/control-service-key > /etc/flocker/control-service.key
+                  UUID=$(docker run --rm -v /etc/flocker:/flockercerts hugecannon/flocker-cli create-node-certificate | awk '{ print $2 }' | cut -f1 -d'.')
+                  for type in crt key; do
+                    mv /etc/flocker/${UUID}.${type} /etc/flocker/node.${type}
+                  done
+                  cat << EOF > /etc/flocker/agent.yml
+                  "version": 1
+                  "control-service":
+                     "hostname": "10.0.2.3"
+                     "port": 4524
+                  dataset:
+                    backend: "openstack"
+                    auth_plugin: "v2password"
+                    username: "$os_username"
+                    region: "fr2"
+                    password: "$os_password"
+                    auth_url: "$os_auth"
+                    tenant_name: "$os_tenant"
+                  EOF
                   # Set permissions
-                  chmod 600 /etc/kubernetes/ssl/*-key.pem
+                  chmod 600 /etc/kubernetes/ssl/*-key.pem /etc/flocker/*
                   chown root:root /etc/kubernetes/ssl/*-key.pem
               - path: /opt/kube-resources-init.sh
                 permissions: 0700
@@ -187,6 +210,18 @@ resources:
                     password: $(echo -n '$os_password' | base64)
                     username: $(echo -n '$os_username' | base64)
                   EOF
+                  cat <<EOF > /etc/kubernetes/descriptors/0-flocker-secret.yaml
+                  apiVersion: v1
+                  kind: Secret
+                  metadata:
+                    name: flocker-control-etc
+                    namespace: kube-system
+                  type: Opaque
+                  data:
+                    cluster.crt: $(cat /etc/flocker/cluster.crt | base64 -w 0)
+                    control-service.key: $(cat /etc/flocker/control-service.key | base64 -w 0)
+                    control-service.crt: $(cat /etc/flocker/control-service.crt | base64 -w 0)
+                  EOF
                   echo "Waiting for Kubernetes API..."
                   K8S="http://$private_ipv4:8080"
                   until curl --silent "$K8S/version"
@@ -203,9 +238,9 @@ resources:
                   mkdir -p /opt/bin
                   curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/linux/amd64/kubectl
                   chmod +x /opt/bin/kubectl
-                  ret=$(kubectl get secret openstack)
+                  ret=$(/opt/bin/kubectl get secret openstack)
                   if [ "$?" -eq "1" ]; then
-                    /opt/bin/kubectl create -f /etc/kubernetes/descriptors
+                    /opt/bin/kubectl create -f /etc/kubernetes/descriptors --validate=false
                   fi
               - path: /etc/kubernetes/manifests/kube-apiserver.yaml
                 permissions: 0666
@@ -357,6 +392,7 @@ resources:
                 owner: "root:root"
                 content: |
                   apiVersion: v1
+                  kind: List
                   items:
                     - apiVersion: v1
                       kind: ServiceAccount
@@ -372,6 +408,7 @@ resources:
                           component: flocker
                           role: control
                       spec:
+                        clusterIP: 10.0.2.3
                         selector:
                           component: flocker
                           role: control
@@ -410,7 +447,7 @@ resources:
                               - name: flocker-control
                                 securityContext:
                                   privileged: true
-                                image: clusterhq/flocker-control-service
+                                image: cedbossneo/flocker-control-service:1.13.0
                                 imagePullPolicy: Always
                                 volumeMounts:
                                   - name: flocker-control-etc
@@ -431,12 +468,94 @@ resources:
                                   secretName: flocker-control-etc
                               - name: var-lib-docker
                                 emptyDir: {}
-                    -
+                    - apiVersion: extensions/v1beta1
+                      kind: DaemonSet
+                      metadata:
+                        name: flocker-container-agent
+                        labels:
+                          tier: storage
+                          app: flocker-container-agent
+                        namespace: kube-system
+                      spec:
+                        template:
+                          metadata:
+                            labels:
+                              name: flocker-container-agent
+                          spec:
+                            hostPID: true
+                            hostIPC: true
+                            hostNetwork: true
+                            nodeSelector:
+                              mode: SchedulingDisabled
+                            containers:
+                              - name: flocker-container-agent
+                                securityContext:
+                                  privileged: true
+                                image: cedbossneo/flocker-container-agent:1.13.0
+                                volumeMounts:
+                                  - name: flocker-config
+                                    mountPath: /etc/flocker
+                                  - name: var-run-docker
+                                    mountPath: /var/run/docker.sock
+                            volumes:
+                              - name: flocker-config
+                                hostPath:
+                                    path: /etc/flocker
+                              - name: var-run-docker
+                                hostPath:
+                                    path: /var/run/docker.sock
+                    - apiVersion: extensions/v1beta1
+                      kind: DaemonSet
+                      metadata:
+                        name: flocker-dataset-agent
+                        labels:
+                          tier: storage
+                          app: flocker-dataset-agent
+                        namespace: kube-system
+                      spec:
+                        template:
+                          metadata:
+                            labels:
+                              name: flocker-dataset-agent
+                          spec:
+                            hostPID: true
+                            hostIPC: true
+                            hostNetwork: true
+                            nodeSelector:
+                              mode: SchedulingDisabled
+                            containers:
+                              - name: flocker-dataset-agent
+                                securityContext:
+                                  privileged: true
+                                image: cedbossneo/flocker-dataset-agent:1.13.0
+                                volumeMounts:
+                                  - name: flocker-config
+                                    mountPath: /etc/flocker
+                                  - name: dev
+                                    mountPath: /dev
+                                  - name: host
+                                    mountPath: /host
+                                  - name: flocker
+                                    mountPath: /flocker
+                            volumes:
+                              - name: flocker-config
+                                hostPath:
+                                    path: /etc/flocker
+                              - name: dev
+                                hostPath:
+                                    path: /dev
+                              - name: host
+                                hostPath:
+                                    path: /
+                              - name: flocker
+                                hostPath:
+                                    path: /flocker
               - path: /etc/kubernetes/descriptors/1-skydns.yaml
                 permissions: 0666
                 owner: "root:root"
                 content: |
                   apiVersion: v1
+                  kind: List
                   items:
                     - apiVersion: v1
                       kind: Service
@@ -576,6 +695,7 @@ resources:
                 owner: "root:root"
                 content: |
                   apiVersion: v1
+                  kind: List
                   items:
                     - apiVersion: v1
                       kind: Service
@@ -619,6 +739,7 @@ resources:
                 owner: "root:root"
                 content: |
                   apiVersion: v1
+                  kind: List
                   items:
                     - apiVersion: v1
                       kind: Service
@@ -682,6 +803,7 @@ resources:
                 owner: "root:root"
                 content: |
                   apiVersion: v1
+                  kind: List
                   items:
                     - apiVersion: v1
                       kind: Service
@@ -801,17 +923,11 @@ resources:
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
                     Environment=KUBELET_VERSION=v1.2.4_coreos.1
-                    Environment="RKT_OPTS=--volume dns,kind=host,source=/etc/resolv.conf --mount volume=dns,target=/etc/resolv.conf \
-                        --volume flocker-etc,kind=host,source=/etc/flocker --mount volume=flocker-etc,target=/etc/flocker \
-                        --set-env=FLOCKER_CONTROL_SERVICE_HOST={{api-endpoint}} \
-                        --set-env=FLOCKER_CONTROL_SERVICE_PORT=4523 \
-                        --set-env=FLOCKER_CONTROL_SERVICE_CA_FILE=/etc/flocker/cluster.crt \
-                        --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_KEY_FILE=/etc/flocker/kubelet.key \
-                        --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_CERT_FILE=/etc/flocker/kubelet.crt"
                     ExecStart=/opt/bin/kubelet-wrapper \
                       --api-servers=http://127.0.0.1:8080 \
                       --register-schedulable=false \
                       --register-node=true \
+                      --node-labels=mode=SchedulingDisabled \
                       --allow-privileged=true \
                       --config=/etc/kubernetes/manifests \
                       --hostname-override=$private_ipv4 \
@@ -850,5 +966,11 @@ resources:
   floating_ip_link:
     type: OS::Nova::FloatingIPAssociation
     properties:
-      floating_ip: { get_param: floating_ip }
+      floating_ip: { get_resource: floating_ip }
       server_id: { get_resource: master }
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network_id: b5dd7532-1533-4b9c-8bf9-e66631a9be1d
+

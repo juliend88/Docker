@@ -43,14 +43,15 @@ parameters:
     type: string
 
   flavor_master:
-    default: n1.cw.small
+    default: s1.cw.small-1
     description: Flavor to use for the deployed instance
     type: string
     label: Master Instance Type (Flavor)
     constraints:
       - allowed_values:
-          - n1.cw.small
+          - s1.cw.small-1
           - n1.cw.standard-1
+          - n2.cw.standard-1
           - n1.cw.standard-2
           - n1.cw.standard-4
           - n1.cw.standard-8
@@ -58,13 +59,14 @@ parameters:
           - n1.cw.standard-16
 
   flavor_node:
-    default: n1.cw.standard-1
+    default: n2.cw.standard-1
     description: Flavor to use for the deployed instance
     type: string
     label: Node Instance Type (Flavor)
     constraints:
       - allowed_values:
           - n1.cw.standard-1
+          - n2.cw.standard-1
           - n1.cw.standard-2
           - n1.cw.standard-4
           - n1.cw.standard-8
@@ -128,11 +130,6 @@ resources:
         - { direction: ingress, protocol: ICMP }
         - { direction: egress }
 
-  floating_ip:
-    type: OS::Neutron::FloatingIP
-    properties:
-      floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
-
   vpn_username:
     type: OS::Heat::RandomString
     properties:
@@ -159,6 +156,8 @@ resources:
               params:
                 $stack: { get_param: 'OS::stack_name' }
           keypair_name: { get_param: keypair_name }
+          mastercount: { get_param: master_count }
+          domain: { get_param: domain }
 
   masters:
     type: OS::Heat::ResourceGroup
@@ -184,8 +183,6 @@ resources:
           os_password: { get_param: os_password }
           os_tenant: { get_param: os_tenant }
           os_auth: { get_param: os_auth }
-          floating_ip: { get_resource: floating_ip }
-          public_ip: { get_attr: [floating_ip, floating_ip_address] }
           vpn_username: { get_resource: vpn_username }
           vpn_password: { get_resource: vpn_password }
 
@@ -233,7 +230,7 @@ resources:
 outputs:
   public_ip:
     description: VPN IP
-    value: { get_attr: [floating_ip, floating_ip_address] }
+    value: { get_attr: [masters, floating_ip, floating_ip_address] }
   vpn_username:
     description: VPN Username
     value: { get_resource: vpn_username }

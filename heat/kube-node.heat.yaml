@@ -75,7 +75,7 @@ resources:
                 content: |
                   "version": 1
                   "control-service":
-                     "hostname": "flocker-control.kube-system.svc.$domain"
+                     "hostname": "10.0.2.3"
                      "port": 4524
                   dataset:
                       backend: "openstack"
@@ -173,18 +173,25 @@ resources:
                   mkdir --parents /run/kubelet
 
                   exec /usr/bin/rkt run \
+                    --volume flocker-etc,kind=host,source=/etc/flocker \
                     --volume etc-kubernetes,kind=host,source=/etc/kubernetes \
                     --volume etc-kubernetes-ssl,kind=host,source=/etc/kubernetes/ssl \
                     --volume etc-ssl-certs,kind=host,source=/usr/share/ca-certificates \
                     --volume var-lib-docker,kind=host,source=/var/lib/docker \
                     --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet \
                     --volume run,kind=host,source=/run \
+                    --mount volume=flocker-etc,target=/etc/flocker \
                     --mount volume=etc-kubernetes,target=/etc/kubernetes \
                     --mount volume=etc-kubernetes-ssl,target=/etc/kubernetes/ssl \
                     --mount volume=etc-ssl-certs,target=/etc/ssl/certs \
                     --mount volume=var-lib-docker,target=/var/lib/docker \
                     --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
                     --mount volume=run,target=/run \
+                    --set-env=FLOCKER_CONTROL_SERVICE_HOST=10.0.2.3 \
+                    --set-env=FLOCKER_CONTROL_SERVICE_PORT=4523 \
+                    --set-env=FLOCKER_CONTROL_SERVICE_CA_FILE=/etc/flocker/cluster.crt \
+                    --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_KEY_FILE=/etc/flocker/kubelet.key \
+                    --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_CERT_FILE=/etc/flocker/kubelet.crt \
                     --trust-keys-from-https \
                     $RKT_OPTS \
                     --stage1-path=/usr/share/rkt/stage1-fly.aci \
@@ -203,7 +210,7 @@ resources:
                 owner: "root:root"
                 content: |
                   #!/bin/bash
-                  mkdir -p /etc/kubernetes/ssl /home/core/keys
+                  mkdir -p /etc/kubernetes/ssl /home/core/keys /etc/flocker
                   cd /etc/kubernetes/ssl
                   # Worker Config
                   cat <<EOF > worker-openssl.cnf
@@ -230,6 +237,9 @@ resources:
                   etcdctl get /ssh/key.pub > /home/core/keys/key.pub
                   etcdctl get /ssl/ca > ca.pem
                   etcdctl get /ssl/key > ca-key.pem
+                  etcdctl get /flocker/cluster-crt > /etc/flocker/cluster.crt
+                  etcdctl get /flocker/kubelet-crt > /etc/flocker/kubelet.crt
+                  etcdctl get /flocker/kubelet-key > /etc/flocker/kubelet.key
                   openssl genrsa -out worker-$fqdn-key.pem 2048
                   WORKER_IP=$private_ipv4 openssl req -new -key worker-$fqdn-key.pem -out worker-$fqdn.csr -subj "/CN=$fqdn" -config worker-openssl.cnf
                   WORKER_IP=$private_ipv4 openssl x509 -req -in worker-$fqdn.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out worker-$fqdn.pem -days 365 -extensions v3_req -extfile worker-openssl.cnf
@@ -280,13 +290,6 @@ resources:
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 
                     Environment=KUBELET_VERSION=v1.2.4_coreos.1
-                    Environment="RKT_OPTS=--volume dns,kind=host,source=/etc/resolv.conf --mount volume=dns,target=/etc/resolv.conf \
-                        --volume flocker-etc,kind=host,source=/etc/flocker --mount volume=flocker-etc,target=/etc/flocker \
-                        --set-env=FLOCKER_CONTROL_SERVICE_HOST={{api-endpoint}} \
-                        --set-env=FLOCKER_CONTROL_SERVICE_PORT=4523 \
-                        --set-env=FLOCKER_CONTROL_SERVICE_CA_FILE=/etc/flocker/cluster.crt \
-                        --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_KEY_FILE=/etc/flocker/kubelet.key \
-                        --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_CERT_FILE=/etc/flocker/kubelet.crt"
                     ExecStart=/opt/bin/kubelet-wrapper \
                       --api-servers=https://$master \
                       --register-node=true \
