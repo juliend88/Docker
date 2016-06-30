@@ -30,6 +30,15 @@ parameters:
     label: OpenStack Tenant Name
     type: string
 
+  os_region:
+    description: OpenStack Region
+    default: fr2
+    type: string
+    constraints:
+      - allowed_values:
+          - fr1
+          - fr2
+
   os_auth:
     description: OpenStack Auth URL
     default: https://identity.fr1.cloudwatt.com/v2.0
@@ -172,6 +181,7 @@ resources:
               params:
                 $stack: { get_param: 'OS::stack_name' }
           nodeip: 10.0.1.25%index%
+          stack: { get_param: 'OS::stack_name' }
           domain: { get_param: domain }
           subnet: { get_resource: subnet }
           security_group: { get_resource: security_group }
@@ -183,6 +193,7 @@ resources:
           os_password: { get_param: os_password }
           os_tenant: { get_param: os_tenant }
           os_auth: { get_param: os_auth }
+          os_region: { get_param: os_region }
           vpn_username: { get_resource: vpn_username }
           vpn_password: { get_resource: vpn_password }
 
@@ -217,6 +228,11 @@ resources:
           master: { get_attr: [pool_masters, vip, address] }
           subnet: { get_resource: subnet }
           nodeip: 10.0.1.1%index%
+          os_username: { get_param: os_username }
+          os_password: { get_param: os_password }
+          os_tenant: { get_param: os_tenant }
+          os_auth: { get_param: os_auth }
+          os_region: { get_param: os_region }
           security_group: { get_resource: security_group }
           network: { get_resource: network }
           nodename:

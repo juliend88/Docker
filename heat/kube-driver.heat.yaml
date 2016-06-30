@@ -120,9 +120,8 @@ resources:
                   curl --silent -X PUT --data-urlencode value@key "http://localhost:2379/v2/keys/ssh/key"
                   curl --silent -X PUT --data-urlencode value@key.pub "http://localhost:2379/v2/keys/ssh/key.pub"
                   # Create Flocker Configuration
-                  docker run --rm -v /home/core/flocker:/flockercerts hugecannon/flocker-cli initialize kube-cluster
-                  docker run --rm -v /home/core/flocker:/flockercerts hugecannon/flocker-cli create-control-certificate 10.0.2.3
-                  docker run --rm -v /home/core/flocker:/flockercerts hugecannon/flocker-cli create-api-certificate kubelet
+                  curl -Lo flocker-ssl.zip https://github.com/ClusterHQ/flocker-openssl/archive/master.zip && unzip flocker-ssl.zip
+                  ./flocker-openssl-master/generate_flocker_certs.sh new -i=10.0.2.3 -k=1024 -c=kube-cluster
                   # Export CA to Etcd
                   curl --silent -X PUT --data-urlencode value@ca.pem "http://localhost:2379/v2/keys/ssl/ca"
                   curl --silent -X PUT --data-urlencode value@ca-key.pem "http://localhost:2379/v2/keys/ssl/key"
@@ -130,12 +129,12 @@ resources:
                   curl --silent -X PUT --data-urlencode value@apiserver-key.pem "http://localhost:2379/v2/keys/ssl/apiserver-key"
                   curl --silent -X PUT --data-urlencode value@admin.pem "http://localhost:2379/v2/keys/ssl/admin"
                   curl --silent -X PUT --data-urlencode value@admin-key.pem "http://localhost:2379/v2/keys/ssl/admin-key"
-                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/cluster.crt "http://localhost:2379/v2/keys/flocker/cluster-crt"
-                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/cluster.key "http://localhost:2379/v2/keys/flocker/cluster-key"
-                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/control-10.0.2.3.key "http://localhost:2379/v2/keys/flocker/control-service-key"
-                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/control-10.0.2.3.crt "http://localhost:2379/v2/keys/flocker/control-service-crt"
-                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/kubelet.crt "http://localhost:2379/v2/keys/flocker/kubelet-crt"
-                  curl --silent -X PUT --data-urlencode value@/home/core/flocker/kubelet.key "http://localhost:2379/v2/keys/flocker/kubelet-key"
+                  curl --silent -X PUT --data-urlencode value@clusters/kube-cluster/cluster.crt "http://localhost:2379/v2/keys/flocker/cluster-crt"
+                  curl --silent -X PUT --data-urlencode value@clusters/kube-cluster/cluster.key "http://localhost:2379/v2/keys/flocker/cluster-key"
+                  curl --silent -X PUT --data-urlencode value@clusters/kube-cluster/control-service.key "http://localhost:2379/v2/keys/flocker/control-service-key"
+                  curl --silent -X PUT --data-urlencode value@clusters/kube-cluster/control-service.crt "http://localhost:2379/v2/keys/flocker/control-service-crt"
+                  curl --silent -X PUT --data-urlencode value@clusters/kube-cluster/plugin.crt "http://localhost:2379/v2/keys/flocker/plugin-crt"
+                  curl --silent -X PUT --data-urlencode value@clusters/kube-cluster/plugin.key "http://localhost:2379/v2/keys/flocker/plugin-key"
 
             coreos:
               etcd2:

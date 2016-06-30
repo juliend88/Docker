@@ -19,6 +19,9 @@ parameters:
   subnet:
     label: subnet
     type: string
+  stack:
+    label: stack
+    type: string
   os_username:
     label: os_username
     type: string
@@ -30,6 +33,9 @@ parameters:
     type: string
   os_auth:
     label: os_auth
+    type: string
+  os_region:
+    label: os_region
     type: string
   network:
     label: network
@@ -89,6 +95,8 @@ resources:
             $os_password: { get_param: os_password}
             $os_tenant: { get_param: os_tenant }
             $os_auth: { get_param: os_auth }
+            $os_region: { get_param: os_region }
+            $stack: { get_param: stack }
             $vpn_username: { get_param: vpn_username }
             $vpn_password: { get_param: vpn_password }
           template: |
@@ -170,27 +178,8 @@ resources:
                   etcdctl get /ssl/apiserver > apiserver.pem
                   etcdctl get /ssl/apiserver-key > apiserver-key.pem
                   etcdctl get /flocker/cluster-crt > /etc/flocker/cluster.crt
-                  etcdctl get /flocker/cluster-key > /etc/flocker/cluster.key
                   etcdctl get /flocker/control-service-crt > /etc/flocker/control-service.crt
                   etcdctl get /flocker/control-service-key > /etc/flocker/control-service.key
-                  UUID=$(docker run --rm -v /etc/flocker:/flockercerts hugecannon/flocker-cli create-node-certificate | awk '{ print $2 }' | cut -f1 -d'.')
-                  for type in crt key; do
-                    mv /etc/flocker/${UUID}.${type} /etc/flocker/node.${type}
-                  done
-                  cat << EOF > /etc/flocker/agent.yml
-                  "version": 1
-                  "control-service":
-                     "hostname": "10.0.2.3"
-                     "port": 4524
-                  dataset:
-                    backend: "openstack"
-                    auth_plugin: "v2password"
-                    username: "$os_username"
-                    region: "fr2"
-                    password: "$os_password"
-                    auth_url: "$os_auth"
-                    tenant_name: "$os_tenant"
-                  EOF
                   # Set permissions
                   chmod 600 /etc/kubernetes/ssl/*-key.pem /etc/flocker/*
                   chown root:root /etc/kubernetes/ssl/*-key.pem
@@ -205,6 +194,17 @@ resources:
                   kind: Secret
                   metadata:
                     name: openstack
+                  type: Opaque
+                  data:
+                    password: $(echo -n '$os_password' | base64)
+                    username: $(echo -n '$os_username' | base64)
+                  EOF
+                  cat <<EOF > /etc/kubernetes/descriptors/0-system-secret.yaml
+                  apiVersion: v1
+                  kind: Secret
+                  metadata:
+                    name: openstack
+                    namespace: kube-system
                   type: Opaque
                   data:
                     password: $(echo -n '$os_password' | base64)
@@ -449,6 +449,25 @@ resources:
                                   privileged: true
                                 image: cedbossneo/flocker-control-service:1.13.0
                                 imagePullPolicy: Always
+                                env:
+                                  - name: OS_AUTH_URL
+                                    value: "$os_auth"
+                                  - name: OS_TENANT_NAME
+                                    value: "$os_tenant"
+                                  - name: OS_REGION
+                                    value: $os_region
+                                  - name: STACK
+                                    value: "$stack"
+                                  - name: OS_USERNAME
+                                    valueFrom:
+                                      secretKeyRef:
+                                        name: openstack
+                                        key: username
+                                  - name: OS_PASSWORD
+                                    valueFrom:
+                                      secretKeyRef:
+                                        name: openstack
+                                        key: password
                                 volumeMounts:
                                   - name: flocker-control-etc
                                     mountPath: /etc/flocker
@@ -796,8 +815,8 @@ resources:
                                     name: rethinkdb-storage
                             volumes:
                               - name: rethinkdb-storage
-                                hostPath:
-                                  path: /data/rethinkdb
+                                flocker:
+                                  datasetName: toolbox-db
               - path: /etc/kubernetes/descriptors/4-toolbox.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -927,7 +946,6 @@ resources:
                       --api-servers=http://127.0.0.1:8080 \
                       --register-schedulable=false \
                       --register-node=true \
-                      --node-labels=mode=SchedulingDisabled \
                       --allow-privileged=true \
                       --config=/etc/kubernetes/manifests \
                       --hostname-override=$private_ipv4 \

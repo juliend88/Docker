@@ -13,6 +13,21 @@ parameters:
   subnet:
     label: subnet
     type: string
+  os_username:
+    label: os_username
+    type: string
+  os_region:
+    label: os_region
+    type: string
+  os_password:
+    label: os_password
+    type: string
+  os_tenant:
+    label: os_tenant
+    type: string
+  os_auth:
+    label: os_auth
+    type: string
   network:
     label: network
     type: string
@@ -59,6 +74,11 @@ resources:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $domain: { get_param: domain }
             $master: { get_param: master }
+            $os_username: { get_param: os_username}
+            $os_password: { get_param: os_password}
+            $os_tenant: { get_param: os_tenant }
+            $os_auth: { get_param: os_auth }
+            $os_region: { get_param: os_region }
             $fqdn: { get_param: nodename }
           template: |
             #cloud-config
@@ -190,8 +210,8 @@ resources:
                     --set-env=FLOCKER_CONTROL_SERVICE_HOST=10.0.2.3 \
                     --set-env=FLOCKER_CONTROL_SERVICE_PORT=4523 \
                     --set-env=FLOCKER_CONTROL_SERVICE_CA_FILE=/etc/flocker/cluster.crt \
-                    --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_KEY_FILE=/etc/flocker/kubelet.key \
-                    --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_CERT_FILE=/etc/flocker/kubelet.crt \
+                    --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_KEY_FILE=/etc/flocker/plugin.key \
+                    --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_CERT_FILE=/etc/flocker/plugin.crt \
                     --trust-keys-from-https \
                     $RKT_OPTS \
                     --stage1-path=/usr/share/rkt/stage1-fly.aci \
@@ -238,8 +258,27 @@ resources:
                   etcdctl get /ssl/ca > ca.pem
                   etcdctl get /ssl/key > ca-key.pem
                   etcdctl get /flocker/cluster-crt > /etc/flocker/cluster.crt
-                  etcdctl get /flocker/kubelet-crt > /etc/flocker/kubelet.crt
-                  etcdctl get /flocker/kubelet-key > /etc/flocker/kubelet.key
+                  etcdctl get /flocker/cluster-key > /etc/flocker/cluster.key
+                  etcdctl get /flocker/plugin-crt > /etc/flocker/plugin.crt
+                  etcdctl get /flocker/plugin-key > /etc/flocker/plugin.key
+                  curl -Lo flocker-ssl.zip https://github.com/ClusterHQ/flocker-openssl/archive/master.zip && unzip flocker-ssl.zip
+                  ./flocker-openssl-master/generate_flocker_certs.sh node -o=/etc/flocker -k=1024 -c=kube-cluster -n=node
+                  mv /etc/flocker/node-node.crt /etc/flocker/node.crt
+                  mv /etc/flocker/node-node.key /etc/flocker/node.key
+                  cat << EOF > /etc/flocker/agent.yml
+                  "version": 1
+                  "control-service":
+                     "hostname": "10.0.2.3"
+                     "port": 4524
+                  dataset:
+                    backend: "openstack"
+                    auth_plugin: "v2password"
+                    username: "$os_username"
+                    region: "$os_region"
+                    password: "$os_password"
+                    auth_url: "$os_auth"
+                    tenant_name: "$os_tenant"
+                  EOF
                   openssl genrsa -out worker-$fqdn-key.pem 2048
                   WORKER_IP=$private_ipv4 openssl req -new -key worker-$fqdn-key.pem -out worker-$fqdn.csr -subj "/CN=$fqdn" -config worker-openssl.cnf
                   WORKER_IP=$private_ipv4 openssl x509 -req -in worker-$fqdn.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out worker-$fqdn.pem -days 365 -extensions v3_req -extfile worker-openssl.cnf
@@ -293,6 +332,7 @@ resources:
                     ExecStart=/opt/bin/kubelet-wrapper \
                       --api-servers=https://$master \
                       --register-node=true \
+                      --node-labels=mode=SchedulingDisabled \
                       --allow-privileged=true \
                       --config=/etc/kubernetes/manifests \
                       --hostname-override=$private_ipv4 \
