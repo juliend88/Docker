@@ -10,6 +10,12 @@ parameters:
   domain:
     label: domain
     type: string
+  stack:
+    label: stack
+    type: string
+  nodeip:
+    label: nodeip
+    type: string
   subnet:
     label: subnet
     type: string
@@ -30,7 +36,7 @@ resources:
     properties:
       network: { get_param: network }
       fixed_ips:
-        - ip_address: 10.0.1.2
+        - ip_address: { get_param: nodeip }
           subnet_id: { get_param: subnet }
       security_groups:
         - { get_param: security_group }
@@ -50,6 +56,7 @@ resources:
           params:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $domain: { get_param: domain }
+            $stack: { get_param: stack }
             $mastercount: { get_param: mastercount }
           template: |
             #cloud-config
@@ -75,6 +82,8 @@ resources:
                 owner: "root:root"
                 content: |
                   #!/bin/bash
+                  if etcdctl get /initialized/kube; then echo 0; fi
+                  etcdctl set /initialized/kube true
                   mkdir -p /etc/kubernetes/ssl
                   cd /etc/kubernetes/ssl
                   # Config
@@ -141,7 +150,7 @@ resources:
                 name: "%H"
                 advertise-client-urls: http://$private_ipv4:2379
                 initial-advertise-peer-urls: http://$private_ipv4:2380
-                initial-cluster: "%H=http://$private_ipv4:2380"
+                initial-cluster: "$stack-driver-0.novalocal=http://10.0.1.240:2380,$stack-driver-1.novalocal=http://10.0.1.241:2380,$stack-driver-2.novalocal=http://10.0.1.242:2380"
                 listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
                 listen-peer-urls: http://$private_ipv4:2380
               units:
@@ -165,7 +174,6 @@ resources:
                     [Unit]
                     Requires=etcd2.service docker.service
                     After=etcd2.service docker.service
-                    ConditionPathExists=!/etc/kubernetes/ssl
                     Description=Kubernetes Initializer
 
                     [Service]

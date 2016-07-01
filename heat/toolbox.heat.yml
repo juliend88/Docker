@@ -152,18 +152,20 @@ resources:
   drivers:
     type: OS::Heat::ResourceGroup
     properties:
-      count: 1
+      count: 3
       resource_def:
         type: kube-driver.heat.yaml
         properties:
           subnet: { get_resource: subnet }
           security_group: { get_resource: security_group }
           network: { get_resource: network }
+          nodeip: 10.0.1.24%index%
           nodename:
             str_replace:
-              template: $stack-driver
+              template: $stack-driver-%index%
               params:
                 $stack: { get_param: 'OS::stack_name' }
+          stack: { get_param: 'OS::stack_name' }
           keypair_name: { get_param: keypair_name }
           mastercount: { get_param: master_count }
           domain: { get_param: domain }
@@ -235,6 +237,7 @@ resources:
           os_region: { get_param: os_region }
           security_group: { get_resource: security_group }
           network: { get_resource: network }
+          stack: { get_param: 'OS::stack_name' }
           nodename:
             str_replace:
               template: $stack-node-%index%

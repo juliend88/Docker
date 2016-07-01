@@ -811,7 +811,7 @@ resources:
                                   - containerPort: 29015
                                     name: cluster-port
                                 volumeMounts:
-                                  - mountPath: /data/rethinkdb_data
+                                  - mountPath: /data
                                     name: rethinkdb-storage
                             volumes:
                               - name: rethinkdb-storage
@@ -828,36 +828,132 @@ resources:
                       kind: Service
                       metadata:
                         labels:
-                          component: toolbox
+                          component: toolbox-frontend
                         name: manager
                       spec:
-                        sessionAffinity: ClientIP
                         ports:
                           - port: 80
-                            targetPort: 3000
-                            nodePort: 30000
-                        type: NodePort
+                            targetPort: 80
                         selector:
-                          component: toolbox
+                          component: toolbox-frontend
+                    - apiVersion: v1
+                      kind: Service
+                      metadata:
+                        labels:
+                          component: toolbox-backend
+                        name: manager
+                      spec:
+                        ports:
+                          - port: 8181
+                            targetPort: 8181
+                        selector:
+                          component: toolbox-backend
                     - apiVersion: extensions/v1beta1
                       kind: Deployment
                       metadata:
                         labels:
-                          component: toolbox
-                        name: toolbox
+                          component: toolbox-frontend
+                        name: toolbox-frontend
                       spec:
                         replicas: 1
                         template:
                           metadata:
                             labels:
-                              component: toolbox
+                              component: toolbox-frontend
                           spec:
                             containers:
-                              - image: cloudwattfr/toolbox:2.0
+                              - image: cloudwattfr/toolbox-client:dev
+                                imagePullPolicy: Always
+                                name: toolbox-frontend
+                                ports:
+                                  - containerPort: 80
+                    - apiVersion: extensions/v1beta1
+                      kind: Ingress
+                      metadata:
+                        name: factorio-panel
+                      spec:
+                        rules:
+                        - http:
+                            paths:
+                            - path: /api
+                              backend:
+                                serviceName: toolbox-backend
+                                servicePort: 8181
+                            - path: /socket.io
+                              backend:
+                                serviceName: toolbox-backend
+                                servicePort: 8181
+                            - path: /
+                              backend:
+                                serviceName: frontend
+                                servicePort: 80
+                    - apiVersion: v1
+                      kind: ReplicationController
+                      metadata:
+                        name: traefik-ingress-controller
+                        labels:
+                          k8s-app: traefik-ingress-lb
+                      spec:
+                        replicas: 1
+                        selector:
+                          k8s-app: traefik-ingress-lb
+                        template:
+                          metadata:
+                            labels:
+                              k8s-app: traefik-ingress-lb
+                              name: traefik-ingress-lb
+                          spec:
+                            terminationGracePeriodSeconds: 60
+                            containers:
+                            - image: traefik
+                              name: traefik-ingress-lb
+                              imagePullPolicy: Always
+                              ports:
+                              - containerPort: 80
+                              - containerPort: 443
+                              - containerPort: 8080
+                              args:
+                              - --web
+                              - --kubernetes
+                              - --logLevel=DEBUG
+                              - --entrypoints='Name:http Address::80'
+                              - --defaultentrypoints=http
+                    - apiVersion: v1
+                      kind: Service
+                      metadata:
+                        labels:
+                          k8s-app: traefik-ingress-lb
+                        name: traefik
+                      spec:
+                        sessionAffinity: ClientIP
+                        type: NodePort
+                        ports:
+                          - port: 80
+                            nodePort: 30000
+                            targetPort: 80
+                            name: http
+                        selector:
+                          k8s-app: traefik-ingress-lb
+                    - apiVersion: extensions/v1beta1
+                      kind: Deployment
+                      metadata:
+                        labels:
+                          component: toolbox-backend
+                        name: toolbox-backend
+                      spec:
+                        replicas: 1
+                        template:
+                          metadata:
+                            labels:
+                              component: toolbox-backend
+                          spec:
+                            containers:
+                              - image: cloudwattfr/toolbox-server:dev
                                 imagePullPolicy: Always
                                 command:
-                                  - npm
-                                  - start
+                                  - node
+                                  - --harmony
+                                  - src/main.js
                                   - $private_ipv4
                                   - $public_ipv4
                                 name: toolbox
@@ -881,7 +977,7 @@ resources:
                                   - name: REPLICAS
                                     value: "1"
                                 ports:
-                                  - containerPort: 3000
+                                  - containerPort: 8181
                                 volumeMounts:
                                   - mountPath: /keys
                                     name: key-storage
@@ -903,7 +999,7 @@ resources:
               etcd2:
                 proxy: on
                 listen-client-urls: http://0.0.0.0:2379
-                initial-cluster: etcdserver=http://10.0.1.2:2380
+                initial-cluster: $stack-driver-0.novalocal=http://10.0.1.240:2380,$stack-driver-1.novalocal=http://10.0.1.241:2380,$stack-driver-2.novalocal=http://10.0.1.242:2380
               units:
                 - name: etcd2.service
                   command: start

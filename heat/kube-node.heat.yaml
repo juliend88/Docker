@@ -10,6 +10,9 @@ parameters:
   nodeip:
     label: nodeip
     type: string
+  stack:
+    label: stack
+    type: string
   subnet:
     label: subnet
     type: string
@@ -74,6 +77,7 @@ resources:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $domain: { get_param: domain }
             $master: { get_param: master }
+            $stack: { get_param: stack }
             $os_username: { get_param: os_username}
             $os_password: { get_param: os_password}
             $os_tenant: { get_param: os_tenant }
@@ -89,22 +93,6 @@ resources:
                 content: |
                   FLANNELD_IFACE=$private_ipv4
                   FLANNELD_ETCD_ENDPOINTS=http://localhost:2379
-              - path: /etc/flocker/flocker.conf
-                permissions: 0666
-                owner: "root:root"
-                content: |
-                  "version": 1
-                  "control-service":
-                     "hostname": "10.0.2.3"
-                     "port": 4524
-                  dataset:
-                      backend: "openstack"
-                      region: "<region slug; for example, LON>"
-                      auth_plugin: "rackspace"
-                      username: "<your rackspace username>"
-                      api_key: "<your rackspace API key>"
-                      auth_url: "https://identity.api.rackspacecloud.com/v2.0"
-
               - path: /etc/kubernetes/worker-$fqdn-kubeconfig.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -289,7 +277,7 @@ resources:
               etcd2:
                 proxy: on
                 listen-client-urls: http://0.0.0.0:2379
-                initial-cluster: etcdserver=http://10.0.1.2:2380
+                initial-cluster: $stack-driver-0.novalocal=http://10.0.1.240:2380,$stack-driver-1.novalocal=http://10.0.1.241:2380,$stack-driver-2.novalocal=http://10.0.1.242:2380
               units:
                 - name: etcd2.service
                   command: start
