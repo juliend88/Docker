@@ -82,7 +82,7 @@ resources:
                 owner: "root:root"
                 content: |
                   #!/bin/bash
-                  if etcdctl get /initialized/kube; then echo 0; fi
+                  if etcdctl get /initialized/kube; then exit 0; fi
                   etcdctl set /initialized/kube true
                   mkdir -p /etc/kubernetes/ssl
                   cd /etc/kubernetes/ssl

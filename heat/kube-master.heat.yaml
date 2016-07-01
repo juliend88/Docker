@@ -841,7 +841,7 @@ resources:
                       metadata:
                         labels:
                           component: toolbox-backend
-                        name: manager
+                        name: toolbox-backend
                       spec:
                         ports:
                           - port: 8181
@@ -870,7 +870,7 @@ resources:
                     - apiVersion: extensions/v1beta1
                       kind: Ingress
                       metadata:
-                        name: factorio-panel
+                        name: toolbox
                       spec:
                         rules:
                         - http:
@@ -885,7 +885,7 @@ resources:
                                 servicePort: 8181
                             - path: /
                               backend:
-                                serviceName: frontend
+                                serviceName: manager
                                 servicePort: 80
                     - apiVersion: v1
                       kind: ReplicationController
@@ -953,7 +953,7 @@ resources:
                                 command:
                                   - node
                                   - --harmony
-                                  - src/main.js
+                                  - server.bundle.js
                                   - $private_ipv4
                                   - $public_ipv4
                                 name: toolbox
@@ -981,10 +981,15 @@ resources:
                                 volumeMounts:
                                   - mountPath: /keys
                                     name: key-storage
+                                  - mountPath: /etc/flocker
+                                    name: flocker-storage
                             volumes:
                               - name: key-storage
                                 hostPath:
                                   path: /home/core/keys
+                              - name: flocker-storage
+                                hostPath:
+                                  path: /etc/flocker
               - path: /etc/environment
                 permissions: 0666
                 owner: "root:root"
