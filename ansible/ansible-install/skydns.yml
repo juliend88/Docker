@@ -6,7 +6,6 @@
 #
 
 - hosts: servers
-  user: cloud
   become: yes
 
   vars:
