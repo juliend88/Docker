@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -e
 ACTION=$1
 
 if [ "$ACTION" == "restore" ]
