@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 ACTION=$1
 
 if [ "$ACTION" == "restore" ]
