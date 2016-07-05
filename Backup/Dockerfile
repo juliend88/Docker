@@ -17,11 +17,7 @@ RUN cd /tmp \
     && wget http://netcologne.dl.sourceforge.net/project/ftplicity/duply%20%28simple%20duplicity%29/1.11.x/duply_1.11.2.tgz \
     && tar xpf duply_1.11.2.tgz \
     && cp -a duply_1.11.2/duply /usr/bin/duply \
-    && cd / && rm -rf /tmp/* \
-    && mkdir /mnt/data \
-    && mkdir /mnt/config \
-    && mkdir /mnt/restore \
-    && chmod 777 /mnt/restore
+    && cd / && rm -rf /tmp/*
 
 RUN mkdir /opt/scripts
 
@@ -29,6 +25,5 @@ WORKDIR /opt/scripts/
 ENV HOME /opt/scripts/
 
 ADD files/* ./
-
 
 ENTRYPOINT ["./run.sh"]
