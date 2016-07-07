@@ -127,7 +127,7 @@ resources:
                     hostNetwork: true
                     containers:
                     - name: kube-proxy
-                      image: quay.io/coreos/hyperkube:v1.2.4_coreos.1
+                      image: quay.io/coreos/hyperkube:v1.3.0_coreos.0
                       command:
                       - /hyperkube
                       - proxy
@@ -213,6 +213,7 @@ resources:
                   ETCD_ADDR=localhost:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
                   TOOLBOX_DOMAIN=$domain
+                  INSTANCE_ID=$(curl -s http://169.254.169.254/openstack/latest/meta_data.json| jq -r .uuid)
               - path: /opt/kubernetes-init-ssl.sh
                 permissions: 0700
                 owner: "root:root"
@@ -271,8 +272,8 @@ resources:
                   WORKER_IP=$private_ipv4 openssl req -new -key worker-$fqdn-key.pem -out worker-$fqdn.csr -subj "/CN=$fqdn" -config worker-openssl.cnf
                   WORKER_IP=$private_ipv4 openssl x509 -req -in worker-$fqdn.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out worker-$fqdn.pem -days 365 -extensions v3_req -extfile worker-openssl.cnf
                   # Set permissions
-                  chmod 600 /etc/kubernetes/ssl/*-key.pem
-                  chown root:root /etc/kubernetes/ssl/*-key.pem
+                  chmod 600 /etc/kubernetes/ssl/*-key.pem /home/core/keys/*
+                  chown root:root /etc/kubernetes/ssl/*-key.pem /home/core/keys/*
             coreos:
               etcd2:
                 proxy: on
@@ -316,7 +317,7 @@ resources:
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
 
-                    Environment=KUBELET_VERSION=v1.2.4_coreos.1
+                    Environment=KUBELET_VERSION=v1.3.0_coreos.0
                     ExecStart=/opt/bin/kubelet-wrapper \
                       --api-servers=https://$master \
                       --register-node=true \
