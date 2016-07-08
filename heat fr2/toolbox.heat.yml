@@ -156,7 +156,7 @@ resources:
               template: $stack-driver-%index%
               params:
                 $stack: { get_param: 'OS::stack_name' }
-          nodeid: %index%
+          nodeid: "%index%"
           keypair_name: { get_param: keypair_name }
           mastercount: { get_param: master_count }
           domain: { get_param: domain }
@@ -225,7 +225,7 @@ resources:
           os_password: { get_param: os_password }
           os_tenant: { get_param: os_tenant }
           os_auth: { get_param: os_auth }
-          os_region: { get_param: os_region }
+          os_region: fr2
           security_group: { get_resource: security_group }
           network: { get_resource: network }
           stack: { get_param: 'OS::stack_name' }
