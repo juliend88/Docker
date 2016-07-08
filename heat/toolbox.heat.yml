@@ -30,15 +30,6 @@ parameters:
     label: OpenStack Tenant Name
     type: string
 
-  os_region:
-    description: OpenStack Region
-    default: fr1
-    type: string
-    constraints:
-      - allowed_values:
-          - fr1
-          - fr2
-
   os_auth:
     description: OpenStack Auth URL
     default: https://identity.fr1.cloudwatt.com/v2.0
@@ -195,7 +186,7 @@ resources:
           os_password: { get_param: os_password }
           os_tenant: { get_param: os_tenant }
           os_auth: { get_param: os_auth }
-          os_region: { get_param: os_region }
+          os_region: fr1
           vpn_username: { get_resource: vpn_username }
           vpn_password: { get_resource: vpn_password }
 
@@ -249,7 +240,7 @@ resources:
 outputs:
   public_ip:
     description: VPN IP
-    value: { get_attr: [masters, floating_ip, floating_ip_address] }
+    value: { get_attr: [masters, public_ip] }
   vpn_username:
     description: VPN Username
     value: { get_resource: vpn_username }

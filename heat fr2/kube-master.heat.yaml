@@ -1101,3 +1101,7 @@ resources:
     properties:
       floating_network_id: b5dd7532-1533-4b9c-8bf9-e66631a9be1d
 
+
+outputs:
+  public_ip:
+    value: {get_attr: [floating_ip, floating_ip_address]}
