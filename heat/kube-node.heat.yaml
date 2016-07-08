@@ -213,13 +213,13 @@ resources:
                   ETCD_ADDR=localhost:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
                   TOOLBOX_DOMAIN=$domain
-                  INSTANCE_ID=$(curl -s http://169.254.169.254/openstack/latest/meta_data.json| jq -r .uuid)
               - path: /opt/kubernetes-init-ssl.sh
                 permissions: 0700
                 owner: "root:root"
                 content: |
                   #!/bin/bash
                   mkdir -p /etc/kubernetes/ssl /home/core/keys /etc/flocker
+                  echo INSTANCE_ID=$(curl -s http://169.254.169.254/openstack/latest/meta_data.json| jq -r .uuid) >> /etc/environment
                   cd /etc/kubernetes/ssl
                   # Worker Config
                   cat <<EOF > worker-openssl.cnf
@@ -278,7 +278,7 @@ resources:
               etcd2:
                 proxy: on
                 listen-client-urls: http://0.0.0.0:2379
-                initial-cluster: $stack-driver-0.novalocal=http://10.0.1.240:2380,$stack-driver-1.novalocal=http://10.0.1.241:2380,$stack-driver-2.novalocal=http://10.0.1.242:2380
+                initial-cluster: driver-0=http://10.0.1.240:2380,driver-1=http://10.0.1.241:2380,driver-2=http://10.0.1.242:2380
               units:
                 - name: etcd2.service
                   command: start

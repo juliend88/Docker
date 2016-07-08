@@ -165,7 +165,7 @@ resources:
               template: $stack-driver-%index%
               params:
                 $stack: { get_param: 'OS::stack_name' }
-          stack: { get_param: 'OS::stack_name' }
+          nodeid: %index%
           keypair_name: { get_param: keypair_name }
           mastercount: { get_param: master_count }
           domain: { get_param: domain }

@@ -4,14 +4,14 @@ parameters:
   nodename:
     label: nodename
     type: string
+  nodeid:
+    label: nodeid
+    type: string
   mastercount:
     label: mastercount
     type: number
   domain:
     label: domain
-    type: string
-  stack:
-    label: stack
     type: string
   nodeip:
     label: nodeip
@@ -56,7 +56,7 @@ resources:
           params:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $domain: { get_param: domain }
-            $stack: { get_param: stack }
+            $nodeid: { get_param: nodeid }
             $mastercount: { get_param: mastercount }
           template: |
             #cloud-config
@@ -147,10 +147,10 @@ resources:
 
             coreos:
               etcd2:
-                name: "%H"
+                name: "driver-$nodeid"
                 advertise-client-urls: http://$private_ipv4:2379
                 initial-advertise-peer-urls: http://$private_ipv4:2380
-                initial-cluster: "$stack-driver-0.novalocal=http://10.0.1.240:2380,$stack-driver-1.novalocal=http://10.0.1.241:2380,$stack-driver-2.novalocal=http://10.0.1.242:2380"
+                initial-cluster: "driver-0=http://10.0.1.240:2380,driver-1=http://10.0.1.241:2380,driver-2.novalocal=http://10.0.1.242:2380"
                 listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
                 listen-peer-urls: http://$private_ipv4:2380
               units:
