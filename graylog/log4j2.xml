@@ -4,7 +4,7 @@
         <Console name="STDOUT" target="SYSTEM_OUT">
             <PatternLayout pattern="%d %-5p: %c - %m%n"/>
         </Console>
-        <File name="graylog-logs-file" fileName="/usr/share/graylog/data/log/app.log">
+        <File name="graylog-logs-file" fileName="/data/log/app.log">
             <PatternLayout>
                 <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
             </PatternLayout>
