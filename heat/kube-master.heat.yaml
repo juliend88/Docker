@@ -547,9 +547,6 @@ resources:
                                 securityContext:
                                   privileged: true
                                 image: cedbossneo/flocker-dataset-agent:1.13.0
-                                env:
-                                  - name: INSTANCE_ID
-                                    value:
                                 volumeMounts:
                                   - name: flocker-config
                                     mountPath: /etc/flocker
@@ -970,8 +967,12 @@ resources:
                                     value: "$domain"
                                   - name: OS_AUTH_URL
                                     value: "$os_auth"
+                                  - name: STACK
+                                    value: "$stack"
                                   - name: OS_TENANT_NAME
                                     value: "$os_tenant"
+                                  - name: OS_REGION
+                                    value: $os_region
                                   - name: OS_USERNAME
                                     valueFrom:
                                       secretKeyRef:
@@ -1065,6 +1066,16 @@ resources:
                     RestartSec=10
                     [Install]
                     WantedBy=multi-user.target
+                - name: settimezone.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Set the time zone
+
+                    [Service]
+                    ExecStart=/usr/bin/timedatectl set-timezone Europe/Paris
+                    RemainAfterExit=yes
+                    Type=oneshot
                 - name: pptp.service
                   command: start
                   content: |

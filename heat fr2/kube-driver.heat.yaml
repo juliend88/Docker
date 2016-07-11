@@ -168,6 +168,16 @@ resources:
                     [Service]
                     Type=oneshot
                     ExecStart=/opt/flannel-init.sh
+                - name: settimezone.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Set the time zone
+
+                    [Service]
+                    ExecStart=/usr/bin/timedatectl set-timezone Europe/Paris
+                    RemainAfterExit=yes
+                    Type=oneshot
                 - name: kubeinit.service
                   command: start
                   content: |

@@ -219,6 +219,11 @@ resources:
                 content: |
                   #!/bin/bash
                   mkdir -p /etc/kubernetes/ssl /home/core/keys /etc/flocker
+                  until curl -s http://169.254.169.254/openstack/latest/meta_data.json
+                  do
+                    echo "Trying to reach metadata server"
+                    sleep 1
+                  done
                   echo INSTANCE_ID=$(curl -s http://169.254.169.254/openstack/latest/meta_data.json| jq -r .uuid) >> /etc/environment
                   cd /etc/kubernetes/ssl
                   # Worker Config
@@ -307,6 +312,16 @@ resources:
                         [Unit]
                         Requires=flanneld.service
                         After=flanneld.service
+                - name: settimezone.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Description=Set the time zone
+
+                    [Service]
+                    ExecStart=/usr/bin/timedatectl set-timezone Europe/Paris
+                    RemainAfterExit=yes
+                    Type=oneshot
                 - name: kubelet.service
                   command: start
                   content: |
