@@ -82,6 +82,11 @@ resources:
                 owner: "root:root"
                 content: |
                   #!/bin/bash
+                  until /usr/bin/etcdctl ls
+                  do
+                    echo "Waiting for etcd to be ready"
+                    sleep 1
+                  done
                   if etcdctl get /initialized/kube; then exit 0; fi
                   etcdctl set /initialized/kube true
                   mkdir -p /etc/kubernetes/ssl
@@ -150,7 +155,7 @@ resources:
                 name: "driver-$nodeid"
                 advertise-client-urls: http://$private_ipv4:2379
                 initial-advertise-peer-urls: http://$private_ipv4:2380
-                initial-cluster: "driver-0=http://10.0.1.240:2380,driver-1=http://10.0.1.241:2380,driver-2.novalocal=http://10.0.1.242:2380"
+                initial-cluster: "driver-0=http://10.0.1.240:2380,driver-1=http://10.0.1.241:2380,driver-2=http://10.0.1.242:2380"
                 listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
                 listen-peer-urls: http://$private_ipv4:2380
               units:

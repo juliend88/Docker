@@ -339,6 +339,7 @@ resources:
                       - controller-manager
                       - --master=http://127.0.0.1:8080
                       - --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
+                      - --pod-eviction-timeout=1m0s
                       - --root-ca-file=/etc/kubernetes/ssl/ca.pem
                       livenessProbe:
                         httpGet:
@@ -551,7 +552,7 @@ resources:
                                   - name: flocker-config
                                     mountPath: /etc/flocker
                                   - name: env-config
-                                    mountPath: /etc/environment
+                                    mountPath: /opt/instance_id
                                   - name: dev
                                     mountPath: /dev
                                   - name: host
@@ -564,7 +565,7 @@ resources:
                                     path: /etc/flocker
                               - name: env-config
                                 hostPath:
-                                    path: /etc/environment
+                                    path: /opt/instance_id
                               - name: dev
                                 hostPath:
                                     path: /dev

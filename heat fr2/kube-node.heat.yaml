@@ -224,7 +224,7 @@ resources:
                     echo "Trying to reach metadata server"
                     sleep 1
                   done
-                  echo INSTANCE_ID=$(curl -s http://169.254.169.254/openstack/latest/meta_data.json| jq -r .uuid) >> /etc/environment
+                  echo export INSTANCE_ID=$(curl -s http://169.254.169.254/openstack/latest/meta_data.json| jq -r .uuid) >> /opt/instance_id
                   cd /etc/kubernetes/ssl
                   # Worker Config
                   cat <<EOF > worker-openssl.cnf
