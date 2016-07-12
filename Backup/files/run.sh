@@ -8,7 +8,7 @@ then
     IP=$3
     ID=$2
     mkdir -p /mnt/restore
-    sshfs -d $IP:/restore/ /mnt/restore -o IdentityFile=/secret/key.pem -o StrictHostKeyChecking=no
+    sshfs $IP:/restore/ /mnt/restore -o IdentityFile=/secret/key.pem -o StrictHostKeyChecking=no
     echo $ACTION
     exec ./restore.sh $ID
 elif [ "$ACTION" == "backup" ]
@@ -20,7 +20,7 @@ then
   for dir in $DIRECTORY
   do
     mkdir -p /mnt/$dir
-    sshfs -d $IP:$dir /mnt/$dir -o IdentityFile=/secret/key.pem -o StrictHostKeyChecking=no
+    sshfs $IP:$dir /mnt/$dir -o IdentityFile=/secret/key.pem -o StrictHostKeyChecking=no
   done
   echo $ACTION
   exec ./$PERIOD.sh $ID
