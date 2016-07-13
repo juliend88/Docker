@@ -31,6 +31,9 @@ parameters:
   os_tenant:
     label: os_tenant
     type: string
+  os_tenant_id:
+    label: os_tenant_id
+    type: string
   os_auth:
     label: os_auth
     type: string
@@ -91,12 +94,13 @@ resources:
             $fqdn: { get_param: nodename }
             $public_ipv4: { get_attr: [floating_ip, floating_ip_address] }
             $domain: { get_param: domain }
+            $stack: { get_param: stack }
             $os_username: { get_param: os_username}
             $os_password: { get_param: os_password}
             $os_tenant: { get_param: os_tenant }
             $os_auth: { get_param: os_auth }
             $os_region: { get_param: os_region }
-            $stack: { get_param: stack }
+            $os_project_id: { get_param: os_tenant_id }
             $vpn_username: { get_param: vpn_username }
             $vpn_password: { get_param: vpn_password }
           template: |
@@ -108,61 +112,12 @@ resources:
                 content: |
                   FLANNELD_IFACE=$private_ipv4
                   FLANNELD_ETCD_ENDPOINTS=http://localhost:2379
-              - path: /opt/bin/kubelet-wrapper
-                permissions: 0700
-                owner: "root:root"
-                content: |
-                  #!/bin/bash
-                  # Wrapper for launching kubelet via rkt-fly stage1.
-                  #
-                  # Make sure to set KUBELET_VERSION to an image tag published here:
-                  # https://quay.io/repository/coreos/hyperkube?tab=tags Alternatively,
-                  # override $KUBELET_ACI to a custom location.
-
-                  set -e
-
-                  if [ -z "${KUBELET_VERSION}" ]; then
-                      echo "ERROR: must set KUBELET_VERSION"
-                      exit 1
-                  fi
-
-                  KUBELET_ACI="${KUBELET_ACI:-quay.io/coreos/hyperkube}"
-
-                  mkdir --parents /etc/kubernetes
-                  mkdir --parents /var/lib/docker
-                  mkdir --parents /var/lib/kubelet
-                  mkdir --parents /run/kubelet
-
-                  exec /usr/bin/rkt run \
-                    --volume flocker-etc,kind=host,source=/etc/flocker \
-                    --volume etc-kubernetes,kind=host,source=/etc/kubernetes \
-                    --volume etc-kubernetes-ssl,kind=host,source=/etc/kubernetes/ssl \
-                    --volume etc-ssl-certs,kind=host,source=/usr/share/ca-certificates \
-                    --volume var-lib-docker,kind=host,source=/var/lib/docker \
-                    --volume var-lib-kubelet,kind=host,source=/var/lib/kubelet \
-                    --volume run,kind=host,source=/run \
-                    --mount volume=flocker-etc,target=/etc/flocker \
-                    --mount volume=etc-kubernetes,target=/etc/kubernetes \
-                    --mount volume=etc-kubernetes-ssl,target=/etc/kubernetes/ssl \
-                    --mount volume=etc-ssl-certs,target=/etc/ssl/certs \
-                    --mount volume=var-lib-docker,target=/var/lib/docker \
-                    --mount volume=var-lib-kubelet,target=/var/lib/kubelet \
-                    --mount volume=run,target=/run \
-                    --set-env=FLOCKER_CONTROL_SERVICE_HOST=10.0.2.3 \
-                    --set-env=FLOCKER_CONTROL_SERVICE_PORT=4523 \
-                    --set-env=FLOCKER_CONTROL_SERVICE_CA_FILE=/etc/flocker/cluster.crt \
-                    --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_KEY_FILE=/etc/flocker/kubelet.key \
-                    --set-env=FLOCKER_CONTROL_SERVICE_CLIENT_CERT_FILE=/etc/flocker/kubelet.crt \
-                    --trust-keys-from-https \
-                    $RKT_OPTS \
-                    --stage1-path=/usr/share/rkt/stage1-fly.aci \
-                    ${KUBELET_ACI}:${KUBELET_VERSION} --exec=/kubelet -- "$@"
               - path: /opt/kubernetes-init-ssl.sh
                 permissions: 0700
                 owner: "root:root"
                 content: |
                   #!/bin/bash
-                  mkdir -p /etc/kubernetes/ssl /etc/flocker
+                  mkdir -p /etc/kubernetes/ssl
                   cd /etc/kubernetes/ssl
                   echo "Waiting for etcd..."
                   ETCD="http://$private_ipv4:2379"
@@ -177,12 +132,19 @@ resources:
                   etcdctl get /ssl/admin-key > admin-key.pem
                   etcdctl get /ssl/apiserver > apiserver.pem
                   etcdctl get /ssl/apiserver-key > apiserver-key.pem
-                  etcdctl get /flocker/cluster-crt > /etc/flocker/cluster.crt
-                  etcdctl get /flocker/control-service-crt > /etc/flocker/control-service.crt
-                  etcdctl get /flocker/control-service-key > /etc/flocker/control-service.key
                   # Set permissions
-                  chmod 600 /etc/kubernetes/ssl/*-key.pem /etc/flocker/*
+                  chmod 600 /etc/kubernetes/ssl/*-key.pem
                   chown root:root /etc/kubernetes/ssl/*-key.pem
+              - path: /etc/kubernetes/cloud.conf
+                permissions: 0766
+                owner: "root:root"
+                content: |
+                  [Global]
+                  auth-url=$os_auth
+                  username=$os_username
+                  password=$os_password
+                  region=$os_region
+                  tenant-id=$os_project_id
               - path: /opt/kube-resources-init.sh
                 permissions: 0700
                 owner: "root:root"
@@ -199,29 +161,6 @@ resources:
                     password: $(echo -n '$os_password' | base64)
                     username: $(echo -n '$os_username' | base64)
                   EOF
-                  cat <<EOF > /etc/kubernetes/descriptors/0-system-secret.yaml
-                  apiVersion: v1
-                  kind: Secret
-                  metadata:
-                    name: openstack
-                    namespace: kube-system
-                  type: Opaque
-                  data:
-                    password: $(echo -n '$os_password' | base64)
-                    username: $(echo -n '$os_username' | base64)
-                  EOF
-                  cat <<EOF > /etc/kubernetes/descriptors/0-flocker-secret.yaml
-                  apiVersion: v1
-                  kind: Secret
-                  metadata:
-                    name: flocker-control-etc
-                    namespace: kube-system
-                  type: Opaque
-                  data:
-                    cluster.crt: $(cat /etc/flocker/cluster.crt | base64 -w 0)
-                    control-service.key: $(cat /etc/flocker/control-service.key | base64 -w 0)
-                    control-service.crt: $(cat /etc/flocker/control-service.crt | base64 -w 0)
-                  EOF
                   echo "Waiting for Kubernetes API..."
                   K8S="http://$private_ipv4:8080"
                   until curl --silent "$K8S/version"
@@ -236,7 +175,7 @@ resources:
                       echo "Created kube-system namespace"
                   fi
                   mkdir -p /opt/bin
-                  curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/linux/amd64/kubectl
+                  curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.3.0/bin/linux/amd64/kubectl
                   chmod +x /opt/bin/kubectl
                   ret=$(/opt/bin/kubectl get secret openstack)
                   if [ "$?" -eq "1" ]; then
@@ -266,6 +205,8 @@ resources:
                       - --service-cluster-ip-range=10.0.2.0/24
                       - --service-node-port-range=1-33000
                       - --secure-port=443
+                      - --cloud-provider=openstack
+                      - --cloud-config=/etc/kubernetes/cloud.conf
                       - --advertise-address=$private_ipv4
                       - --admission-control=NamespaceLifecycle,NamespaceExists,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota
                       - --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem
@@ -281,6 +222,9 @@ resources:
                       - mountPath: /etc/kubernetes/ssl
                         name: ssl-certs-kubernetes
                         readOnly: true
+                      - mountPath: /etc/kubernetes/cloud.conf
+                        name: cloud-conf-kubernetes
+                        readOnly: true
                       - mountPath: /etc/ssl/certs
                         name: ssl-certs-host
                         readOnly: true
@@ -288,6 +232,9 @@ resources:
                     - hostPath:
                         path: /etc/kubernetes/ssl
                       name: ssl-certs-kubernetes
+                    - hostPath:
+                        path: /etc/kubernetes/cloud.conf
+                      name: cloud-conf-kubernetes
                     - hostPath:
                         path: /usr/share/ca-certificates
                       name: ssl-certs-host
@@ -338,6 +285,8 @@ resources:
                       - /hyperkube
                       - controller-manager
                       - --master=http://127.0.0.1:8080
+                      - --cloud-provider=openstack
+                      - --cloud-config=/etc/kubernetes/cloud.conf
                       - --service-account-private-key-file=/etc/kubernetes/ssl/apiserver-key.pem
                       - --pod-eviction-timeout=1m0s
                       - --root-ca-file=/etc/kubernetes/ssl/ca.pem
@@ -352,6 +301,9 @@ resources:
                       - mountPath: /etc/kubernetes/ssl
                         name: ssl-certs-kubernetes
                         readOnly: true
+                      - mountPath: /etc/kubernetes/cloud.conf
+                        name: cloud-conf-kubernetes
+                        readOnly: true
                       - mountPath: /etc/ssl/certs
                         name: ssl-certs-host
                         readOnly: true
@@ -359,6 +311,9 @@ resources:
                     - hostPath:
                         path: /etc/kubernetes/ssl
                       name: ssl-certs-kubernetes
+                    - hostPath:
+                        path: /etc/kubernetes/cloud.conf
+                      name: cloud-conf-kubernetes
                     - hostPath:
                         path: /usr/share/ca-certificates
                       name: ssl-certs-host
@@ -388,193 +343,6 @@ resources:
                           port: 10251
                         initialDelaySeconds: 15
                         timeoutSeconds: 1
-              - path: /etc/kubernetes/descriptors/0-flocker.yaml
-                permissions: 0666
-                owner: "root:root"
-                content: |
-                  apiVersion: v1
-                  kind: List
-                  items:
-                    - apiVersion: v1
-                      kind: ServiceAccount
-                      metadata:
-                        name: flocker
-                        namespace: kube-system
-                    - apiVersion: v1
-                      kind: Service
-                      metadata:
-                        name: flocker-control
-                        namespace: kube-system
-                        labels:
-                          component: flocker
-                          role: control
-                      spec:
-                        clusterIP: 10.0.2.3
-                        selector:
-                          component: flocker
-                          role: control
-                        ports:
-                        - name: api
-                          port: 4523
-                          protocol: TCP
-                        - name: agent
-                          port: 4524
-                          protocol: TCP
-                    - apiVersion: v1
-                      kind: ReplicationController
-                      metadata:
-                        name: flocker-control
-                        namespace: kube-system
-                        labels:
-                          component: flocker
-                          role: control
-                      spec:
-                        replicas: 1
-                        selector:
-                          component: flocker
-                          role: control
-                        template:
-                          metadata:
-                            namespace: kube-system
-                            labels:
-                              component: flocker
-                              role: control
-                          spec:
-                            hostPID: true
-                            hostIPC: true
-                            hostNetwork: true
-                            serviceAccount: flocker
-                            containers:
-                              - name: flocker-control
-                                securityContext:
-                                  privileged: true
-                                image: cedbossneo/flocker-control-service:1.13.0
-                                imagePullPolicy: Always
-                                env:
-                                  - name: OS_AUTH_URL
-                                    value: "$os_auth"
-                                  - name: OS_TENANT_NAME
-                                    value: "$os_tenant"
-                                  - name: OS_REGION
-                                    value: $os_region
-                                  - name: STACK
-                                    value: "$stack"
-                                  - name: OS_USERNAME
-                                    valueFrom:
-                                      secretKeyRef:
-                                        name: openstack
-                                        key: username
-                                  - name: OS_PASSWORD
-                                    valueFrom:
-                                      secretKeyRef:
-                                        name: openstack
-                                        key: password
-                                volumeMounts:
-                                  - name: flocker-control-etc
-                                    mountPath: /etc/flocker
-                                    readOnly: true
-                                  - name: var-lib-docker
-                                    mountPath: /var/lib/flocker
-                                ports:
-                                - containerPort: 4523
-                                  name: api
-                                  protocol: TCP
-                                - containerPort: 4524
-                                  name: agent
-                                  protocol: TCP
-                            volumes:
-                              - name: flocker-control-etc
-                                secret:
-                                  secretName: flocker-control-etc
-                              - name: var-lib-docker
-                                emptyDir: {}
-                    - apiVersion: extensions/v1beta1
-                      kind: DaemonSet
-                      metadata:
-                        name: flocker-container-agent
-                        labels:
-                          tier: storage
-                          app: flocker-container-agent
-                        namespace: kube-system
-                      spec:
-                        template:
-                          metadata:
-                            labels:
-                              name: flocker-container-agent
-                          spec:
-                            hostPID: true
-                            hostIPC: true
-                            hostNetwork: true
-                            nodeSelector:
-                              mode: SchedulingDisabled
-                            containers:
-                              - name: flocker-container-agent
-                                securityContext:
-                                  privileged: true
-                                image: cedbossneo/flocker-container-agent:1.13.0
-                                volumeMounts:
-                                  - name: flocker-config
-                                    mountPath: /etc/flocker
-                                  - name: var-run-docker
-                                    mountPath: /var/run/docker.sock
-                            volumes:
-                              - name: flocker-config
-                                hostPath:
-                                    path: /etc/flocker
-                              - name: var-run-docker
-                                hostPath:
-                                    path: /var/run/docker.sock
-                    - apiVersion: extensions/v1beta1
-                      kind: DaemonSet
-                      metadata:
-                        name: flocker-dataset-agent
-                        labels:
-                          tier: storage
-                          app: flocker-dataset-agent
-                        namespace: kube-system
-                      spec:
-                        template:
-                          metadata:
-                            labels:
-                              name: flocker-dataset-agent
-                          spec:
-                            hostPID: true
-                            hostIPC: true
-                            hostNetwork: true
-                            nodeSelector:
-                              mode: SchedulingDisabled
-                            containers:
-                              - name: flocker-dataset-agent
-                                securityContext:
-                                  privileged: true
-                                image: cedbossneo/flocker-dataset-agent:1.13.0
-                                volumeMounts:
-                                  - name: flocker-config
-                                    mountPath: /etc/flocker
-                                  - name: env-config
-                                    mountPath: /opt/instance_id
-                                  - name: dev
-                                    mountPath: /dev
-                                  - name: host
-                                    mountPath: /host
-                                  - name: flocker
-                                    mountPath: /flocker
-                            volumes:
-                              - name: flocker-config
-                                hostPath:
-                                    path: /etc/flocker
-                              - name: env-config
-                                hostPath:
-                                    path: /opt/instance_id
-                              - name: dev
-                                hostPath:
-                                    path: /dev
-                              - name: host
-                                hostPath:
-                                    path: /
-                              - name: flocker
-                                hostPath:
-                                    path: /flocker
               - path: /etc/kubernetes/descriptors/1-skydns.yaml
                 permissions: 0666
                 owner: "root:root"
@@ -1051,15 +819,18 @@ resources:
                     After=generatessl.service
 
                     [Service]
-                    ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
-                    Environment=KUBELET_VERSION=v1.3.0_coreos.0
-                    ExecStart=/opt/bin/kubelet-wrapper \
+                    ExecStartPre=/usr/bin/mkdir -p /opt/bin
+                    ExecStartPre=-/usr/bin/curl -o /opt/bin/kubelet -C - http://storage.googleapis.com/kubernetes-release/release/v1.3.0/bin/linux/amd64/kubelet
+                    ExecStartPre=-/usr/bin/chmod +x /opt/bin/kubelet
+                    ExecStart=/opt/bin/kubelet \
                       --api-servers=http://127.0.0.1:8080 \
                       --register-schedulable=false \
                       --register-node=true \
+                      --cloud-provider=openstack \
+                      --cloud-config=/etc/kubernetes/cloud.conf \
                       --allow-privileged=true \
                       --config=/etc/kubernetes/manifests \
-                      --hostname-override=$private_ipv4 \
+                      --hostname-override=$fqdn \
                       --cluster-dns=10.0.2.2 \
                       --cluster-domain=$domain
                     ExecStartPost=-/opt/kube-resources-init.sh
