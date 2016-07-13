@@ -534,7 +534,7 @@ resources:
                                   - name: flocker-config
                                     mountPath: /etc/flocker
                                   - name: env-config
-                                    mountPath: /etc/environment
+                                    mountPath: /opt/instance_id
                                   - name: dev
                                     mountPath: /dev
                                   - name: host
@@ -547,7 +547,7 @@ resources:
                                     path: /etc/flocker
                               - name: env-config
                                 hostPath:
-                                    path: /etc/environment
+                                    path: /opt/instance_id
                               - name: dev
                                 hostPath:
                                     path: /dev
@@ -786,3 +786,6 @@ resources:
       floating_network_id: 6ea98324-0f14-49f6-97c0-885d1b8dc517
 
 
+outputs:
+  public_ip:
+    value: {get_attr: [floating_ip, floating_ip_address]}
