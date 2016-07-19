@@ -128,11 +128,6 @@ resources:
                   # Set permissions
                   chmod 600 /etc/kubernetes/ssl/*-key.pem
                   chown root:root /etc/kubernetes/ssl/*-key.pem
-                  # Generate Toolbox key
-                  ssh-keygen -t rsa -f key -N ""
-                  # Export Key to Etcd
-                  curl --silent -X PUT --data-urlencode value@key "http://localhost:2379/v2/keys/ssh/key"
-                  curl --silent -X PUT --data-urlencode value@key.pub "http://localhost:2379/v2/keys/ssh/key.pub"
                   # Export CA to Etcd
                   curl --silent -X PUT --data-urlencode value@ca.pem "http://localhost:2379/v2/keys/ssl/ca"
                   curl --silent -X PUT --data-urlencode value@ca-key.pem "http://localhost:2379/v2/keys/ssl/key"

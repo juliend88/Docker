@@ -5,7 +5,7 @@
 #
 heat_template_version: 2013-05-23
 
-description: MyCloudManager for Cloudwatt
+description: Kubernetes HA
 
 
 parameters:
@@ -32,13 +32,13 @@ parameters:
 
   os_auth:
     description: OpenStack Auth URL
-    default: https://identity.fr2.cloudwatt.com/v2.0
+    default: https://identity.fr1.cloudwatt.com/v2.0
     label: OpenStack Auth URL
     type: string
 
   domain:
     description: Wildcarded domain, ex example.com must have a *.example.com DNS entry
-    default: mycloudmanager
+    default: cluster.local
     label: Cloud DNS
     type: string
 
@@ -111,7 +111,7 @@ resources:
         enable_snat: true
         network: "public"
 
-  toolbox_interface:
+  stack_interface:
     type: OS::Neutron::RouterInterface
     properties:
       router_id: { get_resource: router }
@@ -125,27 +125,15 @@ resources:
         - { direction: ingress, remote_ip_prefix : 10.0.0.0/16, protocol: UDP, port_range_min: 1, port_range_max: 65535 }
         - { direction: ingress, remote_ip_prefix : 0.0.0.0/0, protocol: TCP, port_range_min: 22, port_range_max: 22 }
         - { direction: ingress, remote_ip_prefix : 0.0.0.0/0, protocol: TCP, port_range_min: 80, port_range_max: 80 }
-        - { direction: ingress, remote_ip_prefix : 0.0.0.0/0, protocol: TCP, port_range_min: 1723, port_range_max: 1723 }
-        - { direction: ingress, remote_ip_prefix : 0.0.0.0/0, protocol: 47 }
         - { direction: ingress, protocol: ICMP }
         - { direction: egress }
-
-  vpn_username:
-    type: OS::Heat::RandomString
-    properties:
-      length: 10
-
-  vpn_password:
-    type: OS::Heat::RandomString
-    properties:
-      length: 10
 
   drivers:
     type: OS::Heat::ResourceGroup
     properties:
       count: 3
       resource_def:
-        type: http://storage.fr2.cloudwatt.net:8080/v1/AUTH_7da34701e2fe488683d8a8382ee6f454/toolbox/kube-driver.heat.yaml
+        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/kube-ha-fr1/kube-driver.heat.yaml
         properties:
           subnet: { get_resource: subnet }
           security_group: { get_resource: security_group }
@@ -166,7 +154,7 @@ resources:
     properties:
       count: { get_param: master_count }
       resource_def:
-        type: http://storage.fr2.cloudwatt.net:8080/v1/AUTH_7da34701e2fe488683d8a8382ee6f454/toolbox/kube-master.heat.yaml
+        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/kube-ha-fr1/kube-master.heat.yaml
         properties:
           nodename:
             str_replace:
@@ -186,10 +174,8 @@ resources:
           os_password: { get_param: os_password }
           os_tenant: { get_param: os_tenant }
           os_auth: { get_param: os_auth }
-          os_region: fr2
+          os_region: fr1
           os_tenant_id: { get_param: 'OS::project_id' }
-          vpn_username: { get_resource: vpn_username }
-          vpn_password: { get_resource: vpn_password }
 
   pool_masters:
     type: OS::Neutron::Pool
@@ -216,7 +202,7 @@ resources:
     properties:
       count: { get_param: node_count }
       resource_def:
-        type: http://storage.fr2.cloudwatt.net:8080/v1/AUTH_7da34701e2fe488683d8a8382ee6f454/toolbox/kube-node.heat.yaml
+        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/kube-ha-fr1/kube-node.heat.yaml
         properties:
           domain: { get_param: domain }
           master: { get_attr: [pool_masters, vip, address] }
@@ -229,7 +215,7 @@ resources:
           os_password: { get_param: os_password }
           os_tenant: { get_param: os_tenant }
           os_auth: { get_param: os_auth }
-          os_region: fr2
+          os_region: fr1
           os_tenant_id: { get_param: 'OS::project_id' }
           nodename:
             str_replace:
@@ -241,11 +227,5 @@ resources:
 
 outputs:
   public_ip:
-    description: VPN IP
+    description: Masters IP
     value: { get_attr: [masters, public_ip] }
-  vpn_username:
-    description: VPN Username
-    value: { get_resource: vpn_username }
-  vpn_password:
-    description: VPN Password
-    value: { get_resource: vpn_password }

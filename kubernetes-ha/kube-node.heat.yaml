@@ -167,7 +167,6 @@ resources:
                   COREOS_PUBLIC_IPV4=$private_ipv4
                   ETCD_ADDR=localhost:2379
                   ETCD_PEER_ADDR=$private_ipv4:2380
-                  TOOLBOX_DOMAIN=$domain
               - path: /etc/kubernetes/cloud.conf
                 permissions: 0766
                 owner: "root:root"
@@ -206,16 +205,14 @@ resources:
                       echo "Trying: $K8S"
                       sleep 1
                   done
-                  etcdctl get /ssh/key > /home/core/keys/key
-                  etcdctl get /ssh/key.pub > /home/core/keys/key.pub
                   etcdctl get /ssl/ca > ca.pem
                   etcdctl get /ssl/key > ca-key.pem
                   openssl genrsa -out worker-$fqdn-key.pem 2048
                   WORKER_IP=$private_ipv4 openssl req -new -key worker-$fqdn-key.pem -out worker-$fqdn.csr -subj "/CN=$fqdn" -config worker-openssl.cnf
                   WORKER_IP=$private_ipv4 openssl x509 -req -in worker-$fqdn.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out worker-$fqdn.pem -days 365 -extensions v3_req -extfile worker-openssl.cnf
                   # Set permissions
-                  chmod 600 /etc/kubernetes/ssl/*-key.pem /home/core/keys/*
-                  chown root:root /etc/kubernetes/ssl/*-key.pem /home/core/keys/*
+                  chmod 600 /etc/kubernetes/ssl/*-key.pem
+                  chown root:root /etc/kubernetes/ssl/*-key.pem
             coreos:
               etcd2:
                 proxy: on
