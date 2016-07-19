@@ -130,7 +130,7 @@ Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion V
 -------
 
 
-Vous pouvez dès lors accéder à l'interface d'administration de MyCloudManager via l'url **http://10.0.1.250:3000** ou **http://manager.default.svc.mycloudmanager** et commencer à en tirer tout le bénéfice.
+Vous pouvez dès lors accéder à l'interface d'administration de MyCloudManager via l'url **http://10.0.1.250:30000** ou **http://manager.default.svc.mycloudmanager** et commencer à en tirer tout le bénéfice.
 
 C’est (déjà) FINI !
 
