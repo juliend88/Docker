@@ -145,7 +145,7 @@ resources:
     properties:
       count: 3
       resource_def:
-        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/kube-driver.heat.yaml
+        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox-v2/kube-driver.heat.yaml
         properties:
           subnet: { get_resource: subnet }
           security_group: { get_resource: security_group }
@@ -171,7 +171,7 @@ resources:
     properties:
       count: { get_param: master_count }
       resource_def:
-        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/kube-master.heat.yaml
+        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox-v2/kube-master.heat.yaml
         properties:
           nodename:
             str_replace:
@@ -221,7 +221,7 @@ resources:
     properties:
       count: { get_param: node_count }
       resource_def:
-        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox/kube-node.heat.yaml
+        type: http://storage.fr1.cloudwatt.net:8080/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox-v2/kube-node.heat.yaml
         properties:
           domain: { get_param: domain }
           master: { get_attr: [pool_masters, vip, address] }
