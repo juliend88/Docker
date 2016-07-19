@@ -1,0 +1,33 @@
+---
+#
+##
+### Written by the CAT (Cloudwatt Automation Team)
+##
+#
+- hosts: servers
+  become: yes
+
+  vars:
+    package: duplicity
+    os_username: "{{ lookup('env', 'OS_USERNAME') }}"
+    os_password: "{{ lookup('env', 'OS_PASSWORD') }}"
+    os_tenant_name: "{{ lookup('env', 'OS_TENANT_NAME') }}"
+    os_auth_url: "{{ lookup('env', 'OS_AUTH_URL') }}"
+    container: "backup-{{ lookup('env', 'SERVER_ID') }}"
+    backup_password: "backup-{{ lookup('env', 'BACKUP_PASSWORD') }}"
+
+  tasks:
+
+    - apt: update_cache=true upgrade=full
+      when: (ansible_distribution == "Ubuntu") or (ansible_distribution == "Debian")
+
+    - name : install httplib2
+      pip: name=httplib2
+           state=present
+    - name: packages installed
+      package:
+          name={{ item }}
+          state=present
+      with_items:
+        - duplicity
+        - s3ql

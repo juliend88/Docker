@@ -6,6 +6,7 @@ ENV ANSIBLE_HOST_KEY_CHECKING False
 
 ADD entrypoint.sh /
 
+ADD backup /ansible/backup
 ADD ansible-install /ansible/ansible-install
 ADD ansible-uninstall /ansible/ansible-uninstall
 

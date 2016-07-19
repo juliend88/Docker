@@ -151,6 +151,11 @@ resources:
           security_group: { get_resource: security_group }
           network: { get_resource: network }
           nodeip: 10.0.1.24%index%
+          os_username: { get_param: os_username }
+          os_password: { get_param: os_password }
+          os_tenant: { get_param: os_tenant }
+          os_auth: { get_param: os_auth }
+          os_region: fr1
           nodename:
             str_replace:
               template: $stack-driver-%index%

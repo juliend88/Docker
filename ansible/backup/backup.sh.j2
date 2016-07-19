@@ -1,0 +1,30 @@
+#!/usr/bin/env sh
+echo "Creating swift-container {{ container }}"
+echo "Temporary" > temp
+swift --insecure upload {{ container }} temp
+swift --insecure delete {{ container }} temp
+rm temp
+
+mkdir -p /root/.s3mount
+SWIFT_URI=swiftks://identity.fr1.cloudwatt.com/fr1
+echo fsck.s3ql ${SWIFT_URI}:{{ container }}
+fsck.s3ql ${SWIFT_URI}:{{ container }}
+signal=$?
+
+if [ $signal -eq 18 ] ; then
+        echo "FSCK did not find a Filesystem, Creating new"
+        echo mkfs.s3ql --plain -L $S3QL_STORAGE_CONTAINER --max-obj-size 10240 ${SWIFT_URI}:{{ container }}
+        mkfs.s3ql --plain -L $S3QL_STORAGE_CONTAINER --max-obj-size 10240 ${SWIFT_URI}:{{ container }}
+elif [ $signal -ne 0 ] ; then
+        echo "FSCK failed, Refusing to mount, please fix errors manually"
+        exit 1
+fi
+
+if [ ! "${S3QL_CACHESIZE}x" = "x" ]; then
+    echo mount.s3ql --fg --nfs --log /root/.s3ql/mount.log --allow-other --cachesize ${S3QL_CACHESIZE} --compress zlib ${SWIFT_URI}:{{ container }} /root/.s3mount
+    mount.s3ql --fg --nfs --log /root/.s3ql/mount.log --allow-other --cachesize ${S3QL_CACHESIZE} --compress zlib ${SWIFT_URI}:{{ container }} /root/.s3mount
+else
+    echo mount.s3ql --fg  --nfs --log /root/.s3ql/mount.log --allow-other --compress zlib ${SWIFT_URI}:{{ container }} /root/.s3mount
+    mount.s3ql --fg --nfs --log /root/.s3ql/mount.log --allow-other --compress zlib ${SWIFT_URI}:{{ container }} /root/.s3mount
+fi
+

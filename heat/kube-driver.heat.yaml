@@ -10,6 +10,21 @@ parameters:
   mastercount:
     label: mastercount
     type: number
+  os_username:
+    label: os_username
+    type: string
+  os_password:
+    label: os_password
+    type: string
+  os_tenant:
+    label: os_tenant
+    type: string
+  os_auth:
+    label: os_auth
+    type: string
+  os_region:
+    label: os_region
+    type: string
   domain:
     label: domain
     type: string
@@ -57,6 +72,12 @@ resources:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $domain: { get_param: domain }
             $nodeid: { get_param: nodeid }
+            $os_username: { get_param: os_username}
+            $os_password: { get_param: os_password}
+            $os_tenant: { get_param: os_tenant }
+            $os_auth: { get_param: os_auth }
+            $os_region: { get_param: os_region }
+            $nodename: { get_param: nodename }
             $mastercount: { get_param: mastercount }
           template: |
             #cloud-config
@@ -150,10 +171,28 @@ resources:
                 listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
                 listen-peer-urls: http://$private_ipv4:2380
               units:
-                - name: etcd2.service
-                  command: start
                 - name: docker.service
                   command: start
+                - name: etcd-backup.service
+                  command: start
+                  content: |
+                    [Unit]
+                    Requires=docker.service
+                    After=docker.service
+
+                    [Service]
+                    ExecStartPre=/bin/bash -c '/usr/bin/docker rm -f etcd-backup || true'
+                    ExecStart=/usr/bin/docker run -v /var/lib/etcd2:/opt/etcd --name=etcd-backup -e OS_USERNAME=$os_username -e OS_PASSWORD=$os_password -e OS_AUTH_URL=$os_auth -e OS_TENANT_NAME=$os_tenant -e OS_REGION=$os_region -e NODE=$nodename cloudwattfr/etcd-backup
+                - name: etcd2.service
+                  command: start
+                  drop-ins:
+                    - name: 40-ExecStartPre-backup.conf
+                      content: |
+                        [Unit]
+                        Requires=etcd-backup.service
+                        After=etcd-backup.service
+                        [Service]
+                        ExecStartPre=/bin/bash -c 'until ls /var/lib/etcd2/ready; do sleep 1; echo Waiting for etcd2 restore; done'
                 - name: flannel-init.service
                   command: start
                   content: |
