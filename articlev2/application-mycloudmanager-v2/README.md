@@ -191,12 +191,12 @@ Nous avons mis en place une section **audit** afin que vous puissiez voir l'ense
 
 ![audit](img/audit.png)
 
-La section **Backups** vous permet de sauvegarder l'ensemble des instances rattachées à MyCloudManager, le backup peut-être effectué de deux façon, via un `snapshot` ou via `duplicity` que l'on a appelé `soft`. Le snapshot va prendre une photo de l'instance au moment ou vous avez schedulé le backup. Vous pourrez ensuite le retrouver dans la liste de vos images sur votre tenant. Le backup soft va lui déployer un conteneur duplicity et sauvegarder l'ensemble du contenu du ou des répertoires que vous avez séléctionné (`/data`ou `/config`) dans un contener **swift** que vous pourrez également retrouver dans la partie **Containers** de votre tenant.
+La section **Backups** vous permet de sauvegarder l'ensemble des instances rattachées à MyCloudManager, le backup peut-être effectué de deux façon, via un **snapshot** ou via **duplicity** que l'on a appelé **soft**. Le snapshot va prendre une photo de l'instance au moment ou vous avez schedulé le backup. Vous pourrez ensuite le retrouver dans la liste de vos images sur votre tenant. Le backup soft va lui déployer un conteneur duplicity et sauvegarder l'ensemble du contenu du ou des répertoires que vous avez séléctionné (`/data`ou `/config`) dans un contener **swift** que vous pourrez également retrouver dans la partie **containers** de votre tenant.
 Si vous souhaitez sauvegarder un groupe de serveur il vous faudra alors les séléctionner lors de la création du backup.
 En ce qui concerne la programmation des backups plusieurs choix s'offre à vous :
-* Daily : un backup par jour à l'heure souhaitée,
-* Weekly: un backup par semaine au jour et à l'heure souhaité,
-* Montly : un backup par mois à la date et a l'heure souhaitée.
+* **Daily**: un backup par jour à l'heure souhaitée,
+* **Weekly**: un backup par semaine au jour et à l'heure souhaité,
+* **Montly**: un backup par mois à la date et a l'heure souhaitée.
 
 Afin de commencer une nouvelle configuration de backup il faut cliquer sur le bouton![bouton](img/plus.png)
 
@@ -224,7 +224,7 @@ Vous pouvez à tout moment modifier la configuration d'un backup via le bouton *
 
 Nous avons intégré 2 liens dans le menu de MyCloudManager : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
 
-La section **Support** va vous permettre comme son nom l'indique de contacter le support en cas de demande ou incident sur MyCloudManager. Vous pouvez aussi contacter un **CloudCoach** afin d'avoir de plus ample information en ce qui concerne notre ecosystem ou la faisabilité de vos différents projets que vous souhaitez porter sur le cloud.
+La section **Support** va vous permettre comme son nom l'indique de contacter le support en cas de demande ou incident sur MyCloudManager. Vous pouvez aussi contacter un **CloudCoach** afin d'avoir de plus amples informations en ce qui concerne notre ecosystem ou la faisabilité de vos différents projets que vous souhaitez porter sur le cloud.
 
 Email :
 * Choissez votre besoin **Email Support** ou **Contact a Cloud Coach**,
