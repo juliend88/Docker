@@ -241,7 +241,7 @@ Email :
 
 ![supportemail](img/supportemail.png)
 
-l'envoie du mail se fait via le bouton ![sendmail](img/sendmail.png). Celui-ci devient ![mailsend](img/mailsend.png) si le mail est correctement envoyé ou ![mailfail](img/mailfail.png) si le serveur à rencontré une erreur pendant l'envoie.
+l'envoie du mail se fait via le bouton ![sendmail](img/sendmail.png). Celui-ci devient ![mailsend](img/mailsend.png) si le mail est correctement envoyé ou ![mailfail](img/mailfail.png) si le serveur a rencontré une erreur pendant l'envoie.
 
 
 
