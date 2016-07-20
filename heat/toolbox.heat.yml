@@ -5,7 +5,7 @@
 #
 heat_template_version: 2013-05-23
 
-description: MyCloudManager for Cloudwatt
+description: MyCloudManager by Cloudwatt
 
 
 parameters:

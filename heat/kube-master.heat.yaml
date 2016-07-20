@@ -103,6 +103,7 @@ resources:
             $os_project_id: { get_param: os_tenant_id }
             $vpn_username: { get_param: vpn_username }
             $vpn_password: { get_param: vpn_password }
+            $subnet: { get_param: subnet }
           template: |
             #cloud-config
             write_files:
@@ -145,6 +146,8 @@ resources:
                   password=$os_password
                   region=$os_region
                   tenant-id=$os_project_id
+                  [LoadBalancer]
+                  subnet-id = $subnet
               - path: /opt/kube-resources-init.sh
                 permissions: 0700
                 owner: "root:root"
@@ -175,7 +178,7 @@ resources:
                       echo "Created kube-system namespace"
                   fi
                   mkdir -p /opt/bin
-                  curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.3.0/bin/linux/amd64/kubectl
+                  curl -o /opt/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/v1.3.2/bin/linux/amd64/kubectl
                   chmod +x /opt/bin/kubectl
                   ret=$(/opt/bin/kubectl get secret openstack)
                   if [ "$?" -eq "1" ]; then
@@ -194,7 +197,7 @@ resources:
                     hostNetwork: true
                     containers:
                     - name: kube-apiserver
-                      image: quay.io/coreos/hyperkube:v1.3.0_coreos.0
+                      image: quay.io/coreos/hyperkube:v1.3.2_coreos.0
                       command:
                       - /hyperkube
                       - apiserver
@@ -251,7 +254,7 @@ resources:
                     hostNetwork: true
                     containers:
                     - name: kube-proxy
-                      image: quay.io/coreos/hyperkube:v1.3.0_coreos.0
+                      image: quay.io/coreos/hyperkube:v1.3.2_coreos.0
                       command:
                       - /hyperkube
                       - proxy
@@ -280,7 +283,7 @@ resources:
                     hostNetwork: true
                     containers:
                     - name: kube-controller-manager
-                      image: quay.io/coreos/hyperkube:v1.3.0_coreos.0
+                      image: quay.io/coreos/hyperkube:v1.3.2_coreos.0
                       command:
                       - /hyperkube
                       - controller-manager
@@ -330,7 +333,7 @@ resources:
                     hostNetwork: true
                     containers:
                     - name: kube-scheduler
-                      image: quay.io/coreos/hyperkube:v1.3.0_coreos.0
+                      image: quay.io/coreos/hyperkube:v1.3.2_coreos.0
                       command:
                       - /hyperkube
                       - scheduler
@@ -373,56 +376,34 @@ resources:
                     - apiVersion: v1
                       kind: ReplicationController
                       metadata:
-                        name: kube-dns-v11
+                        name: kube-dns-v15
                         namespace: kube-system
                         labels:
                           k8s-app: kube-dns
-                          version: v11
+                          version: v15
                           kubernetes.io/cluster-service: "true"
                       spec:
                         replicas: 1
                         selector:
                           k8s-app: kube-dns
-                          version: v11
+                          version: v15
                         template:
                           metadata:
                             labels:
                               k8s-app: kube-dns
-                              version: v11
+                              version: v15
                               kubernetes.io/cluster-service: "true"
                           spec:
                             containers:
-                            - name: etcd
-                              image: gcr.io/google_containers/etcd-amd64:2.2.1
-                              resources:
-                                limits:
-                                  cpu: 100m
-                                  memory: 500Mi
-                                requests:
-                                  cpu: 100m
-                                  memory: 50Mi
-                              command:
-                              - /usr/local/bin/etcd
-                              - -data-dir
-                              - /var/etcd/data
-                              - -listen-client-urls
-                              - http://127.0.0.1:2379,http://127.0.0.1:4001
-                              - -advertise-client-urls
-                              - http://127.0.0.1:2379,http://127.0.0.1:4001
-                              - -initial-cluster-token
-                              - skydns-etcd
-                              volumeMounts:
-                              - name: etcd-storage
-                                mountPath: /var/etcd/data
-                            - name: kube2sky
-                              image: gcr.io/google_containers/kube2sky:1.14
+                            - name: kubedns
+                              image: gcr.io/google_containers/kubedns-amd64:1.5
                               resources:
                                 limits:
                                   cpu: 100m
                                   memory: 200Mi
                                 requests:
                                   cpu: 100m
-                                  memory: 50Mi
+                                  memory: 100Mi
                               livenessProbe:
                                 httpGet:
                                   path: /healthz
@@ -440,22 +421,22 @@ resources:
                                 initialDelaySeconds: 30
                                 timeoutSeconds: 5
                               args:
-                              # command = "/kube2sky"
-                              - --domain=$domain
-                            - name: skydns
-                              image: gcr.io/google_containers/skydns:2015-10-13-8c72f8c
-                              resources:
-                                limits:
-                                  cpu: 100m
-                                  memory: 200Mi
-                                requests:
-                                  cpu: 100m
-                                  memory: 50Mi
+                              # command = "/kube-dns"
+                              - --domain=$domain.
+                              - --dns-port=10053
+                              ports:
+                              - containerPort: 10053
+                                name: dns-local
+                                protocol: UDP
+                              - containerPort: 10053
+                                name: dns-tcp-local
+                                protocol: TCP
+                            - name: dnsmasq
+                              image: gcr.io/google_containers/dnsmasq:1.1
                               args:
-                              - -machines=http://127.0.0.1:4001
-                              - -addr=0.0.0.0:53
-                              - -ns-rotate=false
-                              - -domain=$domain.
+                              - --cache-size=1000
+                              - --no-resolv
+                              - --server=127.0.0.1#10053
                               ports:
                               - containerPort: 53
                                 name: dns
@@ -464,7 +445,7 @@ resources:
                                 name: dns-tcp
                                 protocol: TCP
                             - name: healthz
-                              image: gcr.io/google_containers/exechealthz:1.0
+                              image: gcr.io/google_containers/exechealthz-amd64:1.0
                               resources:
                                 # keep request = limit to keep this container in guaranteed class
                                 limits:
@@ -479,9 +460,6 @@ resources:
                               ports:
                               - containerPort: 8080
                                 protocol: TCP
-                            volumes:
-                            - name: etcd-storage
-                              emptyDir: {}
                             dnsPolicy: Default  # Don't use cluster DNS.
               - path: /etc/kubernetes/descriptors/2-rabbitmq.yaml
                 permissions: 0666
@@ -827,7 +805,7 @@ resources:
 
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /opt/bin
-                    ExecStartPre=-/usr/bin/curl -o /opt/bin/kubelet -C - http://storage.googleapis.com/kubernetes-release/release/v1.3.0/bin/linux/amd64/kubelet
+                    ExecStartPre=-/usr/bin/curl -o /opt/bin/kubelet -C - http://storage.googleapis.com/kubernetes-release/release/v1.3.2/bin/linux/amd64/kubelet
                     ExecStartPre=-/usr/bin/chmod +x /opt/bin/kubelet
                     ExecStart=/opt/bin/kubelet \
                       --api-servers=http://127.0.0.1:8080 \
