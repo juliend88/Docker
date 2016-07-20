@@ -221,8 +221,15 @@ Une fois que vous avez cliqué sur le bouton finish votre configuration est à p
 
 Vous pouvez à tout moment modifier la configuration d'un backup via le bouton **editer** ![bkpedit](img/bkpedit.png) qui vous permet d'ajouter ou de supprimer des serveurs, de modifier le ou les répertoires à sauvegarder ainsi que le moment où celui ci sera exécuté.  Le bouton **supprimer** ![bkpdelete](img/bkpdelete.png) quant à lui, permet de supprimer complètement le backup selectionné.
 
+#### Qui dit backup dit restauration :
 
-Nous avons intégré 2 liens dans le menu de MyCloudManager : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
+ Afin de restorer un backup qu'il soit **soft** ou **snapshot** la démarche reste là même. Il faut vous rendre de le menu **instance** de votre MycloudManager. Comme vouss pouvez le constater un nouveau bouton ![restore](img/restore.png) est apparu sur l'ensemble des serveur qui ont été sauvegardés.
+
+ Lorsque vous cliquez dessus un pop-up s'ouvre et vous pouvez maintenant choisir via le menu déroulant le backup que vous voulez restorer ![chooserestore](img/chooserestore.png).
+ Une fois cette action effectuée, si votre backup était de type **snapshot**, l'image selectionnée va être restorée à la place de l'instance en cours, sinon pour le backup **soft** l'integralité des dossiers séléctionné seront réstauré dans le répertoire `restore` de votre instance.
+
+##### Retour au menu
+Dans le menu MycloudManager nous avons intégré 2 liens : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
 
 La section **Support** va vous permettre comme son nom l'indique de contacter le support en cas de demande ou incident sur MyCloudManager. Vous pouvez aussi contacter un **CloudCoach** afin d'avoir de plus amples informations en ce qui concerne notre ecosystem ou la faisabilité de vos différents projets que vous souhaitez porter sur le cloud.
 
