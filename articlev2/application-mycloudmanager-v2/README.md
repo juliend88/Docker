@@ -10,10 +10,10 @@ Cette deuxième version de MyCloudManager (version Beta). Celle-ci a pour but de
 * Synchronisation de temps
 
 MyCloudManager a entièrement été développé par l'équipe CAT - Cloudwatt Automation Team.
-* Cette Stack est entièrement HA (Haute Dispo)
+* MyCloudManager est entièrement HA (Haute Dispo)
 * Il repose sur une instance CoreOS
-* L'ensemble des applications se déploie dans des conteneurs Docker orchestré par Kubernetes
-* L'interface utilisateur est construite en technologie React
+* L'ensemble des applications se déploient dans des conteneurs Docker orchestrés par Kubernetes
+* L'interface utilisateur est developpé en React
 * De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible
 * Afin de sécuriser au maximum votre MyCloudManager, aucun port n'est exposé sur internet mis à part le port 22 pour le management des instances de la stack ainsi que le port 1723 pour l'accès VPN PPTP.
 
@@ -191,17 +191,51 @@ Nous avons mis en place une section **audit** afin que vous puissiez voir l'ense
 
 ![audit](img/audit.png)
 
-La section **Backups** vous permet de sauvegarder l'ensemble des instances rattachées à MyCloudManager, le backup peut-être effectué de deux façon, via un `snapshot` ou via `duplicity` que l'on a appelé `soft`. Le snapshot va prendre une photo de l'instance au moment ou vous avez schedulé le backup et vous pourrez le retrouver dans la liste de vos image sur votre tenant. Le backup soft va lui déployer un contener duplicity et sauvegarder l'ensemble du contenu du ou des répertoires que vous avez séléctionnés (`/data`ou `/config`) dans un contener **swift** que vous pourrez egalement retrouver dans la partie **Containers** de votre tenant.
+La section **Backups** vous permet de sauvegarder l'ensemble des instances rattachées à MyCloudManager, le backup peut-être effectué de deux façon, via un `snapshot` ou via `duplicity` que l'on a appelé `soft`. Le snapshot va prendre une photo de l'instance au moment ou vous avez schedulé le backup. Vous pourrez ensuite le retrouver dans la liste de vos images sur votre tenant. Le backup soft va lui déployer un conteneur duplicity et sauvegarder l'ensemble du contenu du ou des répertoires que vous avez séléctionné (`/data`ou `/config`) dans un contener **swift** que vous pourrez également retrouver dans la partie **Containers** de votre tenant.
 Si vous souhaitez sauvegarder un groupe de serveur il vous faudra alors les séléctionner lors de la création du backup.
-En ce qui concerne la programation des backups plusieurs choix s'offre à vous :
+En ce qui concerne la programmation des backups plusieurs choix s'offre à vous :
 * Daily : un backup par jour à l'heure souhaitée,
 * Weekly: un backup par semaine au jour et à l'heure souhaité,
 * Montly : un backup par mois à la date et a l'heure souhaitée.
+
+Afin de commencer une nouvelle configuration de backup il faut cliquer sur le bouton![bouton](img/plus.png)
+
+Donner un nom à votre configuration de backup :
+![newconfig](img/backupinfo.png)
+
+Selectionner les serveurs que vous voulez ajouter :
+![Backupselectsrv](img/selectsrv.png)
+
+Définissez maintenant **quand** et **comment** le backup de ses serveurs sera fait :
+
+* Snapshot (Prend une "photo" de votre instance et la dépose dans votre bibliothèque d'image sur votre tenant)
+![bkpsnapshot](img/bkpsnapshot.png)
+
+* Soft (Copie l'intégralité des répertoires coché dans un conteneur swift)
+![bkpsoft](img/bkpsoft.png)
+
+
+Une fois que vous avez cliqué sur le bouton finish votre configuration est à présent sauvegardée :
+
+![bkpsvg](img/bkpsvg.png)
+
+Vous pouvez à tout moment modifier la configuration d'un backup via le bouton **editer** ![bkpedit](img/bkpedit.png) qui vous permet d'ajouter ou de supprimer des serveurs, de modifier le ou les répertoires à sauvegarder ainsi que le moment où celui ci sera exécuté.  Le bouton **supprimer** ![bkpdelete](img/bkpdelete.png) quant à lui, permet de supprimer complètement le backup selectionné.
 
 
 Nous avons intégré 2 liens dans le menu de MyCloudManager : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
 
 La section **Support** va vous permettre comme son nom l'indique de contacter le support en cas de demande ou incident sur MyCloudManager. Vous pouvez aussi contacter un **CloudCoach** afin d'avoir de plus ample information en ce qui concerne notre ecosystem ou la faisabilité de vos différents projets que vous souhaitez porter sur le cloud.
+
+Email :
+* Choissez votre besoin **Email Support** ou **Contact a Cloud Coach**,
+* Le champ **type** va vous permettre de choisir entre **demande** ou **incident**,
+* Le champ **Reply Email Address** va permettre au support ou au cloud coach d'avoir votre adresse afin de pouvoir vous répondre,
+* le Champ **Request/Problems encountered** constitue le corps du mail.
+
+![supportemail](img/supportemail.png)
+
+l'envoie du mail se fait via le bouton ![sendmail](img/sendmail.png). Celui-ci devient ![mailsend](img/mailsend.png) si le mail est correctement envoyé ou ![mailfail](img/mailfail.png) si le serveur à rencontré une erreur pendant l'envoie.
+
 
 
 ### Ajouter des instances à MyCloudManager
@@ -325,7 +359,7 @@ Pour aller plus loin voici quelques liens utiles:
 
 ## Les versions
 
-### MyCloudManager **v1** (Beta)
+### MyCloudManager **v2** (Beta)
 
   - CoreOS Stable 1010.6
   - Docker 1.9.1
