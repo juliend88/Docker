@@ -88,6 +88,7 @@ resources:
             $os_auth: { get_param: os_auth }
             $os_region: { get_param: os_region }
             $os_project_id: { get_param: os_tenant_id }
+            $subnet: { get_param: subnet }
           template: |
             #cloud-config
             write_files:
@@ -131,7 +132,7 @@ resources:
                     hostNetwork: true
                     containers:
                     - name: kube-proxy
-                      image: quay.io/coreos/hyperkube:v1.3.0_coreos.0
+                      image: quay.io/coreos/hyperkube:v1.3.2_coreos.0
                       command:
                       - /hyperkube
                       - proxy
@@ -177,6 +178,8 @@ resources:
                   password=$os_password
                   region=$os_region
                   tenant-id=$os_project_id
+                  [LoadBalancer]
+                  subnet-id = $subnet
               - path: /opt/kubernetes-init-ssl.sh
                 permissions: 0700
                 owner: "root:root"
@@ -265,7 +268,7 @@ resources:
 
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /opt/bin
-                    ExecStartPre=-/usr/bin/curl -o /opt/bin/kubelet -C - http://storage.googleapis.com/kubernetes-release/release/v1.3.0/bin/linux/amd64/kubelet
+                    ExecStartPre=-/usr/bin/curl -o /opt/bin/kubelet -C - http://storage.googleapis.com/kubernetes-release/release/v1.3.2/bin/linux/amd64/kubelet
                     ExecStartPre=-/usr/bin/chmod +x /opt/bin/kubelet
                     ExecStart=/opt/bin/kubelet \
                       --api-servers=https://$master \
