@@ -7,13 +7,14 @@ Cette deuxième version de MyCloudManager (version Beta). Celle-ci a pour but de
 * Planificateur de taches
 * Miroir Antivirus
 * Gestionnaire de répertoire applicatif
+* Backup full ou incremental
 * Synchronisation de temps
 
 MyCloudManager a entièrement été développé par l'équipe CAT - Cloudwatt Automation Team.
-* MyCloudManager est entièrement HA (Haute Dispo)
+* MyCloudManager est entièrement HA (Haute Disponibilité)
 * Il repose sur une instance CoreOS
 * L'ensemble des applications se déploient dans des conteneurs Docker orchestrés par Kubernetes
-* L'interface utilisateur est developpé en React
+* L'interface utilisateur est developpée en React
 * De plus vous pouvez installer ou configurer, depuis l'interface graphique, l'ensemble des applications sur vos instances via des playbooks Ansible
 * Afin de sécuriser au maximum votre MyCloudManager, aucun port n'est exposé sur internet mis à part le port 22 pour le management des instances de la stack ainsi que le port 1723 pour l'accès VPN PPTP.
 
@@ -56,13 +57,13 @@ Après avoir entré vos login/password de votre compte, le wizard de lancement a
 Comme vous avez pu le constater le wizard du 1-Clic vous demande de saisir une nouvelle fois vos identifiants Openstack (cela sera fixé lors d'une prochaine version de MyCloudManager).
 Vous trouverez [ici](https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) votre **tenant ID**, il est identique a l'**ID du projet**. Il vous sera nécessaire pour compléter le wizard.
 
-Par défaut, le wizard propose un déploiement de deux instances de type "small-1" qui seront les instances `masters`, celles-ci sont nécessaire au bon fonctionnement de kubernetes en HA. Concernant les `nodes`, ils porterons l'ensemble des *"pods" (applications)* déployés sur la stack ceux-ci doivent être taillés en fonction de l'utilisation que vous souhaitez faire de MyCloudManager par défaut il vous ait proposé de les déployer sur des flavor de type "n2.cw.standart-1".
+Par défaut, le wizard propose un déploiement de deux instances de type "small-1" qui seront les instances `masters`, celles-ci sont nécessaire au bon fonctionnement de kubernetes en HA, concernant les `nodes`, ils porterons l'ensemble des *"pods" (applications)* déployés sur la stack ceux-ci doivent être taillés en fonction de l'utilisation que vous souhaitez faire de MyCloudManager. Par défaut il vous ait proposé de les déployer sur des flavors de type "n2.cw.standart-1".
 
-Vous verrez par la suite que 3 instances de type "tiny" seront aussi créées, celles-ci permettent à kubernetes de connaitre l'ensemble des noeuds et application qui compose le cluster déployé.
+Vous verrez par la suite que 3 instances de type "tiny" seront aussi créées, celles-ci permettent à Kubernetes de connaitre l'ensemble des noeuds et application qui compose le cluster déployé.
 
 Cependant il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
 
-Afin de persister les données applicative, des volumes de type standard seront crées dans votre tenant et attacher automatiquement à votre stack au déploiement de chaque applications, grâce à kubernetes, afin de contenir l'ensemble des données de vos différentes applications.
+Afin de persister les données applicative, des volumes de type standard seront crées dans votre tenant et attachés automatiquement à votre stack au déploiement de chaque application, grâce à Kubernetes, afin de contenir l'ensemble des données de vos différentes applications.
 
 Par défault, MyCloudManager sera déployé sur 2 instance *master* avec 3 instance *worker* et 3 instance *etcd*.
 
@@ -119,7 +120,7 @@ Après avoir suivi cette procédure vous pouvez maintenant lancer la connexion V
 ![configwin01](img/configwin10.png)
 
 
-* Entrez à présent les informations récupérées en sortie de la stack : dans un premier temps la *FloatingIP*, puis le *login* et ensuite le *mot de passe* fournis.
+* Entrez à présent les informations récupérées en sortie de la stack : dans un premier temps la *FloatingIP*, puis le *login* et ensuite le *mot de passe* fournis. Vous pouvez aussi préciser le type de réseau privé virtuel en sélectionnant le protocole PPTP, cela accélérera la création du VPN.
 
 ![configipwin10](img/configipwin10.png)
 ![configuserwin10](img/configuserwin10.png)
@@ -158,7 +159,7 @@ Grâce au menu présent en haut en gauche de la page, vous pouvez vous déplacer
 * Backups: liste l'ensemble des backups avec MyCloudManager
 * My Instances > Console : accès à la console Horizon
 * My account > Cockpit : accès à mon compte
-* Support: permet l'envoie de mail au support et au cloudcoach
+* Support: permet l'envoie de mail aux équipes support ou cloudcoach
 
 ![menu](img/menu.png)
 
@@ -193,9 +194,12 @@ Nous avons mis en place une section **audit** afin que vous puissiez voir l'ense
 
 ![audit](img/audit.png)
 
-La section **Backups** vous permet de sauvegarder l'ensemble des instances rattachées à MyCloudManager. Le backup peut-être effectué de deux façon, via un **snapshot** ou via **duplicity** que l'on a appelé **soft**. Le snapshot va prendre une photo de l'instance au moment ou vous avez schedulé le backup. Vous pourrez ensuite le retrouver dans la liste de vos images sur votre tenant. Le backup soft va lui déployer un conteneur duplicity et sauvegarder l'ensemble du contenu du ou des répertoires que vous avez séléctionné (`/data`ou `/config`) dans un contener **swift** que vous pourrez également retrouver dans la partie **containers** de votre tenant.
-Si vous souhaitez sauvegarder un groupe de serveur il vous faudra alors les séléctionner lors de la création du backup.
-En ce qui concerne la programmation des backups plusieurs choix s'offre à vous :
+La section **Backups** vous permet de sauvegarder l'ensemble des instances rattachées à MyCloudManager. Le backup peut-être effectué de deux façons, via un **snapshot** ou via **duplicity** que l'on a appelé **soft**.
+* Le backup snapshot va prendre une photo de l'instance au moment ou vous avez schedulé le backup. Vous pourrez ensuite le retrouver dans la liste de vos images sur votre tenant.
+* Le backup soft va lui déployer un conteneur duplicity et sauvegarder l'ensemble du contenu du ou des répertoires que vous avez sélectionné (`/data`ou `/config`) dans un conteneur **swift** que vous pourrez également retrouver dans la partie **containers** de votre tenant (stockage objet).
+Si vous souhaitez sauvegarder un groupe de serveurs il vous faudra alors les séléctionner lors de la création du backup.
+En ce qui concerne la programmation des backups, plusieurs choix s'offre à vous :
+
 * **Daily**: un backup par jour à l'heure souhaitée,
 * **Weekly**: un backup par semaine au jour et à l'heure souhaité,
 * **Montly**: un backup par mois à la date et a l'heure souhaitée.
@@ -208,42 +212,42 @@ Donner un nom à votre configuration de backup :
 Selectionner les serveurs que vous voulez ajouter :
 ![Backupselectsrv](img/selectsrv.png)
 
-Définissez maintenant **quand** et **comment** le backup de ses serveurs sera fait :
+Définissez maintenant **quand** et **comment** le backup de ces serveurs sera fait :
 
-* Snapshot (Prend une "photo" de votre instance et la dépose dans votre bibliothèque d'image sur votre tenant)
+* Snapshot : Prend une "photo" de votre instance et la dépose dans votre bibliothèque d'image sur votre tenant (attention: un snapshot s'éxecute à froid comme indiqué dans cet article [Fin du Hot Snapshot, place au Cold Snapshot pour une sauvegarde plus consistante !](https://dev.cloudwatt.com/fr/blog/fin-du-hot-snapshot-place-au-cold-snapshot.html) )
 ![bkpsnapshot](img/bkpsnapshot.png)
 
-* Soft (Copie l'intégralité des répertoires coché dans un conteneur swift)
+* Soft : Copie l'intégralité des répertoires cochés dans un conteneur swift
 ![bkpsoft](img/bkpsoft.png)
 
 
-Une fois que vous avez cliqué sur le bouton finish votre configuration est à présent sauvegardée :
+Une fois que vous avez cliqué sur le bouton FINISH votre configuration est à présent sauvegardée :
 
 ![bkpsvg](img/bkpsvg.png)
 
-Vous pouvez à tout moment modifier la configuration d'un backup via le bouton **editer** ![bkpedit](img/bkpedit.png) qui vous permet d'ajouter ou de supprimer des serveurs, de modifier le ou les répertoires à sauvegarder ainsi que le moment où celui ci sera exécuté.  Le bouton **supprimer** ![bkpdelete](img/bkpdelete.png) quant à lui, permet de supprimer complètement le backup selectionné.
+Vous pouvez à tout moment modifier la configuration d'un backup via le bouton **editer** ![bkpedit](img/bkpedit.png) qui vous permet d'ajouter ou de supprimer des serveurs, de modifier le ou les répertoires à sauvegarder ainsi que le moment où celui-ci sera exécuté.  Le bouton **supprimer** ![bkpdelete](img/bkpdelete.png), quant à lui, permet de supprimer complètement le job de backup selectionné.
 
 #### Qui dit backup dit restauration :
 
- Afin de restorer un backup qu'il soit **soft** ou **snapshot** la démarche reste là même. Il faut vous rendre de le menu **instance** de votre MycloudManager. Comme vouss pouvez le constater un nouveau bouton ![restore](img/restore.png) est apparu sur l'ensemble des serveur qui ont été sauvegardés.
+ Afin de restorer un backup qu'il soit **soft** ou **snapshot** la démarche reste là même. Il faut vous rendre de le menu **instances** de votre MycloudManager. Comme vouss pouvez le constater un nouveau bouton ![restore](img/restore.png) est apparu sur l'ensemble des serveurs qui ont été sauvegardés.
 
  Lorsque vous cliquez dessus un pop-up s'ouvre et vous pouvez maintenant choisir via le menu déroulant le backup que vous voulez restorer ![chooserestore](img/chooserestore.png).
- Une fois cette action effectuée, si votre backup était de type **snapshot**, l'image selectionnée va être restorée à la place de l'instance en cours, sinon pour le backup **soft** l'integralité des dossiers séléctionné seront réstauré dans le répertoire `restore` de votre instance.
+ Une fois cette action effectuée, si votre backup était de type **snapshot**, l'image selectionnée va être restorée à la place de l'instance en cours, sinon pour le backup **soft** l'integralité des dossiers sélectionné seront restaurés dans le répertoire `restore` de votre instance.
 
 ##### Retour au menu
 Dans le menu MycloudManager nous avons intégré 2 liens : **My Instances** et **My Account**. Ils servent respectivement à accéder à la console Horizon Cloudwatt et à la gestion de votre compte via l'interface Cockpit.
 
-La section **Support** va vous permettre comme son nom l'indique de contacter le support en cas de demande ou incident sur MyCloudManager. Vous pouvez aussi contacter un **CloudCoach** afin d'avoir de plus amples informations en ce qui concerne notre ecosystem ou la faisabilité de vos différents projets que vous souhaitez porter sur le cloud.
+La section **Support** va vous permettre, comme son nom l'indique, de contacter le support en cas de demande ou incident sur MyCloudManager. Vous pouvez aussi contacter un **CloudCoach** afin d'avoir de plus amples informations en ce qui concerne notre ecosystem ou la faisabilité de vos différents projets que vous souhaitez porter sur le cloud public Cloudwatt.
 
 Email :
-* Choissez votre besoin **Email Support** ou **Contact a Cloud Coach**,
+* Choisissez votre besoin **Email Support** ou **Contact a Cloud Coach**,
 * Le champ **type** va vous permettre de choisir entre **demande** ou **incident**,
 * Le champ **Reply Email Address** va permettre au support ou au cloud coach d'avoir votre adresse afin de pouvoir vous répondre,
-* le Champ **Request/Problems encountered** constitue le corps du mail.
+* le champ **Request/Problems encountered** constitue le corps du mail.
 
 ![supportemail](img/supportemail.png)
 
-l'envoie du mail se fait via le bouton ![sendmail](img/sendmail.png). Celui-ci devient ![mailsend](img/mailsend.png) si le mail est correctement envoyé ou ![mailfail](img/mailfail.png) si le serveur a rencontré une erreur pendant l'envoie.
+L'envoi du mail se fait via le bouton ![sendmail](img/sendmail.png). Celui-ci devient ![mailsend](img/mailsend.png) si le mail est correctement envoyé ou ![mailfail](img/mailfail.png) si le serveur a rencontré une erreur pendant l'envoi.
 
 
 
@@ -273,17 +277,17 @@ Une fois ceci effectué vous êtes maintenant dans la capacité d'ajouter votre 
 
 #### 2. Lancer le script d'attachement
 
-Dans MyCloudManager, aller dans le menu **instance** et cliquer sur le bouton ![bouton](img/plus.png) en bas à droite.
+Dans MyCloudManager, aller dans le menu **Instances** et cliquer sur le bouton ![bouton](img/plus.png) en bas à droite.
 
-Nous proposons un commandes de type **Curl** ainsi qu'un **Copy to Clipboard** permettant de lancer un script à la création de l'instance.
+Nous proposons une commande de type **Curl** ainsi qu'un **Copy to Clipboard** permettant de lancer un script à la création de l'instance.
 
 ![addinstance](img/addinstance.png)
 
-Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu **instance** de votre MyCloudManager.
+Une fois le script appliqué sur l'instance choisie, elle apparait dans le menu **Instances** de votre MyCloudManager.
 
 ![appdisable](img/appdisable.png)
 
-**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre MyCloudManager, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de MyCloudManager ainsi que le security group de MyCloudManager et - à l'étape 4 - collez la commande précedament copier via le **Copy to Clipboard** dans le champ Script personnalisé.
+**Astuce :** Si vous souhaitez créer une instance via la console horizon Cloudwatt et la déclarer **directement** dans votre MyCloudManager, il vous faut sélectionner - à l'étape 3 du wizard de lancement d'instance - le réseau de MyCloudManager ainsi que le security group de MyCloudManager et - à l'étape 4 - collez la commande précedemment copiée via le **Copy to Clipboard** dans le champ Script personnalisé.
 
 ![attachnetwork](img/attachnetwork.png)
 
@@ -333,7 +337,7 @@ Pour aller plus loin voici quelques liens utiles:
 Pour répondre à ce besoin nous avons choisi d'utiliser *Rundeck*.
 L'application Rundeck vous permet de **programmer et d'organiser l'ensemble des taches** que vous voulez déployer régulièrement sur  votre tenant via son interface web.
 
-Dans une prochaine version de MyCloudManager, nous automatiserons la sauvegarde de vos serveurs comme nous l'avons vu dans le cadre du *bundle* Duplicity.
+Dans cette version de MyCloudManager, nous avons automatisé la sauvegarde de vos serveurs comme nous l'avons vu dans le cadre du *bundle* Duplicity.
 
 Pour aller plus loin voici quelques liens utiles:
   * http://rundeck.org/
@@ -416,6 +420,7 @@ Cet article permet de vous familiariser avec cette nouvelle version de MyCloudMa
 
 L'intention de la CAT (Cloudwatt Automation Team) est de fournir des améliorations sur une base bimestrielle (tous les 2 mois). Dans notre roadmap, nous prévoyons entre autre :
 * l'instrumentalisation d'instances Ubuntu 16.04 (possible aujourd'hui mais uniquement avec la commande CURL post-création),
+* l'instrumentalisation d'instances Windows
 * une version francaise,
 * ne plus avoir à resaisir ses identifiants,
 * bien d'autres choses
