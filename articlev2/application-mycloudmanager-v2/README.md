@@ -366,9 +366,9 @@ Pour aller plus loin voici quelques liens utiles:
   - Kubernetes 1.3
   - Zabbix 3.0
   - Rundeck 2.6.2
-  - Graylog 1.3.4
-  - Artifactory 4.7.5
-  - Nginx 1.9.12
+  - Graylog 2.0
+  - Artifactory 4.9.1
+  - Nginx 1.11.2
   - SkyDNS 2.5.3a
   - Etcd 2.0.3
 
