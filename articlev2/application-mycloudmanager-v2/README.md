@@ -1,4 +1,4 @@
-# Innovation Beta: MyCloudManager #
+# Innovation Beta: MyCloudManager
 
 
 Cette deuxième version de MyCloudManager (version Beta). Celle-ci a pour but de vous apporter un ensemble d'outils afin **d'unifier, d'harmoniser et monitorer votre tenant**. En effet celui-ci renferme un lot d'applications variées qui a pour vocation de vous aider dans la gestion au jour le jour de vos instances **Linux**:
@@ -56,13 +56,15 @@ Après avoir entré vos login/password de votre compte, le wizard de lancement a
 Comme vous avez pu le constater le wizard du 1-Clic vous demande de saisir une nouvelle fois vos identifiants Openstack (cela sera fixé lors d'une prochaine version de MyCloudManager).
 Vous trouverez [ici](https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) votre **tenant ID**, il est identique a l'**ID du projet**. Il vous sera nécessaire pour compléter le wizard.
 
-Par défaut, le wizard propose un déploiement de deux instances de type "small-1" qui seront les instances `masters`, celles-ci sont nécessaire au bon fonctionnement de kubernetes en HA, concernant les `nodes`, ils porterons l'ensemble des *"pods" (applications)* déployés sur la stack ceux-ci doivent être taillés en fonction de l'utilisation que vous souhaitez faire de MyCloudManager par défaut il vous ait proposé de les déployer sur des flavor de type "n2.cw.standart-1".
+Par défaut, le wizard propose un déploiement de deux instances de type "small-1" qui seront les instances `masters`, celles-ci sont nécessaire au bon fonctionnement de kubernetes en HA. Concernant les `nodes`, ils porterons l'ensemble des *"pods" (applications)* déployés sur la stack ceux-ci doivent être taillés en fonction de l'utilisation que vous souhaitez faire de MyCloudManager par défaut il vous ait proposé de les déployer sur des flavor de type "n2.cw.standart-1".
 
 Vous verrez par la suite que 3 instances de type "tiny" seront aussi créées, celles-ci permettent à kubernetes de connaitre l'ensemble des noeuds et application qui compose le cluster déployé.
 
 Cependant il existe une variété d'autres types d'instances pour la satisfaction de vos multiples besoins. Les instances sont facturées à la minute, vous permettant de payer uniquement pour les services que vous avez consommés et plafonnées à leur prix mensuel (vous trouverez plus de détails sur la [Page tarifs](https://www.cloudwatt.com/fr/produits/tarifs.html) du site de Cloudwatt).
 
 Afin de persister les données applicative, des volumes de type standard seront crées dans votre tenant et attacher automatiquement à votre stack au déploiement de chaque applications, grâce à kubernetes, afin de contenir l'ensemble des données de vos différentes applications.
+
+Par défault, MyCloudManager sera déployé sur 2 instance *master* avec 3 instance *worker* et 3 instance *etcd*.
 
 Appuyer sur **LANCER**.
 
@@ -137,9 +139,9 @@ C’est (déjà) FINI !
 
 ## Enjoy
 
-L'accès à l'interface et aux différents services se fait via des noms l'adresse **IP** ou un nom **DNS** si les droits sur votre poste le permettent. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms DNS mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **GO** ou via une requête URL (par exemple : http://10.0.1.250:30601/ ou http://zabbix.default.svc.mycloudmanager/).
+L'accès à l'interface et aux différents services se fait via l'adresse **IP** ou un nom **DNS** si les droits sur votre poste le permettent. En effet un conteneur **SkyDNS** est lancé au démarrage ce qui vous permet de bénéficier de l'ensemble des noms DNS mis en place. Vous pourrez accéder aux différentes interfaces web des applications en cliquant sur **GO** ou via une requête URL (par exemple : http://10.0.1.250:30601/ ou http://zabbix.default.svc.mycloudmanager/).
 
-Nous attachons un volume bloc à chaque fois que vous déployez une application afin de pouvoir sauvegarder l'ensemble des **datas** du conteneurs de l'application. Le volume est monté sur le noeud du cluster qui porte votre application et automatiquement attaché au conteneur. Cela rend notre stack d'être beaucoup plus robuste. Pour information si jamais l'application se crashe et qu'elle se remonte sur un autre noeud alors kubernetes se chargera de le démonter et remonter sur le nouveau noeud afin que l'application retrouve l'ensemble de ses données.
+Nous attachons un volume bloc à chaque fois que vous déployez une application afin de pouvoir sauvegarder l'ensemble des **datas** du conteneurs de l'application. Le volume est monté sur le noeud du cluster qui porte votre application et automatiquement attaché au conteneur. Cela rend notre stack d'être beaucoup plus robuste. Pour information si jamais l'application se crash et qu'elle se remonte sur un autre noeud alors kubernetes se chargera de le démonter et remonter sur le nouveau noeud afin que l'application retrouve l'ensemble de ses données.
 
 
 ### Présentation de l'interface
@@ -191,7 +193,7 @@ Nous avons mis en place une section **audit** afin que vous puissiez voir l'ense
 
 ![audit](img/audit.png)
 
-La section **Backups** vous permet de sauvegarder l'ensemble des instances rattachées à MyCloudManager, le backup peut-être effectué de deux façon, via un **snapshot** ou via **duplicity** que l'on a appelé **soft**. Le snapshot va prendre une photo de l'instance au moment ou vous avez schedulé le backup. Vous pourrez ensuite le retrouver dans la liste de vos images sur votre tenant. Le backup soft va lui déployer un conteneur duplicity et sauvegarder l'ensemble du contenu du ou des répertoires que vous avez séléctionné (`/data`ou `/config`) dans un contener **swift** que vous pourrez également retrouver dans la partie **containers** de votre tenant.
+La section **Backups** vous permet de sauvegarder l'ensemble des instances rattachées à MyCloudManager. Le backup peut-être effectué de deux façon, via un **snapshot** ou via **duplicity** que l'on a appelé **soft**. Le snapshot va prendre une photo de l'instance au moment ou vous avez schedulé le backup. Vous pourrez ensuite le retrouver dans la liste de vos images sur votre tenant. Le backup soft va lui déployer un conteneur duplicity et sauvegarder l'ensemble du contenu du ou des répertoires que vous avez séléctionné (`/data`ou `/config`) dans un contener **swift** que vous pourrez également retrouver dans la partie **containers** de votre tenant.
 Si vous souhaitez sauvegarder un groupe de serveur il vous faudra alors les séléctionner lors de la création du backup.
 En ce qui concerne la programmation des backups plusieurs choix s'offre à vous :
 * **Daily**: un backup par jour à l'heure souhaitée,

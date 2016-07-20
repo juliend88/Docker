@@ -1,7 +1,7 @@
-# Innovation Beta: MyCloudManager #
+# Innovation Beta: MyCloudManager
 
 
-This first version of MyCloudManager (Beta) is a different stack of everything the team was able to share with you so far. It aims to bring you a set of tools to **unify, harmonize and monitor your tenant**. In fact it contains a lot of different applications that aims to help you manage day by day your instances :
+This first version of MyCloudManager (Beta) is a different stack of everything the team was able to share with you so far. It aims to bring you a set of tools to **unify, harmonize and monitor your tenant**. In fact it contains a lot of different applications that aims to help you manage day by day your **Linux** instances :
 * Monitoring and Supervision
 * Log management
 * Jobs Scheduler
@@ -10,9 +10,10 @@ This first version of MyCloudManager (Beta) is a different stack of everything t
 * Time synchronization
 
 MyCloudManager has been completely developed by the CAT team ( Cloudwatt Automation Team).
+* My Cloud Manager is fully HA (High Available)
 * it is based on a CoreOS instance
-* all applications are deployed via Docker containers on a Kubernetes infrastructure
-* The user interface is built in technology React
+* all applications are deployed via Docker containers orchestrated by Kubernetes
+* The user interface is developed by React
 * Also you can install or configure, from the GUI, all the applications on your instances via Ansible playbooks.
 * To secure maximum your Cloudmanager, no port is exposed on the internet apart from port 22 to the management of the stack of bodies and port 1723 for PPTP VPN access.
 
@@ -55,20 +56,27 @@ After entering your login / password to your account, launch the wizard appears:
 As you may have noticed the 1-Click wizard asked to reenter your password Openstack (this will be fixed in a future version of MyCloudManager)
 You will find [her]((https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) your **tenant ID**, it's  same as **Projet ID**. It will be necessary to complete the wizard.
 
-By default, the wizard deploys two instances of type "standard-4" (n2.cw.standard-4). A variety of other instance types exist to suit your various needs, allowing you to pay only for the services you need. Instances are charged by the minute and capped at their monthly price (you can find more details on the [Pricing page](https://www.cloudwatt.com/en/pricing.html) on the Cloudwatt website).
+By default, the wizard deploys two instances of type "small-1" who will be the `masters` instances, these are necessary for the proper functioning of Kubernetes HA. Regarding `nodes` they support all your *"pods "(applications)* on the stack. They should be size according to the use you want to make of MyCloudManager by default we proposed to deploy flavor type "n2.cw.standart-1".
 
-You must indicate the type [(standard ou performant)](https://www.cloudwatt.com/en/products.html) and the size of the block volume that will be attached to your stack via the `volume_size` parameter.
+You'll see later that 3 "tiny" instance  will be created, they help Kubernetes to know all of the nodes and the application deployed on the cluster.
 
-Finally , you can set a number of nodes to distribute the load. By default, MyCloudManager will be deployed on 1 instance *master* and 1 *slave* node. At maximum, MyCloudManager Beta can be deployed on 1 instance *master* and 3 *slave* node.
+Also a variety of other instance types exist to suit your various needs, allowing you to pay only for the services you need. Instances are charged by the minute and capped at their monthly price (you can find more details on the [Pricing page](https://www.cloudwatt.com/en/pricing.html) on the Cloudwatt website).
+
+
+To persist the application data, we will create standard volume in your tenant and automatically attach to your stack to deploy each application through Kubernetes to contain all the data of your different applications.
+
+By default, MyCloudManager will be deployed on two *master* instances, 3 *worker* instances and 3 *etcd* instances.
 
 Press **DEPLOY**.
 
 The **1-click** handles the launch of the necessary calls on Cloudwatt API :
 
-* Start an instance based on CoreOS,
-* Create and attach a block volume standard or performed as you want,
-* Start the **toolbox** container,
-* Start the **SkyDNS** container
+* Start all cluster instances based on CoreOS,
+* Start the **toolbox-backend** container,
+* Start the **toolbox-frontend** container,
+* Start the **rethinkdb** container,
+* Start the **rabbitmq** container,
+* Start the **traefik** container
 
 The stack is created automatically. You can see its progression by clicking on its name which will take you to the Horizon console. When all modules become "green", the creation is finished.
 
@@ -132,10 +140,9 @@ It's (already) done !
 
 ## Enjoy
 
-Access to the interface and the various applications is via **DNS** names. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the names in place. You can access on the different web interfaces applications by clicking **Go** or via URL request (ex: http://zabbix.default.svc.mycloudmanager/).
+Interface access and the various applications is via **IP** address or **DNS** names if the user rights on your computer allow you to do this. Indeed a **SkyDNS** container is launched at startup allowing you to benefit all the names in place. You can access on the different web interfaces applications by clicking **Go** or via URL request (ex: http://10.0.1.250:30601/ or http://zabbix.default.svc.mycloudmanager/).
 
-We have attached a block volume to your stack in order to save all **data** MyCloudManager.
-The volume is mounted on the master instance and all nodes in your MyCloudManager in the `/dev/vdb`. This allows our stack to be much more robust. The data being synchronized on all nodes, it allows applications to have access to their data regardless of the node where the  are created.
+We place a block volume every time you deploy an application to save all the **datas**  of the application containers. The volume is mounted on the cluster node that support your application and automatically attached to the container. This makes our stack to be much more robust. For information if the application crash and goes on another node, Kubernetes will dismount and re-mount the volume on the new node, therefore the application finds all of its data.
 
 
 #### Interface Overview
@@ -149,8 +156,10 @@ A menu is present in the top left of the page, it can move through the different
 * Instances: list of visible instances of MyCloudManager
 * Tasks : all ongoing or completed tasks
 * Audit: list of actions performed
+* Backups: list all backups
 * My Instances> Console: access to the console Horizon
 * My account> Cockpit ; access to the dashboard
+* Support: allows sending mail to support and cloud coach
 
 
 ![menu](img/menu.png)
@@ -182,6 +191,20 @@ It is possible for you to cancel pending on error spot in the **tasks** menu by 
 We also implemented a **audit** section so you can see all actions performed on each of your instances and export to Excel (.xlsx ) if you want to make a post-processing or keep this information for safety reasons via the button ![xlsx](img/xlsx.png).
 
 ![audit](img/audit.png)
+
+
+The **Backups** section allows you to backup all instances in your MyCloudManager. The backup may be performed in two ways, via a **snapshot** or via **duplicity** that has been called **soft**. The snapshot will take a picture of the instance when you have schedule the backup.
+Then you can find it in the list of your images on your tenant. The **soft** backup will deploy a duplicity container and backup all data in the repository 
+
+
+
+
+
+
+
+
+
+
 
 
 Finally , we integrated two navigation paths in the MyCloudManager menu : **My Instances** and **My Account**. They are respectively used to access the Cloudwatt Horizon console and to manage your account via the Cockpit interface.
