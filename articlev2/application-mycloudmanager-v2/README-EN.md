@@ -1,16 +1,17 @@
 # Innovation Beta: MyCloudManager
 
 
-This first version of MyCloudManager (Beta) is a different stack of everything the team was able to share with you so far. It aims to bring you a set of tools to **unify, harmonize and monitor your tenant**. In fact it contains a lot of different applications that aims to help you manage day by day your **Linux** instances :
+This version of MyCloudManager (Beta) is a different stack of everything the team was able to share with you so far. It aims to bring you a set of tools to **unify, harmonize and monitor your tenant**. In fact it contains a lot of different applications that aims to help you manage day by day your **Linux** instances :
 * Monitoring and Supervision
 * Log management
 * Jobs Scheduler
 * Mirror ClamAV - Antivirus
 * Repository app manager
+* Backup snapshot or backup soft
 * Time synchronization
 
 MyCloudManager has been completely developed by the CAT team ( Cloudwatt Automation Team).
-* My Cloud Manager is fully HA (High Available)
+* MyCloudManager is fully HA (High Available)
 * it is based on a CoreOS instance
 * all applications are deployed via Docker containers orchestrated by Kubernetes
 * The user interface is developed by React
@@ -54,13 +55,13 @@ After entering your login / password to your account, launch the wizard appears:
 
 
 As you may have noticed the 1-Click wizard asked to reenter your password Openstack (this will be fixed in a future version of MyCloudManager)
-You will find [her]((https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) your **tenant ID**, it's  same as **Projet ID**. It will be necessary to complete the wizard.
+You will find [here](https://console.cloudwatt.com/project/access_and_security/api_access/view_credentials/) your **tenant ID**, it's  same as **Projet ID**. It will be necessary to complete the wizard.
 
 By default, the wizard deploys two instances of type "small-1" who will be the `masters` instances, these are necessary for the proper functioning of Kubernetes HA. Regarding `nodes` they support all your *"pods "(applications)* on the stack. They should be size according to the use you want to make of MyCloudManager by default we proposed to deploy flavor type "n2.cw.standart-1".
 
-You'll see later that 3 "tiny" instance  will be created, they help Kubernetes to know all of the nodes and the application deployed on the cluster.
+You'll see later that 3 "tiny" instances  will be created, they help Kubernetes to know all of the nodes and the application deployed on the cluster.
 
-Also a variety of other instance types exist to suit your various needs, allowing you to pay only for the services you need. Instances are charged by the minute and capped at their monthly price (you can find more details on the [Pricing page](https://www.cloudwatt.com/en/pricing.html) on the Cloudwatt website).
+Also a variety of other instance types exists to suit your various needs, allowing you to pay only for the services you need. Instances are charged by the minute and capped at their monthly price (you can find more details on the [Pricing page](https://www.cloudwatt.com/en/pricing.html) on the Cloudwatt website).
 
 
 To persist the application data, we will create standard volume in your tenant and automatically attach to your stack to deploy each application through Kubernetes to contain all the data of your different applications.
@@ -147,7 +148,7 @@ We place a block volume every time you deploy an application to save all the **d
 
 #### Interface Overview
 
-Here is the home of the MyCloudManager, each thumbnail representing an application ready to be launched. In order to be as scalable and flexible as possible, all applications of MyCloudManager are containers Docker.
+Here is the home of the MyCloudManager, each thumbnail representing an application ready to be launched. In order to be as scalable and flexible as possible, all applications of MyCloudManager are Docker's containers.
 
 ![accueil](img/accueil.png)
 
@@ -156,7 +157,7 @@ A menu is present in the top left of the page, it can move through the different
 * Instances: list of visible instances of MyCloudManager
 * Tasks : all ongoing or completed tasks
 * Audit: list of actions performed
-* Backups: list all backups
+* Backups: list all backup jobs
 * My Instances> Console: access to the console Horizon
 * My account> Cockpit ; access to the dashboard
 * Support: allows sending mail to support and cloud coach
@@ -193,7 +194,7 @@ We also implemented a **audit** section so you can see all actions performed on 
 ![audit](img/audit.png)
 
 
-The **Backups** section allows you to backup all instances in your MyCloudManager. The backup may be performed in two ways, via a **snapshot** or via **duplicity** that has been called **soft**.
+The **Backups** section allows you to backup all instances by your MyCloudManager. The backup may be performed in two ways, via a **snapshot** or via **duplicity** that has been called **soft**.
 * The snapshot backup will take a picture of the instance when you have schedule the backup.
 Then you can find it in the list of your images on your tenant.
 * The soft backup will deploy a duplicity container and backup all data in the repository (`/data`or `/config`) in a **swift** container which can also be found in **containers** section of your tenant (object storage).
@@ -202,10 +203,10 @@ Regarding the scheduling of backups, several choices are available to you:
 
 * **Daily**: one backup per day at the desired time,
 * **weekly**: one backup per week at day and time desired,
-* **Monthly**: one backup per month at date and time desired.
+* **Monthly**: one backup per month at day and time desired.
 
 
-To start a new backup configuration you must click on the button![bouton](img/plus.png)
+To start a new backup configuration you must click on the button![button](img/plus.png)
 
 Give a name to your backup configuration:
 ![newconfig](img/backupinfo.png)
@@ -228,17 +229,17 @@ Once you have clicked the button FINISH your configuration is now saved:
 You can always change the configuration of a backup via the button **edit**![bkpedit](img/bkpedit.png) that allows you to add or remove servers, change the backup directory and when it will run.
 The **delete** button ![bkpdelete](img/bkpdelete.png), for its part, allows to completely remove the selected backup job.
 
-#### Who says said backup said restore:
+#### Who says said backup said restore:
 
-To restore a backup  **soft** or **snapshot** the approach stay the same. You must go to the menu **instances** of your MycloudManager. As you can see a new ![restore](img/restore.png) button appeared on all servers that have been saved.
+To restore a backup  **soft** or **snapshot** the approach stays the same. You must go to the menu **instances** of your MycloudManager. As you can see a new ![restore](img/restore.png) button appeared on all servers that have been saved.
 
-When you click on a pop-up open and you can now choose from the list the backup to restore  ![chooserestore](img/chooserestore.png).
+When you click on a pop-up open, you can now choose from the list the backup to restore  ![chooserestore](img/chooserestore.png).
 Once this has been done, if your backup was **snapshot**, the selected image will be restored instead of the current instance, if the backup is **soft** the selected files will be restored in the `restore` directory of your instance.
 
 ##### Back to menu
 Finally , we integrated two navigation paths in the MyCloudManager menu : **My Instances** and **My Account**. They are respectively used to access the Cloudwatt Horizon console and to manage your account via the Cockpit interface.
 
-The **Support** section will allow you, as the name implies, contact support if requested or incident in your MyCloudManager. You can also contact a **cloud coach** to have more information regarding our ecosystem or feasibility of your projects that you want to focus on the public cloud Cloudwatt.
+The **Support** section will allow you, as the name implies, contacts the Cloudwatt support organization if requested or incident in your MyCloudManager. You can also contact a **cloud coach** to have more information regarding our ecosystem or feasibility of your projects that you want to focus on the Cloudwatt public cloud.
 
 Email :
 * Choose your need **Email Support** or  **Contact a Cloud Coach**,
@@ -425,12 +426,12 @@ This article will acquaint you with this first version of MyCloudManager. It is 
 
 The intention of the CAT ( Cloudwatt Automation Team) is to provide improvements on a bimonthly basis. In our roadmap, we expect among others:
 * Instrumentalisation of Ubuntu 16.04 instance (possible today but only with the CURL command),
-* Instrumentalisation Windows instance,
+* Instrumentalisation of Windows instances,
 * A French version,
-* not having to reenter their credentials,
+* not having to re-enter your credentials,
 * many other things
 
-Suggestions for improvement ? Services that you would like ? do not hesitate to contact us [apps@cloudwatt.com](mailto:apps@cloudwatt.com)
+Suggestions for improvement ? Services that you would like ? do not hesitate to contact us [apps.cloudwatt@orange.com](mailto:apps.cloudwatt@orange.com)
 
 -----
 Have fun. Hack in peace.
