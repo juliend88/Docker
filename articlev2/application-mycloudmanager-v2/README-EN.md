@@ -1,4 +1,6 @@
-# Innovation Beta: MyCloudManager ![logo](img/mycloudmanager.png)
+# Innovation Beta: MyCloudManager
+
+![logo](img/mycloudmanager.png)
 
 
 

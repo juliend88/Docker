@@ -1,4 +1,6 @@
-# Innovation Beta: MyCloudManager  ![logo](img/mycloudmanager.png)
+# Innovation Beta: MyCloudManager
+
+ ![logo](img/mycloudmanager.png)
 
 
 Cette deuxième version de MyCloudManager (version Beta). Celle-ci a pour but de vous apporter un ensemble d'outils afin **d'unifier, d'harmoniser et monitorer votre tenant**. En effet celui-ci renferme un lot d'applications variées qui a pour vocation de vous aider dans la gestion au jour le jour de vos instances **Linux**:
