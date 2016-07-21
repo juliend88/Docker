@@ -151,6 +151,7 @@ resources:
           security_group: { get_resource: security_group }
           network: { get_resource: network }
           nodeip: 10.0.1.24%index%
+          stack: { get_param: 'OS::stack_name' }
           os_username: { get_param: os_username }
           os_password: { get_param: os_password }
           os_tenant: { get_param: os_tenant }
