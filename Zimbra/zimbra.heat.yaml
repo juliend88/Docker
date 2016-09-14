@@ -59,6 +59,8 @@ resources:
       rules:
         - { direction: ingress, protocol: TCP, port_range_min: 22, port_range_max: 22 }
         - { direction: ingress, protocol: TCP, port_range_min: 80, port_range_max: 80 }
+        - { direction: ingress, protocol: TCP, port_range_min: 443, port_range_max: 443 }
+        - { direction: ingress, protocol: TCP, port_range_min: 7071, port_range_max: 7071 }
         - { direction: ingress, protocol: ICMP }
         - { direction: egress, protocol: ICMP }
         - { direction: egress, protocol: TCP }
@@ -153,7 +155,6 @@ resources:
                     Requires=docker.service
                     [Service]
                     TimeoutStartSec=0
-                    Restart=Always
                     ExecStartPre=-/usr/bin/docker kill zimbra
                     ExecStartPre=-/usr/bin/docker rm zimbra
                     ExecStartPre=/usr/bin/docker pull jorgedlcruz/zimbra
@@ -172,11 +173,10 @@ resources:
                              --publish=8080:8080 \
                              --publish=8443:8443 \
                              --publish=9071:9071 \
-                             --restart=always \
                              --env-file /home/core/zimbra.env \
                              --dns=$DNS \
                              --dns=8.8.8.8 \
-                             --hostname=zimbra86-docker.zimbra.io \
+                             --hostname=zimbra86-docker.$Domain_Name \
                              --name=zimbra jorgedlcruz/zimbra
 
                     [Install]
