@@ -190,9 +190,9 @@ resources:
 
 outputs:
   floating_ip_url:
-    description: owncloud URL
+    description: Zimbra URL
     value:
       str_replace:
-        template: http://$floating_ip
+        template: https://$floating_ip
         params:
           $floating_ip: { get_attr: [floating_ip, floating_ip_address] }
