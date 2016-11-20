@@ -132,7 +132,7 @@ resources:
                     hostNetwork: true
                     containers:
                     - name: kube-proxy
-                      image: quay.io/coreos/hyperkube:v1.3.5_coreos.0
+                      image: quay.io/coreos/hyperkube:v1.3.7_coreos.0
                       command:
                       - /hyperkube
                       - proxy
@@ -271,7 +271,7 @@ resources:
 
                     [Service]
                     ExecStartPre=/usr/bin/mkdir -p /opt/bin
-                    ExecStartPre=-/usr/bin/curl -o /opt/bin/kubelet -C - http://storage.googleapis.com/kubernetes-release/release/v1.3.2/bin/linux/amd64/kubelet
+                    ExecStartPre=-/usr/bin/curl -o /opt/bin/kubelet -C - http://storage.googleapis.com/kubernetes-release/release/v1.3.7/bin/linux/amd64/kubelet
                     ExecStartPre=-/usr/bin/chmod +x /opt/bin/kubelet
                     ExecStart=/opt/bin/kubelet \
                       --api-servers=https://$master \
