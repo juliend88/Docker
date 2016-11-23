@@ -1,4 +1,4 @@
-FROM graylog2/server:2.0.3-2
+FROM graylog2/server:2.1.2-1
 
 ADD custom-entrypoint.sh /
 ADD graylog.conf /
