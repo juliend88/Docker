@@ -95,6 +95,7 @@
               ip: "{{ server_ip }}"
               dns: "{{ ansible_hostname }}"
               port: 10050
+      notify: restart zabbix
 
   handlers:
     - name: restart zabbix
