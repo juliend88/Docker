@@ -1,7 +1,0 @@
-[template]
-src = "rundeck-config.properties.tmpl"
-dest = "/etc/rundeck/rundeck-config.properties"
-keys = [
-    "/rundeck/baseuri",
-    "/rundeck/mail"
-]

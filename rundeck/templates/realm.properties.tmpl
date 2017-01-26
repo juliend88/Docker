@@ -1,4 +1,0 @@
-{{range gets "/rundeck/users/*"}}
-{{ $user := split .Key "/" }}
-{{index $user 3}}:{{.Value}},user,admin,architect,deploy,build
-{{end}}

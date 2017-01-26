@@ -1,16 +1,12 @@
 FROM java:7
 
-RUN wget -O /usr/bin/confd https://github.com/kelseyhightower/confd/releases/download/v0.11.0/confd-0.11.0-linux-amd64 && chmod +x /usr/bin/confd
-
-ENV RUN_DECK_VERSION 2.6.8-1-GA
+ENV RUN_DECK_VERSION 2.6.11-1-GA
 
 RUN wget http://dl.bintray.com/rundeck/rundeck-deb/rundeck-${RUN_DECK_VERSION}.deb && dpkg -i rundeck-${RUN_DECK_VERSION}.deb && rm -f rundeck-${RUN_DECK_VERSION}.deb
 
 ADD entrypoint.sh /entrypoint.sh
 
-ADD conf/* /etc/confd/conf.d/
-ADD templates/* /etc/confd/templates/
-RUN bash -c "echo project.resources.url = http://manager/api/servers/rundeck >> /etc/rundeck/project.properties"
+RUN bash -c "echo project.resources.url = http://10.1.1.10:30000/api/servers/rundeck >> /etc/rundeck/project.properties"
 
 CMD ["/entrypoint.sh"]
 

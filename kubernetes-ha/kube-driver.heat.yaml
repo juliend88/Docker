@@ -1,6 +1,9 @@
 heat_template_version: 2013-05-23
 
 parameters:
+  stack:
+    label: stack
+    type: string
   nodename:
     label: nodename
     type: string
@@ -10,6 +13,21 @@ parameters:
   mastercount:
     label: mastercount
     type: number
+  os_username:
+    label: os_username
+    type: string
+  os_password:
+    label: os_password
+    type: string
+  os_tenant:
+    label: os_tenant
+    type: string
+  os_auth:
+    label: os_auth
+    type: string
+  os_region:
+    label: os_region
+    type: string
   domain:
     label: domain
     type: string
@@ -57,6 +75,12 @@ resources:
             $private_ipv4: { get_attr: [ port, fixed_ips, 0, ip_address ] }
             $domain: { get_param: domain }
             $nodeid: { get_param: nodeid }
+            $os_username: { get_param: os_username}
+            $os_password: { get_param: os_password}
+            $os_tenant: { get_param: os_tenant }
+            $os_auth: { get_param: os_auth }
+            $os_region: { get_param: os_region }
+            $stack: { get_param: stack }
             $mastercount: { get_param: mastercount }
           template: |
             #cloud-config
@@ -135,6 +159,34 @@ resources:
                   curl --silent -X PUT --data-urlencode value@apiserver-key.pem "http://localhost:2379/v2/keys/ssl/apiserver-key"
                   curl --silent -X PUT --data-urlencode value@admin.pem "http://localhost:2379/v2/keys/ssl/admin"
                   curl --silent -X PUT --data-urlencode value@admin-key.pem "http://localhost:2379/v2/keys/ssl/admin-key"
+              - path: /etc/rclone.conf
+                permissions: 0766
+                owner: "root:root"
+                content: |
+                  [Openstack]
+                  type = swift
+                  user = $os_username
+                  key = $os_password
+                  auth = $os_auth
+                  tenant = $os_tenant
+                  region = $os_region
+                  storage_url =
+              - path: /etc/etcd-backup-env
+                permissions: 0766
+                owner: "root:root"
+                content: |
+                  ETCD_NAME=driver-$nodeid
+                  ETCD_ADVERTISE_CLIENT_URLS=http://$private_ipv4:2379
+                  ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$private_ipv4:2380
+                  ETCD_INITIAL_CLUSTER=driver-0=http://10.0.1.240:2380,driver-1=http://10.0.1.241:2380,driver-2=http://10.0.1.242:2380
+                  ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379,http://0.0.0.0:4001
+                  ETCD_LISTEN_PEER_URLS=http://$private_ipv4:2380
+                  RCLONE_ENDPOINT=Openstack:etcd-backup-$stack
+                  RCLONE_CONFIG_PATH=/etc/rclone.conf
+                  ETCD_DATA_DIR=/var/lib/etcd2
+                  ETCD_BACKUP_DIR=/var/lib/etcd2-backup
+                  ETCD_RESTORE_DIR=/var/lib/etcd2-restore
+                  RCLONE_CHECKSUM=true
 
             coreos:
               etcd2:
@@ -172,7 +224,7 @@ resources:
                     ExecStartPre=/usr/bin/rm -rf ${ETCD_DATA_DIR}/member
                     ExecStartPre=/usr/bin/mkdir -p ${ETCD_RESTORE_DIR} /opt/bin
                     ExecStartPre=/usr/bin/rm -rf ${ETCD_RESTORE_DIR}/member
-                    ExecStartPre=-/usr/bin/curl -C - -o /opt/bin/etcd2-restore https://storage.fr1.cloudwatt.com/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/toolbox-v2/etcd2-restore
+                    ExecStartPre=-/usr/bin/curl -C - -o /opt/bin/etcd2-restore https://storage.fr1.cloudwatt.com/v1/AUTH_772be1ffb32e42a28ac8e0205c0b0b90/kube-ha-fr1/etcd2-restore
                     ExecStartPre=/usr/bin/chmod +x /opt/bin/etcd2-restore
 
                     # Copy the last backup from rclone endpoint

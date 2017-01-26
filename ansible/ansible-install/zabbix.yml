@@ -11,7 +11,7 @@
     package: zabbix
     service_web: "{{ lookup('env', 'SERVICE_WEB_HOST') }}:{{ lookup('env', 'SERVICE_WEB_PORT') }}"
     service: "{{ lookup('env', 'SERVICE_ACTIVE_HOST') }}:{{ lookup('env', 'SERVICE_ACTIVE_PORT') }}"
-    service_username: "admin"
+    service_username: "Admin"
     service_password: "zabbix"
 
   tasks:
