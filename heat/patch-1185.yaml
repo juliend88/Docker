@@ -1,0 +1,20 @@
+#cloud-config
+coreos:
+  units:
+    - name: 50-docker.network
+      mask: true
+    - name: 50-docker-veth.network
+      mask: true
+    - name: zz-default.network
+      runtime: false
+      content: |
+        # default should not match virtual Docker/weave bridge/veth network interfaces
+        [Match]
+        Name=eth*
+
+        [Network]
+        DHCP=yes
+
+        [DHCP]
+        UseMTU=true
+        UseDomains=true
