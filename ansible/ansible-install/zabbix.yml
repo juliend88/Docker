@@ -21,15 +21,39 @@
 
     - name: Add repository for CentOS 7
       yum:
-        name=http://repo.zabbix.com/zabbix/3.0/rhel/7/x86_64/zabbix-release-3.0-1.el7.noarch.rpm
+        name=http://repo.zabbix.com/zabbix/3.2/rhel/7/x86_64/zabbix-release-3.2-1.el7.noarch.rpm
         state=present
       when: ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "7"
 
     - name: Add repository for CentOS 6
       yum:
-        name=http://repo.zabbix.com/zabbix/3.0/rhel/6/x86_64/zabbix-release-3.0-1.el6.noarch.rpm
+        name=http://repo.zabbix.com/zabbix/3.2/rhel/6/x86_64/zabbix-agent-3.2.1-1.el6.x86_64.rpm
         state=present
       when: ansible_distribution == "CentOS" and ansible_distribution_version.split(".")[0] == "6"
+
+    - name: Add repository for Debian 7
+      apt:
+        name=http://repo.zabbix.com/zabbix/3.2/debian/pool/main/z/zabbix-release/zabbix-release_3.2-1+wheezy_all.deb
+        state=present
+      when: ansible_distribution == "Debian" and ansible_distribution_version.split(".")[0] == "7"
+
+    - name: Add repository for Debian 8
+      apt:
+        name=http://repo.zabbix.com/zabbix/3.2/debian/pool/main/z/zabbix-release/zabbix-release_3.2-1+jessie_all.deb
+        state=present
+      when: ansible_distribution == "Debian" and ansible_distribution_version.split(".")[0] == "8"
+
+    - name: Add repository for Ubuntu 14
+      apt:
+        name=http://repo.zabbix.com/zabbix/3.2/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.2-1+trusty_all.deb
+        state=present
+      when: ansible_distribution == "Ubuntu" and ansible_distribution_version.split(".")[0] == "14"
+
+    - name: Add repository for Ubuntu 16
+      apt:
+        name=http://repo.zabbix.com/zabbix/3.2/ubuntu/pool/main/z/zabbix-release/zabbix-release_3.2-1+xenial_all.deb
+        state=present
+      when: ansible_distribution == "Ubuntu" and ansible_distribution_version.split(".")[0] == "16"
 
     - name: install packages
       package: name={{ item }} state=present
@@ -103,8 +127,3 @@
         name=zabbix-agent
         state=restarted
         enabled=yes
-
-
-
-
-
